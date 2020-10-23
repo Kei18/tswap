@@ -6,8 +6,6 @@
 #include <default_params.hpp>
 #include <problem.hpp>
 #include <pibt.hpp>
-#include <hca.hpp>
-#include <whca.hpp>
 #include <cbs.hpp>
 #include <icbs.hpp>
 #include <ecbs.hpp>
@@ -118,10 +116,6 @@ Solver* getSolver(const std::string solver_name,
   Solver* solver;
   if (solver_name == "PIBT") {
     solver = new PIBT(P);
-  } else if (solver_name == "HCA") {
-    solver = new HCA(P);
-  } else if (solver_name == "WHCA") {
-    solver = new WHCA(P);
   } else if (solver_name == "CBS") {
     solver = new CBS(P);
   } else if (solver_name == "ICBS") {
@@ -154,8 +148,6 @@ void printHelp() {
             << std::endl;
   // each solver
   PIBT::printHelp();
-  HCA::printHelp();
-  WHCA::printHelp();
   CBS::printHelp();
   ECBS::printHelp();
   ICBS::printHelp();

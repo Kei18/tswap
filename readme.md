@@ -1,9 +1,9 @@
-Multi-Agent Path Finding
+Unlabeled Multi-Agent Path Finding
 ===
 [![Build Status](https://travis-ci.com/Kei18/mapf-IR.svg?token=NJ5EpN7k73FqKbLee887&branch=master)](https://travis-ci.com/Kei18/mapf-IR)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
-A simulator and visualizer of Multi-Agent Path Finding (MAPF), used in a paper "Iterative Refinement for Realtime MAPF".
+A simulator and visualizer of Unlabeled/Anonymous Multi-Agent Path Finding (MAPF).
 It is written in C++(17) with [CMake](https://cmake.org/) build and tested on OSX 10.15.
 The visualizer uses [openFrameworks](https://openframeworks.cc).
 

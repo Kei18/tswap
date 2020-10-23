@@ -4,26 +4,7 @@
 
 
 const std::string IR::SOLVER_NAME = "IR";
-const IR::INIT_SOLVER_TYPE IR::DEFAULT_INIT_SOLVER =
-  IR::INIT_SOLVER_TYPE::PIBT_COMPLETE;
-const IR::OPTIMAL_SOLVER_TYPE IR::DEFAULT_REFINE_SOLVER =
-  IR::OPTIMAL_SOLVER_TYPE::ICBS;
 const int IR::DEFAULT_MAX_ITERATION = 100;
-
-
-// used for set underlying solver options
-static void setSolverOption(Solver* solver,
-                            const std::vector<std::string>& option)
-{
-  if (option.empty()) return;
-  int argc = option.size() + 1;
-  char *argv[argc+1];
-  for (int i = 0; i < argc; ++i) {
-    char *tmp = const_cast<char*>(option[i].c_str());
-    argv[i+1] = tmp;
-  }
-  solver->setParams(argc, argv);
-}
 
 
 IR::IR(Problem* _P) : Solver(_P)
@@ -31,8 +12,6 @@ IR::IR(Problem* _P) : Solver(_P)
   solver_name = IR::SOLVER_NAME;
 
   output_file = DEFAULT_OUTPUT_FILE;
-  init_solver = DEFAULT_INIT_SOLVER;
-  refine_solver = DEFAULT_REFINE_SOLVER;
   max_iteration = DEFAULT_MAX_ITERATION;
   verbose_underlying_solver = false;
   make_log_every_itr = false;
@@ -95,28 +74,9 @@ Plan IR::getInitialPlan()
                             max_timestep);
 
   // set solver
-  Solver* solver;
-  switch (init_solver) {
-  case INIT_SOLVER_TYPE::HCA:
-    solver = new HCA(_P);
-    break;
-  case INIT_SOLVER_TYPE::WHCA:
-    solver = new WHCA(_P);
-    break;
-  case INIT_SOLVER_TYPE::ECBS:
-    solver = new ECBS(_P);
-    break;
-  case INIT_SOLVER_TYPE::PIBT:
-    solver = new PIBT(_P);
-    break;
-  case INIT_SOLVER_TYPE::PIBT_COMPLETE:
-  default:
-    solver = new PIBT_COMPLETE(_P);
-    break;
-  }
+  Solver* solver = new PIBT_COMPLETE(_P);
 
   // set solver options
-  setSolverOption(solver, option_init_solver);
   solver->setVerbose(verbose_underlying_solver);
 
   // solve
@@ -216,25 +176,9 @@ std::tuple<bool, Plan> IR::getOptimalPlan(Problem* _P,
                                           const std::vector<int>& sample)
 {
   // set solver
-  Solver* solver;
-  switch (refine_solver) {
-  case OPTIMAL_SOLVER_TYPE::CBS_NORMAL:
-    solver = new CBS(_P);
-    break;
-  case OPTIMAL_SOLVER_TYPE::CBS:
-    solver = new CBS_REFINE(_P, current_plan, sample);
-    break;
-  case OPTIMAL_SOLVER_TYPE::ICBS_NORMAL:
-    solver = new ICBS(_P);
-    break;
-  case OPTIMAL_SOLVER_TYPE::ICBS:
-  default:
-    solver = new ICBS_REFINE(_P, current_plan, sample);
-    break;
-  }
+  std::unique_ptr<Solver> solver = std::make_unique<ICBS_REFINE>(_P, current_plan, sample);
 
   // set solver option
-  setSolverOption(solver, option_optimal_solver);
   solver->setVerbose(verbose_underlying_solver);
 
   // solve
@@ -248,7 +192,6 @@ std::tuple<bool, Plan> IR::getOptimalPlan(Problem* _P,
     plan = solver->getSolution();
     success = true;
   }
-  delete solver;
 
   return std::make_tuple(success, plan);
 }
@@ -263,10 +206,6 @@ void IR::setParams(int argc, char *argv[])
   struct option longopts[] = {
     { "timeout-refinement", required_argument, 0, 't' },
     { "log-every-iter", required_argument, 0, 'l' },
-    { "init-solver", required_argument, 0, 'x' },
-    { "optimal-solver", required_argument, 0, 'y' },
-    { "option-init-solver", required_argument, 0, 'X' },
-    { "option-optimal-solver", required_argument, 0, 'Y' },
     { "verbose-underlying", no_argument, 0, 'V' },
     { "max-iteration", required_argument, 0, 'n' },
     { 0, 0, 0, 0 },
@@ -291,60 +230,6 @@ void IR::setParams(int argc, char *argv[])
         timeout_refinement = max_comp_time;
       }
       break;
-    case 'x':
-      s = std::string(optarg);
-      if (s == "PIBT") {
-        init_solver = INIT_SOLVER_TYPE::PIBT;
-      } else if (s == "HCA") {
-        init_solver = INIT_SOLVER_TYPE::HCA;
-      } else if (s == "WHCA") {
-        init_solver = INIT_SOLVER_TYPE::WHCA;
-      } else if (s == "ECBS") {
-        init_solver = INIT_SOLVER_TYPE::ECBS;
-      } else if (s == "PIBT_COMPLETE") {
-        init_solver = INIT_SOLVER_TYPE::PIBT_COMPLETE;
-      } else {
-        warn("solver does not exists, use PIBT");
-      }
-      break;
-    case 'X':
-      s = std::string(optarg);
-      for (int i = 0; i < s.size(); ++i) {
-        if (s[i] == ' ') {
-          option_init_solver.push_back(s_tmp);
-          s_tmp = "";
-        } else {
-          s_tmp += s[i];
-          if (i == s.size() - 1) option_init_solver.push_back(s_tmp);
-        }
-      }
-      break;
-    case 'y':
-      s = std::string(optarg);
-      if (s == "CBS") {
-        refine_solver = OPTIMAL_SOLVER_TYPE::CBS;
-      } else if (s == "CBS_NORMAL") {
-        refine_solver = OPTIMAL_SOLVER_TYPE::CBS_NORMAL;
-      } else if (s == "ICBS") {
-        refine_solver = OPTIMAL_SOLVER_TYPE::ICBS;
-      } else if (s == "ICBS_NORMAL") {
-        refine_solver = OPTIMAL_SOLVER_TYPE::ICBS_NORMAL;
-      } else {
-        warn("solver does not exists, use ICBS");
-      }
-      break;
-    case 'Y':
-      s = std::string(optarg);
-      for (int i = 0; i < s.size(); ++i) {
-        if (s[i] == ' ') {
-          option_optimal_solver.push_back(s_tmp);
-          s_tmp = "";
-        } else {
-          s_tmp += s[i];
-          if (i == s.size() - 1) option_optimal_solver.push_back(s_tmp);
-        }
-      }
-      break;
     case 'V':
       verbose_underlying_solver = true;
       break;
@@ -367,22 +252,6 @@ void IR::printHelp()
             << "  -t --timeout-refinement [INT]"
             << " "
             << "timeout for refinement\n"
-
-            << "  -x --init-solver [SOLVER]"
-            << "     "
-            << "init solver: { PIBT, HCA, WHCA, PIBT_COMPLETE }, default: PIBT_COMPLETE\n"
-
-            << "  -X --option-init-solver [\"OPTION\"]\n"
-            << "                                "
-            << "option for init-solver\n"
-
-            << "  -y --refine-solver [SOLVER]"
-            << "   "
-            << "refine solver: { CBS, CBS_USUAL, ICBS, ICBS_USUAL }, default: ICBS\n"
-
-            << "  -Y --option-refine-solver [\"OPTION\"]\n"
-            << "                                "
-            << "option for refine-solver"
 
             << "  -n --max-iteration [INT]"
             << "      "

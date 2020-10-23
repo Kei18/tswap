@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <vector>
+#include <set>
 #include <iostream>
 #include <iomanip>
 #include <unordered_map>
@@ -120,6 +121,15 @@ static bool sameConfig(const Config& config_i, const Config& config_j)
     if (config_i[k] != config_j[k]) return false;
   }
   return true;
+}
+
+[[maybe_unused]]
+static bool permutatedConfig(const Config& config_i, const Config& config_j)
+{
+  std::set<Node*> set_config_i(config_i.begin(), config_i.end());
+  std::set<Node*> set_config_j(config_j.begin(), config_j.end());
+
+  return set_config_i == set_config_j;
 }
 
 // Pure graph. Base class of Grid class.

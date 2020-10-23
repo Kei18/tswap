@@ -95,7 +95,7 @@ bool Plan::validate(Problem* P) const
 
   // start and goal
   if (!sameConfig(P->getConfigStart(), get(0))) return false;
-  if (!sameConfig(P->getConfigGoal(), get(getMakespan()))) return false;
+  if (!permutatedConfig(P->getConfigGoal(), get(getMakespan()))) return false;
 
   // check conflicts and continuity
   int num_agents = get(0).size();

@@ -4,11 +4,6 @@
 
 #pragma once
 #include "solver.hpp"
-#include "../include/pibt.hpp"
-#include "../include/hca.hpp"
-#include "../include/whca.hpp"
-#include "../include/cbs_refine.hpp"
-#include "../include/ecbs.hpp"
 #include "../include/icbs_refine.hpp"
 #include "../include/pibt_complete.hpp"
 
@@ -18,18 +13,6 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  // init-solver
-  enum struct INIT_SOLVER_TYPE
-    { PIBT, HCA, WHCA, ECBS, PIBT_COMPLETE };
-  INIT_SOLVER_TYPE init_solver;
-  std::vector<std::string> option_init_solver;
-
-  // refine-solver
-  enum struct OPTIMAL_SOLVER_TYPE
-    { CBS, CBS_NORMAL, ICBS, ICBS_NORMAL };
-  OPTIMAL_SOLVER_TYPE refine_solver;
-  std::vector<std::string> option_optimal_solver;
-
   // max iteration
   int max_iteration;
 
@@ -49,8 +32,6 @@ private:
   bool verbose_underlying_solver;
 
   // default params
-  static const INIT_SOLVER_TYPE DEFAULT_INIT_SOLVER;
-  static const OPTIMAL_SOLVER_TYPE DEFAULT_REFINE_SOLVER;
   static const int DEFAULT_MAX_ITERATION;
 
   void run();
