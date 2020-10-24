@@ -8,7 +8,7 @@ ofApp::ofApp(MAPFPlan* _P): P(_P)
   flg_loop = true;
   flg_goal = true;
   flg_font = false;
-  flg_line = false;
+  flg_line = true;
   flg_focus = false;
   flg_logo_gen = false;
 }
@@ -98,7 +98,7 @@ void ofApp::draw()
   if (flg_goal) {
     for (int i = 0; i < P->num_agents; ++i) {
       if (flg_focus && i != agent_slider) continue;
-      ofSetColor(Color::goal);
+      ofSetColor(Color::agents[i % Color::agents.size()]);
       Node* g = P->config_g[i];
       Pos pos1 = g->pos * scale;
       int x = pos1.x + BufferSize::window_x_buffer + scale/2;

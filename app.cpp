@@ -11,6 +11,7 @@
 #include <ecbs.hpp>
 #include <pibt_complete.hpp>
 #include <ir.hpp>
+#include <network_based_solver.hpp>
 
 void printHelp();
 Solver* getSolver(const std::string solver_name,
@@ -126,6 +127,8 @@ Solver* getSolver(const std::string solver_name,
     solver = new ECBS(P);
   } else if (solver_name == "IR") {
     solver = new IR(P);
+  } else if (solver_name == "NetworkFlow") {
+    solver = new NetworkBasedSolver(P);
   } else {
     warn("unknown solver name, " + solver_name + ", continue by PIBT");
     solver = new PIBT(P);
@@ -153,4 +156,5 @@ void printHelp() {
   ICBS::printHelp();
   PIBT_COMPLETE::printHelp();
   IR::printHelp();
+  NetworkBasedSolver::printHelp();
 }

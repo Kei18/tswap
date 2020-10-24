@@ -8,6 +8,14 @@ Graph::~Graph()
   for (auto v : V) delete v;
 }
 
+Nodes Graph::getV() {
+  Nodes _V;
+  for (auto v : V) {
+    if (v != nullptr) _V.push_back(v);
+  }
+  return _V;
+}
+
 Path Graph::getPath(Node* const s, Node* const g)
 {
   if (s == g) return {};

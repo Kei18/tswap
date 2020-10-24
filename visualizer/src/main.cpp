@@ -101,11 +101,6 @@ void readSetResult(const std::string& result_file, MAPFPlan* plan)
       readSetNode(results[1].str(), plan->config_s, plan->G);
       continue;
     }
-    // goals
-    if (std::regex_match(line, results, r_goals)) {
-      readSetNode(results[1].str(), plan->config_g, plan->G);
-      continue;
-    }
     // solution
     if (std::regex_match(line, results, r_sol)) {
       while (getline(file, line)) {
@@ -116,5 +111,10 @@ void readSetResult(const std::string& result_file, MAPFPlan* plan)
         }
       }
     }
+  }
+
+  // set goals
+  for (int i = 0; i < plan->num_agents; ++i) {
+    plan->config_g.push_back((plan->transitions.end()-1)->at(i));
   }
 }
