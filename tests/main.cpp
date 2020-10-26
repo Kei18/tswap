@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 #include "graph.hpp"
+#include "problem.hpp"
+#include "network_flow.hpp"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

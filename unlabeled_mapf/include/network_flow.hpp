@@ -1,7 +1,7 @@
 #pragma once
 #include "solver.hpp"
 
-class NetworkBasedSolver : public Solver
+class NetworkFlow : public Solver
 {
 public:
   static const std::string SOLVER_NAME;
@@ -10,8 +10,8 @@ private:
   void run();
 
 public:
-  NetworkBasedSolver(Problem* _P);
-  ~NetworkBasedSolver();
+  NetworkFlow(Problem* _P);
+  ~NetworkFlow();
 
   static void printHelp();
 };

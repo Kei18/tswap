@@ -2,7 +2,8 @@
 #include "gtest/gtest.h"
 #include <graph.hpp>
 
-TEST(Graph, grid) {
+TEST(Graph, grid)
+{
   Grid G("lak105d.map");
   ASSERT_TRUE(G.existNode(0));
   ASSERT_TRUE(G.existNode(455));
