@@ -1,0 +1,23 @@
+name: dev_test
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  dev_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+
+      - name: test
+        run: ./test
