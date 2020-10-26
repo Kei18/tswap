@@ -1,4 +1,4 @@
-name: dev_test
+name: test
 
 on:
   push:
@@ -24,3 +24,7 @@ jobs:
       - name: test
         working-directory: build
         run: ./test
+
+      - name: run-app
+        working-directory: build
+        run: ./app -i ../instances/sample.txt -s PIBT -o result.txt -v
