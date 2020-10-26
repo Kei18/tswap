@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 file(GLOB SRCS "./src/*.cpp")
+list(FILTER SRCS EXCLUDE REGEX ".*main.cpp$")
 project(lib-mapf)
 add_library(lib-mapf STATIC ${SRCS})
 add_definitions(-D_MAPDIR_="${CMAKE_CURRENT_LIST_DIR}/../map/")

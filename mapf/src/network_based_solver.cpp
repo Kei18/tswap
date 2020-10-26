@@ -15,7 +15,7 @@ NetworkBasedSolver::~NetworkBasedSolver()
 void NetworkBasedSolver::run()
 {
   // simple test
-  for (int t = 20; t <= max_timestep; ++t) {
+  for (int t = 1; t <= max_timestep; ++t) {
     if (overCompTime()) break;
 
     info(" ",
