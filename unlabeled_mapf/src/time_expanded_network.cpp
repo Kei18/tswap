@@ -9,10 +9,6 @@ std::unordered_map<std::string, TEN_Node*> TEN_Node::all_nodes;
 TimeExpandedNetwork::TimeExpandedNetwork(Problem* _P, int _T)
     : P(_P), V(P->getG()->getV()), T(_T)
 {
-  valid_network = false;
-  createGraph();
-  FordFulkerson();
-  createPlan();
 }
 
 TimeExpandedNetwork::~TimeExpandedNetwork()
@@ -21,34 +17,40 @@ TimeExpandedNetwork::~TimeExpandedNetwork()
   for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
     delete itr->second;
   }
+  residual_capacity.clear();
+}
+
+void TimeExpandedNetwork::solve()
+{
+  valid_network = false;
+  createGraph();
+  FordFulkerson();
+  createPlan();
 }
 
 void TimeExpandedNetwork::createGraph()
 {
-  // add vertex
   for (int t = 1; t <= T; ++t) {
     for (auto v : V) {
+      // add vertex
       auto v_in  = TEN_Node::createNewNode(TEN_Node::NodeType::V_IN,  v, t);
       auto v_out = TEN_Node::createNewNode(TEN_Node::NodeType::V_OUT, v, t);
       v_out->addParent(v_in);
       if (t > 1) {
         v_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, t - 1));
       }
-    }
-  }
 
-  // add edges
-  for (int t = 1; t <= T; ++t) {
-    for (auto v : V) {
+      // add edges
       for (auto u : v->neighbor) {
-        if (v->id >= u->id) continue;  // avoid duplication
-        auto w_in  = TEN_Node::createNewNode(TEN_Node::NodeType::W_IN,  v, u, t);
-        auto w_out = TEN_Node::createNewNode(TEN_Node::NodeType::W_OUT, v, u, t);
-        w_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_IN, v, t));
+        if (u->id >= v->id) continue;  // avoid duplication, already created?
+        // u->id < v->id
+        auto w_in  = TEN_Node::createNewNode(TEN_Node::NodeType::W_IN,  u, v, t);
+        auto w_out = TEN_Node::createNewNode(TEN_Node::NodeType::W_OUT, u, v, t);
         w_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_IN, u, t));
+        w_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_IN, v, t));
         w_out->addParent(w_in);
-        TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, t)->addParent(w_out);
         TEN_Node::getNode(TEN_Node::NodeType::V_OUT, u, t)->addParent(w_out);
+        TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, t)->addParent(w_out);
       }
     }
   }
@@ -68,15 +70,6 @@ void TimeExpandedNetwork::createGraph()
 
 void TimeExpandedNetwork::FordFulkerson()
 {
-  // initialize
-  for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
-    auto p = itr->second;
-    for (auto q : p->children) {
-      residual_capacity[TEN_Node::getEdgeName(p, q)] = 1;
-      residual_capacity[TEN_Node::getEdgeName(q, p)] = 0;
-    }
-  }
-
   while (true) {
     // depth first search
     std::unordered_map<std::string, bool> CLOSED;
@@ -90,11 +83,13 @@ void TimeExpandedNetwork::FordFulkerson()
       next.insert(next.end(), p->parents.begin(), p->parents.end());
       for (auto q : next) {
         if (CLOSED.find(q->name) != CLOSED.end()) continue;
-        if (residual_capacity[TEN_Node::getEdgeName(p, q)] == 0) continue;
+
+        int cap = getResidualCapacity(p, q);
+        if (cap == 0) continue;
         auto res = self(self, q);
         if (res != nullptr) {
-          residual_capacity[TEN_Node::getEdgeName(p, q)] -= 1;
-          residual_capacity[TEN_Node::getEdgeName(q, p)] += 1;
+          decrementResidualCapacity(p, q);
+          incrementResidualCapacity(q, p);
           return res;
         }
       }
@@ -107,7 +102,7 @@ void TimeExpandedNetwork::FordFulkerson()
   // check validity
   int flow = 0;
   for (auto p : source->children) {
-    flow += residual_capacity[TEN_Node::getEdgeName(p, source)];
+    flow += getResidualCapacity(p, source);
   }
   valid_network = (flow == P->getNum());
 }
@@ -131,8 +126,7 @@ void TimeExpandedNetwork::createPlan()
         auto q1 = TEN_Node::getNode(TEN_Node::NodeType::W_IN,  first, second, t);
         auto p2 = TEN_Node::getNode(TEN_Node::NodeType::W_OUT, first, second, t);
         auto q2 = TEN_Node::getNode(TEN_Node::NodeType::V_OUT, u, t);
-        if (residual_capacity[TEN_Node::getEdgeName(p1, q1)] == 0 &&
-            residual_capacity[TEN_Node::getEdgeName(p2, q2)] == 0) {
+        if (getResidualCapacity(p1, q1) == 0 && getResidualCapacity(p2, q2) == 0) {
           next_node = u;
           break;
         }
@@ -146,4 +140,42 @@ void TimeExpandedNetwork::createPlan()
     C = C_next;
     C_next.clear();
   }
+}
+
+int TimeExpandedNetwork::getResidualCapacity(TEN_Node* p, TEN_Node* q)
+{
+  std::string key = TEN_Node::getEdgeName(p, q);
+  auto itr = residual_capacity.find(key);
+  if (itr != residual_capacity.end()) return itr->second;
+
+  // require initialization
+  initResidualCapacity(p, q);
+  return residual_capacity[key];
+}
+
+void TimeExpandedNetwork::initResidualCapacity(TEN_Node* p, TEN_Node* q)
+{
+  std::string key1 = TEN_Node::getEdgeName(p, q);
+  std::string key2 = TEN_Node::getEdgeName(q, p);
+  if (inArray(q, p->children)) {
+    residual_capacity[key1] = 1;
+    residual_capacity[key2] = 0;
+  } else if (inArray(q, p->parents)) {
+    residual_capacity[key1] = 0;
+    residual_capacity[key2] = 1;
+  } else {
+    halt("invalid residual capacity");
+  }
+}
+
+void TimeExpandedNetwork::incrementResidualCapacity(TEN_Node* p, TEN_Node* q)
+{
+  int cap = getResidualCapacity(p, q);  // capacity
+  residual_capacity[TEN_Node::getEdgeName(p, q)] = cap + 1;
+}
+
+void TimeExpandedNetwork::decrementResidualCapacity(TEN_Node* p, TEN_Node* q)
+{
+  int cap = getResidualCapacity(p, q);  // capacity
+  residual_capacity[TEN_Node::getEdgeName(p, q)] = cap - 1;
 }

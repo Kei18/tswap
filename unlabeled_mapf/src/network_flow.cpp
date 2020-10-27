@@ -19,6 +19,7 @@ void NetworkFlow::run()
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t);
 
     TimeExpandedNetwork network = TimeExpandedNetwork(P, t);
+    network.solve();
     if (network.isValid()) {
       solved = true;
       solution = network.getPlan();

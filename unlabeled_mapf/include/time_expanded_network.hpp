@@ -110,7 +110,7 @@ class TimeExpandedNetwork
 private:
   Problem* P;   // original problem
   Nodes V;      // all nodes in G
-  const int T;  // max timestep
+  int T;        // max timestep
 
   TEN_Node *source, *sink;
   std::unordered_map<std::string, int> residual_capacity;
@@ -121,10 +121,16 @@ private:
   void FordFulkerson();
   void createPlan();
 
+  int getResidualCapacity(TEN_Node* p, TEN_Node* q);
+  void initResidualCapacity(TEN_Node* p, TEN_Node* q);
+  void incrementResidualCapacity(TEN_Node* p, TEN_Node* q);
+  void decrementResidualCapacity(TEN_Node* p, TEN_Node* q);
+
 public:
   TimeExpandedNetwork(Problem* _P, int _T);
   ~TimeExpandedNetwork();
 
+  void solve();
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }
 };
