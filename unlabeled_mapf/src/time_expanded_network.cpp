@@ -11,9 +11,7 @@ TimeExpandedNetwork::TimeExpandedNetwork(Problem* _P, int _T)
 TimeExpandedNetwork::~TimeExpandedNetwork()
 {
   // free
-  for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
-    delete itr->second;
-  }
+  TEN_Node::clear();
   residual_capacity.clear();
 }
 

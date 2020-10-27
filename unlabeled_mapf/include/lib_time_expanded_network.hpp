@@ -32,4 +32,5 @@ struct TEN_Node {
   static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
   static TEN_Node* getNode(NodeType _type, Node* _v, Node* _u, int _t);
   static TEN_Node* getNode(NodeType _type, Node* _v, int _t);
+  static void clear();
 };

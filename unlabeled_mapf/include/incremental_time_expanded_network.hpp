@@ -19,6 +19,7 @@ class IncrementalTimeExpandedNetwork {
   void createPlan();
 
   int getResidualCapacity(TEN_Node* p, TEN_Node* q);
+  void deleteCapacityEdge(TEN_Node* p, TEN_Node* q);
   void initResidualCapacity(TEN_Node* p, TEN_Node* q);
   void incrementResidualCapacity(TEN_Node* p, TEN_Node* q);
   void decrementResidualCapacity(TEN_Node* p, TEN_Node* q);

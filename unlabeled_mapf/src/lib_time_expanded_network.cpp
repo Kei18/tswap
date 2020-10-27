@@ -93,3 +93,9 @@ TEN_Node* TEN_Node::getNode(NodeType _type, Node* _v, int _t)
 {
   return getNode(_type, _v, nullptr, _t);
 }
+
+void TEN_Node::clear()
+{
+  for (auto itr = all_nodes.begin(); itr != all_nodes.end(); ++itr) delete itr->second;
+  all_nodes.clear();
+}

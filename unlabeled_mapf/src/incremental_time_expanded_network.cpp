@@ -6,6 +6,7 @@
 IncrementalTimeExpandedNetwork::IncrementalTimeExpandedNetwork(Problem* _P)
   : P(_P), V(P->getG()->getV()), T(0)
 {
+  TEN_Node::clear();
   source = TEN_Node::createNewNode(TEN_Node::NodeType::SOURCE);
   sink = TEN_Node::createNewNode(TEN_Node::NodeType::SINK);
 }
@@ -13,9 +14,7 @@ IncrementalTimeExpandedNetwork::IncrementalTimeExpandedNetwork(Problem* _P)
 IncrementalTimeExpandedNetwork::~IncrementalTimeExpandedNetwork()
 {
   // free
-  for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
-    delete itr->second;
-  }
+  TEN_Node::clear();
   residual_capacity.clear();
 }
 
@@ -100,8 +99,8 @@ void IncrementalTimeExpandedNetwork::updateGraph()
     incrementResidualCapacity(r, q);
     decrementResidualCapacity(r, sink);
     incrementResidualCapacity(sink, r);
-    residual_capacity.erase(TEN_Node::getEdgeName(p, sink));
-    residual_capacity.erase(TEN_Node::getEdgeName(sink, p));
+    deleteCapacityEdge(p, sink);
+    deleteCapacityEdge(sink, p);
   }
 }
 
@@ -217,6 +216,10 @@ void IncrementalTimeExpandedNetwork::decrementResidualCapacity(TEN_Node* p, TEN_
   residual_capacity[TEN_Node::getEdgeName(p, q)] = cap - 1;
 }
 
+void IncrementalTimeExpandedNetwork::deleteCapacityEdge(TEN_Node* p, TEN_Node* q)
+{
+  residual_capacity.erase(TEN_Node::getEdgeName(p, q));
+}
 
 int IncrementalTimeExpandedNetwork::nodesNum()
 {
