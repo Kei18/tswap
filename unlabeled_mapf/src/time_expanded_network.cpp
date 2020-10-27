@@ -4,8 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-std::unordered_map<std::string, TEN_Node*> TEN_Node::all_nodes;
-
 TimeExpandedNetwork::TimeExpandedNetwork(Problem* _P, int _T)
     : P(_P), V(P->getG()->getV()), T(_T)
 {
