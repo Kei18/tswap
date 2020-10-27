@@ -9,8 +9,6 @@ ofApp::ofApp(MAPFPlan* _P): P(_P)
   flg_goal = true;
   flg_font = false;
   flg_line = true;
-  flg_focus = false;
-  flg_logo_gen = false;
 }
 
 void ofApp::setup()
@@ -44,7 +42,6 @@ void ofApp::setup()
   gui.setup();
   gui.add(timestep_slider.setup("time step", 0, 0, P->makespan));
   gui.add(speed_slider.setup("speed", 0.1, 0, 1));
-  gui.add(agent_slider.setup("agent", 0, 0, P->num_agents-1));
 
   printKeys();
 }
@@ -81,11 +78,7 @@ void ofApp::draw()
         + BufferSize::window_x_buffer + scale/2;
       int y_draw = y*scale-scale/2+0.5
         + BufferSize::window_y_top_buffer + scale/2;
-      if (!flg_logo_gen) {  // default
-        ofDrawRectangle(x_draw, y_draw, scale-0.5, scale-0.5);
-      } else {
-        ofDrawRectangle(x_draw, y_draw, scale, scale);
-      }
+      ofDrawRectangle(x_draw, y_draw, scale-0.5, scale-0.5);
       if (flg_font) {
         ofSetColor(Color::font);
         font.drawString(std::to_string(y*P->G->getWidth()+x),
@@ -97,7 +90,6 @@ void ofApp::draw()
   // draw goals
   if (flg_goal) {
     for (int i = 0; i < P->num_agents; ++i) {
-      if (flg_focus && i != agent_slider) continue;
       ofSetColor(Color::agents[i % Color::agents.size()]);
       Node* g = P->config_g[i];
       Pos pos1 = g->pos * scale;
@@ -109,7 +101,6 @@ void ofApp::draw()
 
   // draw agents
   for (int i = 0; i < P->num_agents; ++i) {
-    if (flg_focus && i != agent_slider) continue;
     ofSetColor(Color::agents[i % Color::agents.size()]);
     int t1 = (int)timestep_slider;
     int t2 = t1 + 1;
@@ -130,12 +121,7 @@ void ofApp::draw()
     x += BufferSize::window_x_buffer + scale/2;
     y += BufferSize::window_y_top_buffer + scale/2;
 
-    if (!flg_logo_gen) { // default
-      ofDrawCircle(x, y, agent_rad);
-    } else {
-      ofSetColor(Color::bg);
-      ofDrawRectangle(x-scale/2,y-scale/2,scale,scale);
-    }
+    ofDrawCircle(x, y, agent_rad);
 
     // goal
     if (flg_line) {
@@ -145,7 +131,7 @@ void ofApp::draw()
     }
 
     // agent at goal
-    if (v == P->config_g[i] && !flg_logo_gen) {
+    if (v == P->config_g[i]) {
       ofSetColor(255,255,255);
       ofDrawCircle(x, y, agent_rad-2);
     }
@@ -184,24 +170,10 @@ void ofApp::keyPressed(int key) {
   if (key == 'p') flg_autoplay = !flg_autoplay;
   if (key == 'l') flg_loop = !flg_loop;
   if (key == 'v') flg_line = !flg_line;
-  if (key == 'a') flg_focus = !flg_focus;
   if (key == 'g') flg_goal = !flg_goal;
   if (key == 'f') {
     flg_font = !flg_font;
     flg_font &= (scale - font_size > 6);
-  }
-  if (key == 'i') {
-    if (!flg_logo_gen) {
-      flg_logo_gen = true;
-      flg_line = false;
-      flg_focus = false;
-      flg_goal = false;
-      flg_font = false;
-    } else {
-      flg_logo_gen = false;
-      flg_line = true;
-      flg_goal = true;
-    }
   }
 
   float t;

@@ -4,6 +4,8 @@
 #include <string>
 #include <unordered_map>
 
+std::unordered_map<std::string, TEN_Node*> TEN_Node::all_nodes;
+
 TimeExpandedNetwork::TimeExpandedNetwork(Problem* _P, int _T)
     : P(_P), V(P->getG()->getV()), T(_T)
 {
@@ -16,34 +18,22 @@ TimeExpandedNetwork::TimeExpandedNetwork(Problem* _P, int _T)
 TimeExpandedNetwork::~TimeExpandedNetwork()
 {
   // free
-  for (auto itr = nodes.begin(); itr != nodes.end(); ++itr) {
+  for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
     delete itr->second;
   }
 }
 
 void TimeExpandedNetwork::createGraph()
 {
-  auto createNewNode = [&](NodeType type, Node* v = nullptr, int t = 0,
-                           Node* u = nullptr) {
-    TEN_Node* new_node;
-    if (type == NodeType::SOURCE || type == NodeType::SINK) {
-      new_node = new TEN_Node(type);
-    } else {
-      new_node = new TEN_Node(v, t, type, u);
-    }
-    nodes[new_node->name] = new_node;
-    return new_node;
-  };
-
   // add vertex
   for (int t = 1; t <= T; ++t) {
     for (auto v : V) {
-      auto v_in = createNewNode(NodeType::V_IN, v, t);
-      auto v_out = createNewNode(NodeType::V_OUT, v, t);
-
+      auto v_in  = TEN_Node::createNewNode(TEN_Node::NodeType::V_IN,  v, t);
+      auto v_out = TEN_Node::createNewNode(TEN_Node::NodeType::V_OUT, v, t);
       v_out->addParent(v_in);
-      if (t > 1)
-        v_in->addParent(nodes[TEN_Node::getName(v, t - 1, NodeType::V_OUT)]);
+      if (t > 1) {
+        v_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, t - 1));
+      }
     }
   }
 
@@ -51,33 +41,35 @@ void TimeExpandedNetwork::createGraph()
   for (int t = 1; t <= T; ++t) {
     for (auto v : V) {
       for (auto u : v->neighbor) {
-        if (v->id >= u->id) continue;
-        auto w_in = createNewNode(NodeType::W_IN, v, t, u);
-        auto w_out = createNewNode(NodeType::W_OUT, v, t, u);
-        w_in->addParent(nodes[TEN_Node::getName(v, t, NodeType::V_IN)]);
-        w_in->addParent(nodes[TEN_Node::getName(u, t, NodeType::V_IN)]);
+        if (v->id >= u->id) continue;  // avoid duplication
+        auto w_in  = TEN_Node::createNewNode(TEN_Node::NodeType::W_IN,  v, u, t);
+        auto w_out = TEN_Node::createNewNode(TEN_Node::NodeType::W_OUT, v, u, t);
+        w_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_IN, v, t));
+        w_in->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_IN, u, t));
         w_out->addParent(w_in);
-        nodes[TEN_Node::getName(v, t, NodeType::V_OUT)]->addParent(w_out);
-        nodes[TEN_Node::getName(u, t, NodeType::V_OUT)]->addParent(w_out);
+        TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, t)->addParent(w_out);
+        TEN_Node::getNode(TEN_Node::NodeType::V_OUT, u, t)->addParent(w_out);
       }
     }
   }
 
   // add source
-  source = createNewNode(NodeType::SOURCE);
-  for (auto v : P->getConfigStart())
-    nodes[TEN_Node::getName(v, 1, NodeType::V_IN)]->addParent(source);
+  source = TEN_Node::createNewNode(TEN_Node::NodeType::SOURCE);
+  for (auto v : P->getConfigStart()) {
+    TEN_Node::getNode(TEN_Node::NodeType::V_IN, v, 1)->addParent(source);
+  }
 
   // add sink
-  sink = createNewNode(NodeType::SINK);
-  for (auto v : P->getConfigGoal())
-    sink->addParent(nodes[TEN_Node::getName(v, T, NodeType::V_OUT)]);
+  sink = TEN_Node::createNewNode(TEN_Node::NodeType::SINK);
+  for (auto v : P->getConfigGoal()) {
+    sink->addParent(TEN_Node::getNode(TEN_Node::NodeType::V_OUT, v, T));
+  }
 }
 
 void TimeExpandedNetwork::FordFulkerson()
 {
   // initialize
-  for (auto itr = nodes.begin(); itr != nodes.end(); ++itr) {
+  for (auto itr = TEN_Node::all_nodes.begin(); itr != TEN_Node::all_nodes.end(); ++itr) {
     auto p = itr->second;
     for (auto q : p->children) {
       residual_capacity[TEN_Node::getEdgeName(p, q)] = 1;
@@ -126,7 +118,7 @@ void TimeExpandedNetwork::createPlan()
 
   Config C = P->getConfigStart();
   Config C_next;
-  plan.add(C);
+  solution.add(C);
 
   for (int t = 1; t <= T; ++t) {
     for (auto v : C) {
@@ -135,10 +127,10 @@ void TimeExpandedNetwork::createPlan()
       for (auto u : v->neighbor) {
         auto first = (v->id < u->id) ? v : u;
         auto second = (v->id < u->id) ? u : v;
-        auto p1 = nodes[TEN_Node::getName(v, t, NodeType::V_IN)];
-        auto q1 = nodes[TEN_Node::getName(first, t, NodeType::W_IN, second)];
-        auto p2 = nodes[TEN_Node::getName(first, t, NodeType::W_OUT, second)];
-        auto q2 = nodes[TEN_Node::getName(u, t, NodeType::V_OUT)];
+        auto p1 = TEN_Node::getNode(TEN_Node::NodeType::V_IN, v, t);
+        auto q1 = TEN_Node::getNode(TEN_Node::NodeType::W_IN,  first, second, t);
+        auto p2 = TEN_Node::getNode(TEN_Node::NodeType::W_OUT, first, second, t);
+        auto q2 = TEN_Node::getNode(TEN_Node::NodeType::V_OUT, u, t);
         if (residual_capacity[TEN_Node::getEdgeName(p1, q1)] == 0 &&
             residual_capacity[TEN_Node::getEdgeName(p2, q2)] == 0) {
           next_node = u;
@@ -150,7 +142,7 @@ void TimeExpandedNetwork::createPlan()
       if (next_node == nullptr) next_node = v;
       C_next.push_back(next_node);
     }
-    plan.add(C_next);
+    solution.add(C_next);
     C = C_next;
     C_next.clear();
   }

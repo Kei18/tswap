@@ -166,22 +166,13 @@ Plan Solver::pathsToPlan(const Paths& paths)
 
 void Solver::printResult()
 {
-  int LB_soc = 0;
-  int LB_makespan = 0;
-  for (int i = 0; i < P->getNum(); ++i) {
-    int d = pathDist(i);
-    LB_soc += d;
-    if (d > LB_makespan) LB_makespan = d;
-  }
-
   std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
             << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
             << comp_time << ", soc=" << std::right << std::setw(6)
-            << solution.getSOC() << " (LB=" << std::right << std::setw(6)
-            << LB_soc << ")"
+            << solution.getSOC()
             << ", makespan=" << std::right << std::setw(4)
-            << solution.getMakespan() << " (LB=" << std::right << std::setw(6)
-            << LB_makespan << ")" << std::endl;
+            << solution.getMakespan()
+            << std::endl;
 }
 
 void Solver::makeLog(const std::string& logfile)
