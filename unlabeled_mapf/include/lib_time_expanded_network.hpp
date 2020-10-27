@@ -22,6 +22,7 @@ struct TEN_Node {
 
   TEN_Node(NodeType _type, Node* _v, Node* _u, int _t);
   void addParent(TEN_Node* parent);
+  void removeParent(TEN_Node* parent);
 
   static TEN_Node* createNewNode(NodeType _type, Node* _v, Node* _u, int _t);
   static TEN_Node* createNewNode(NodeType _type, Node* _v, int _t);

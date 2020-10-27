@@ -1,6 +1,5 @@
 #include "../include/time_expanded_network.hpp"
 
-#include <stack>
 #include <string>
 #include <unordered_map>
 

@@ -15,6 +15,15 @@ void TEN_Node::addParent(TEN_Node* parent)
   parent->children.push_back(this);
 }
 
+void TEN_Node::removeParent(TEN_Node* parent)
+{
+  auto itr1 = std::find(parents.begin(), parents.end(), parent);
+  if (itr1 == parents.end()) return;
+  parents.erase(itr1);
+  auto itr2 = std::find(parent->children.begin(), parent->children.end(), this);
+  parent->children.erase(itr2);
+}
+
 TEN_Node* TEN_Node::createNewNode(NodeType _type, Node* _v, Node* _u, int _t)
 {
   TEN_Node* new_node = new TEN_Node(_type, _v, _u, _t);

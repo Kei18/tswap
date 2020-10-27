@@ -1,5 +1,6 @@
 #include "../include/network_flow.hpp"
 #include "../include/time_expanded_network.hpp"
+#include "../include/incremental_time_expanded_network.hpp"
 
 const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
 
@@ -12,19 +13,25 @@ NetworkFlow::~NetworkFlow() {}
 
 void NetworkFlow::run()
 {
+  auto network = IncrementalTimeExpandedNetwork(P);
+
   // simple test
   for (int t = 1; t <= max_timestep; ++t) {
     if (overCompTime()) break;
 
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t);
 
-    TimeExpandedNetwork network = TimeExpandedNetwork(P, t);
-    network.solve();
+    network.update();
+
+    // TimeExpandedNetwork network = TimeExpandedNetwork(P, t);
+    // network.solve();
+
     if (network.isValid()) {
       solved = true;
       solution = network.getPlan();
       break;
     }
+
   }
 }
 
