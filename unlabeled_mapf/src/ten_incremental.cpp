@@ -2,16 +2,12 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-
 TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P)
-  : TEN(_P, 0),
-    current_timestep(0)
+    : TEN(_P, 0), current_timestep(0)
 {
 }
 
-TEN_INCREMENTAL::~TEN_INCREMENTAL()
-{
-}
+TEN_INCREMENTAL::~TEN_INCREMENTAL() {}
 
 void TEN_INCREMENTAL::update()
 {
@@ -32,17 +28,18 @@ void TEN_INCREMENTAL::updateGraph()
 
   // add sink
   for (auto v : P->getConfigGoal()) {
-    network.sink->addParent(network.getNode(NodeType::V_OUT, v, current_timestep));
+    network.sink->addParent(
+        network.getNode(NodeType::V_OUT, v, current_timestep));
   }
 
   // inherit flow of previous iteration
   if (current_timestep > 1) {
     for (auto v : P->getConfigGoal()) {
-      auto p = network.getNode(NodeType::V_OUT, v, current_timestep-1);
+      auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
       // agent has already reached goal in previous iteration
       if (network.getCapacity(p, network.sink) == 0) {
-        auto p = network.getNode(NodeType::V_OUT, v, current_timestep-1);
-        auto q = network.getNode(NodeType::V_IN,  v, current_timestep);
+        auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
+        auto q = network.getNode(NodeType::V_IN, v, current_timestep);
         auto r = network.getNode(NodeType::V_OUT, v, current_timestep);
         network.setFlow(p, q);
         network.setFlow(q, r);
@@ -54,7 +51,4 @@ void TEN_INCREMENTAL::updateGraph()
   }
 }
 
-void TEN_INCREMENTAL::createPlan()
-{
-  TEN::createPlan(current_timestep);
-}
+void TEN_INCREMENTAL::createPlan() { TEN::createPlan(current_timestep); }

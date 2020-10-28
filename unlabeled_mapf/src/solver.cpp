@@ -169,10 +169,8 @@ void Solver::printResult()
   std::cout << "solved=" << solved << ", solver=" << std::right << std::setw(8)
             << solver_name << ", comp_time(ms)=" << std::right << std::setw(8)
             << comp_time << ", soc=" << std::right << std::setw(6)
-            << solution.getSOC()
-            << ", makespan=" << std::right << std::setw(4)
-            << solution.getMakespan()
-            << std::endl;
+            << solution.getSOC() << ", makespan=" << std::right << std::setw(4)
+            << solution.getMakespan() << std::endl;
 }
 
 void Solver::makeLog(const std::string& logfile)

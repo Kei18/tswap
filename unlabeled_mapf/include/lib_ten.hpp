@@ -10,13 +10,13 @@ namespace LibTEN
   struct TEN_Node;
   using TEN_Nodes = std::vector<TEN_Node*>;
 
-  struct TEN_Node
-  {
+  struct TEN_Node {
     enum NodeType { SOURCE, V_IN, V_OUT, W_IN, W_OUT, SINK };
 
     NodeType type;
     Node* v;  // original node
-    Node* u;  // default nullptr, used when type \in { W_IN, W_OUT }, v->id < w->id
+    Node* u;  // default nullptr, used when type \in { W_IN, W_OUT }, v->id <
+              // w->id
     int t;    // timestep
     std::string name;
 
@@ -45,8 +45,7 @@ namespace LibTEN
     static void clear();  // memory management
   };
 
-  struct ResidualNetwork
-  {
+  struct ResidualNetwork {
     TEN_Node* source;
     TEN_Node* sink;
     std::unordered_map<std::string, TEN_Node*> body;
@@ -55,12 +54,14 @@ namespace LibTEN
     ResidualNetwork();
     ~ResidualNetwork();
 
-    TEN_Node* createNewNode(TEN_Node::NodeType _type, Node* _v, Node* _u, int _t);
-    TEN_Node* createNewNode(TEN_Node::NodeType _type, Node* _v, int _t);
-    TEN_Node* createNewNode(TEN_Node::NodeType _type);
+    using NodeType = TEN_Node::NodeType;
 
-    TEN_Node* getNode(TEN_Node::NodeType _type, Node* _v, Node* _u, int _t);
-    TEN_Node* getNode(TEN_Node::NodeType _type, Node* _v, int _t);
+    TEN_Node* createNewNode(NodeType _type, Node* _v, Node* _u, int _t);
+    TEN_Node* createNewNode(NodeType _type, Node* _v, int _t);
+    TEN_Node* createNewNode(NodeType _type);
+
+    TEN_Node* getNode(NodeType _type, Node* _v, Node* _u, int _t);
+    TEN_Node* getNode(NodeType _type, Node* _v, int _t);
 
     static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
 
@@ -79,4 +80,4 @@ namespace LibTEN
     int getFlowSum();
   };
 
-};
+};  // namespace LibTEN

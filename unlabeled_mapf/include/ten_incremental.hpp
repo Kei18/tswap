@@ -1,7 +1,8 @@
 #pragma once
 #include "ten.hpp"
 
-class TEN_INCREMENTAL : public TEN {
+class TEN_INCREMENTAL : public TEN
+{
 private:
   int current_timestep;
 

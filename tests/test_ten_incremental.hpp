@@ -1,7 +1,8 @@
 #pragma once
-#include "gtest/gtest.h"
 #include <problem.hpp>
 #include <ten_incremental.hpp>
+
+#include "gtest/gtest.h"
 
 TEST(TEN_INCREMENTAL, update)
 {

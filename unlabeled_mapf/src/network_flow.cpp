@@ -1,7 +1,9 @@
 #include "../include/network_flow.hpp"
+
+#include <memory>
+
 #include "../include/ten.hpp"
 #include "../include/ten_incremental.hpp"
-#include <memory>
 
 const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
 
@@ -41,18 +43,18 @@ void NetworkFlow::run()
 void NetworkFlow::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"no-cache", no_argument, 0, 'n'},
-    {0, 0, 0, 0},
+      {"no-cache", no_argument, 0, 'n'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
   while ((opt = getopt_long(argc, argv, "n", longopts, &longindex)) != -1) {
     switch (opt) {
-    case 'n':
-      use_incremental = false;
-      break;
-    default:
-      break;
+      case 'n':
+        use_incremental = false;
+        break;
+      default:
+        break;
     }
   }
 }

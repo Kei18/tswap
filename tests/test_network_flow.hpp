@@ -1,6 +1,7 @@
 #pragma once
-#include "gtest/gtest.h"
 #include <network_flow.hpp>
+
+#include "gtest/gtest.h"
 
 TEST(NetworkFlow, TEN_INCREMENTAL)
 {
@@ -22,7 +23,7 @@ TEST(NetworkFlow, TEN)
 
   char argv0[] = "dummy";
   char argv1[] = "-n";
-  char* argv[] = { argv0, argv1 };
+  char* argv[] = {argv0, argv1};
   solver->setParams(2, argv);
   solver->solve();
 
@@ -31,5 +32,4 @@ TEST(NetworkFlow, TEN)
 
   delete P;
   delete solver;
-
 }

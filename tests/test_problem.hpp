@@ -1,7 +1,8 @@
 #pragma once
-#include "gtest/gtest.h"
 #include <plan.hpp>
 #include <problem.hpp>
+
+#include "gtest/gtest.h"
 
 TEST(Problem, unlabeled_mapf)
 {
@@ -14,31 +15,31 @@ TEST(Problem, unlabeled_mapf)
 
   Config starts = P->getConfigStart();
   ASSERT_EQ(starts.size(), 2);
-  ASSERT_EQ(starts[0], G->getNode(0,0));
-  ASSERT_EQ(starts[1], G->getNode(1,1));
+  ASSERT_EQ(starts[0], G->getNode(0, 0));
+  ASSERT_EQ(starts[1], G->getNode(1, 1));
 
   Config goals = P->getConfigGoal();
   ASSERT_EQ(goals.size(), 2);
-  ASSERT_EQ(goals[0], G->getNode(1,0));
-  ASSERT_EQ(goals[1], G->getNode(0,1));
+  ASSERT_EQ(goals[0], G->getNode(1, 0));
+  ASSERT_EQ(goals[1], G->getNode(0, 1));
 
   Plan plan0;
-  Config c0_0 = { G->getNode(0,0), G->getNode(1, 1) };
-  Config c0_1 = { G->getNode(1,0), G->getNode(0, 1) };
+  Config c0_0 = {G->getNode(0, 0), G->getNode(1, 1)};
+  Config c0_1 = {G->getNode(1, 0), G->getNode(0, 1)};
   plan0.add(c0_0);
   plan0.add(c0_1);
   ASSERT_TRUE(plan0.validate(P));
 
   Plan plan1;
-  Config c1_0 = { G->getNode(0,0), G->getNode(1, 1) };
-  Config c1_1 = { G->getNode(0,1), G->getNode(1, 0) };
+  Config c1_0 = {G->getNode(0, 0), G->getNode(1, 1)};
+  Config c1_1 = {G->getNode(0, 1), G->getNode(1, 0)};
   plan1.add(c1_0);
   plan1.add(c1_1);
   ASSERT_TRUE(plan1.validate(P));
 
   Plan plan2;
-  Config c2_0 = { G->getNode(0,0), G->getNode(1, 1) };
-  Config c2_1 = { G->getNode(0,1), G->getNode(1, 1) };
+  Config c2_0 = {G->getNode(0, 0), G->getNode(1, 1)};
+  Config c2_1 = {G->getNode(0, 1), G->getNode(1, 1)};
   plan1.add(c2_0);
   plan1.add(c2_1);
   ASSERT_FALSE(plan2.validate(P));

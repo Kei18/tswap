@@ -7,7 +7,7 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  bool use_incremental;  // choose TEN_INCREMENTAL or TEN (Time Expanded Network)
+  bool use_incremental;  // choose TEN_INCREMENTAL or TEN
 
   void run();
 

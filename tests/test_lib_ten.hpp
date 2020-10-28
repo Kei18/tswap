@@ -1,6 +1,7 @@
 #pragma once
-#include "gtest/gtest.h"
 #include <lib_ten.hpp>
+
+#include "gtest/gtest.h"
 
 TEST(ResidualNetwork, residual_capacity)
 {

@@ -1,13 +1,13 @@
 #pragma once
+#include "lib_ten.hpp"
 #include "plan.hpp"
 #include "problem.hpp"
-#include "lib_ten.hpp"
 
 class TEN
 {
 protected:
-  Problem* const P;   // original problem
-  const Nodes V;      // all nodes in G
+  Problem* const P;  // original problem
+  const Nodes V;     // all nodes in G
 
   LibTEN::ResidualNetwork network;
   bool valid_network;

@@ -1,6 +1,7 @@
 #pragma once
-#include "gtest/gtest.h"
 #include <graph.hpp>
+
+#include "gtest/gtest.h"
 
 TEST(Graph, grid)
 {
@@ -23,9 +24,9 @@ TEST(Graph, grid)
   ASSERT_EQ(G.getMapFileName(), "lak105d.map");
   ASSERT_EQ(G.pathDist(G.getNode(0), G.getNode(455)), 39);
 
-  Config c1 = { v, u };
-  Config c2 = { v, u };
-  Config c3 = { u, v };
+  Config c1 = {v, u};
+  Config c2 = {v, u};
+  Config c3 = {u, v};
   ASSERT_TRUE(sameConfig(c1, c2));
   ASSERT_FALSE(sameConfig(c1, c3));
   ASSERT_TRUE(permutatedConfig(c1, c2));

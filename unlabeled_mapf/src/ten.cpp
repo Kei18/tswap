@@ -2,19 +2,16 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-
 TEN::TEN(Problem* const _P, const int _T)
-  : P(_P),
-    V(P->getG()->getV()),
-    network(LibTEN::ResidualNetwork()),
-    valid_network(false),
-    max_timestep(_T)
+    : P(_P),
+      V(P->getG()->getV()),
+      network(LibTEN::ResidualNetwork()),
+      valid_network(false),
+      max_timestep(_T)
 {
 }
 
-TEN::~TEN()
-{
-}
+TEN::~TEN() {}
 
 void TEN::update()
 {
@@ -28,7 +25,7 @@ void TEN::extendGraphOneTimestep(const int t)
 {
   for (auto v : V) {
     // add vertex
-    auto v_in  = network.createNewNode(NodeType::V_IN,  v, t);
+    auto v_in = network.createNewNode(NodeType::V_IN, v, t);
     auto v_out = network.createNewNode(NodeType::V_OUT, v, t);
     v_out->addParent(v_in);
 
@@ -38,7 +35,7 @@ void TEN::extendGraphOneTimestep(const int t)
     for (auto u : v->neighbor) {
       if (u->id >= v->id) continue;  // avoid duplication
       // u->id < v->id
-      auto w_in  = network.createNewNode(NodeType::W_IN,  u, v, t);
+      auto w_in = network.createNewNode(NodeType::W_IN, u, v, t);
       auto w_out = network.createNewNode(NodeType::W_OUT, u, v, t);
       w_in->addParent(network.getNode(NodeType::V_IN, u, t));
       w_in->addParent(network.getNode(NodeType::V_IN, v, t));
@@ -64,11 +61,7 @@ void TEN::updateGraph()
   }
 }
 
-void TEN::createPlan()
-{
-  createPlan(max_timestep);
-}
-
+void TEN::createPlan() { createPlan(max_timestep); }
 
 void TEN::createPlan(const int T)
 {
@@ -86,10 +79,11 @@ void TEN::createPlan(const int T)
         auto first = (v->id < u->id) ? v : u;
         auto second = (v->id < u->id) ? u : v;
         auto p1 = network.getNode(NodeType::V_IN, v, t);
-        auto q1 = network.getNode(NodeType::W_IN,  first, second, t);
+        auto q1 = network.getNode(NodeType::W_IN, first, second, t);
         auto p2 = network.getNode(NodeType::W_OUT, first, second, t);
         auto q2 = network.getNode(NodeType::V_OUT, u, t);
-        if (network.getCapacity(p1, q1) == 0 && network.getCapacity(p2, q2) == 0) {
+        if (network.getCapacity(p1, q1) == 0 &&
+            network.getCapacity(p2, q2) == 0) {
           next_node = u;
           break;
         }
@@ -105,12 +99,6 @@ void TEN::createPlan(const int T)
   }
 }
 
-int TEN::getNodesNum()
-{
-  return network.getNodesNum();
-}
+int TEN::getNodesNum() { return network.getNodesNum(); }
 
-int TEN::getEdgesNum()
-{
-  return network.getEdgesNum();
-}
+int TEN::getEdgesNum() { return network.getEdgesNum(); }
