@@ -8,7 +8,7 @@ add_executable(app ./app.cpp)
 target_compile_features(app PUBLIC cxx_std_17)
 target_link_libraries(app lib-unlabeled-mapf)
 
-add_executable(test ./tests/main.cpp)
+add_executable(test ./tests/tests.cpp)
 target_compile_features(test PUBLIC cxx_std_17)
 target_include_directories(test PUBLIC ./third_party/googletest/googletest/include)
 target_link_libraries(test lib-unlabeled-mapf gtest)
