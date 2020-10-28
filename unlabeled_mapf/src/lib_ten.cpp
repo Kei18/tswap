@@ -1,7 +1,5 @@
 #include "../include/lib_ten.hpp"
 
-std::unordered_map<std::string, LibTEN::TEN_Node*> LibTEN::TEN_Node::all_nodes;
-
 LibTEN::TEN_Node::TEN_Node(NodeType _type, Node* _v, Node* _u, int _t)
     : type(_type), v(_v), u(_u), t(_t)
 {
@@ -21,28 +19,6 @@ void LibTEN::TEN_Node::removeParent(LibTEN::TEN_Node* parent)
   parents.erase(itr1);
   auto itr2 = std::find(parent->children.begin(), parent->children.end(), this);
   parent->children.erase(itr2);
-}
-
-LibTEN::TEN_Node* LibTEN::TEN_Node::createNewNode(NodeType _type, Node* _v,
-                                                  Node* _u, int _t)
-{
-  LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _u, _t);
-  all_nodes[new_node->name] = new_node;
-  return new_node;
-}
-
-LibTEN::TEN_Node* LibTEN::TEN_Node::createNewNode(NodeType _type, Node* _v,
-                                                  int _t)
-{
-  return createNewNode(_type, _v, nullptr, _t);
-}
-
-// used for sink or source
-LibTEN::TEN_Node* LibTEN::TEN_Node::createNewNode(NodeType _type)
-{
-  if ((_type != NodeType::SOURCE) && (_type != NodeType::SINK))
-    halt("invalid type");
-  return createNewNode(_type, nullptr, nullptr, 0);
 }
 
 std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, Node* _u,
@@ -74,41 +50,6 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, Node* _u,
 std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
 {
   return getName(_type, _v, nullptr, _t);
-}
-
-std::string LibTEN::TEN_Node::getEdgeName(LibTEN::TEN_Node* p,
-                                          LibTEN::TEN_Node* q)
-{
-  return p->name + "__" + q->name;
-}
-
-LibTEN::TEN_Node* LibTEN::TEN_Node::getNode(NodeType _type, Node* _v, Node* _u,
-                                            int _t)
-{
-  auto itr = all_nodes.find(getName(_type, _v, _u, _t));
-  return (itr != all_nodes.end()) ? itr->second : nullptr;
-}
-
-LibTEN::TEN_Node* LibTEN::TEN_Node::getNode(NodeType _type, Node* _v, int _t)
-{
-  return getNode(_type, _v, nullptr, _t);
-}
-
-int LibTEN::TEN_Node::getNodesNum() { return all_nodes.size(); }
-
-int LibTEN::TEN_Node::getEdgesNum()
-{
-  return std::accumulate(all_nodes.begin(), all_nodes.end(), 0,
-                         [](int acc, decltype(all_nodes)::value_type& itr) {
-                           return acc + itr.second->children.size();
-                         });
-}
-
-void LibTEN::TEN_Node::clear()
-{
-  for (auto itr = all_nodes.begin(); itr != all_nodes.end(); ++itr)
-    delete itr->second;
-  all_nodes.clear();
 }
 
 LibTEN::ResidualNetwork::ResidualNetwork()
@@ -180,7 +121,7 @@ int LibTEN::ResidualNetwork::getEdgesNum()
 
 int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
 {
-  std::string key = LibTEN::TEN_Node::getEdgeName(p, q);
+  std::string key = getEdgeName(p, q);
   auto itr = capacity.find(key);
   if (itr != capacity.end()) return itr->second;
 
@@ -191,8 +132,8 @@ int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
 
 void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
 {
-  std::string key1 = LibTEN::TEN_Node::getEdgeName(p, q);
-  std::string key2 = LibTEN::TEN_Node::getEdgeName(q, p);
+  std::string key1 = getEdgeName(p, q);
+  std::string key2 = getEdgeName(q, p);
 
   // capacity \in { 0, 1 }
   if (inArray(q, p->children)) {
@@ -208,20 +149,20 @@ void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
 
 void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 {
-  capacity.erase(LibTEN::TEN_Node::getEdgeName(p, q));
-  capacity.erase(LibTEN::TEN_Node::getEdgeName(q, p));
+  capacity.erase(getEdgeName(p, q));
+  capacity.erase(getEdgeName(q, p));
 }
 
 void LibTEN::ResidualNetwork::increment(TEN_Node* p, TEN_Node* q)
 {
   int cap = getCapacity(p, q);
-  capacity[LibTEN::TEN_Node::getEdgeName(p, q)] = cap + 1;
+  capacity[getEdgeName(p, q)] = cap + 1;
 }
 
 void LibTEN::ResidualNetwork::decrement(TEN_Node* p, TEN_Node* q)
 {
   int cap = getCapacity(p, q);
-  capacity[LibTEN::TEN_Node::getEdgeName(p, q)] = cap - 1;
+  capacity[getEdgeName(p, q)] = cap - 1;
 }
 
 void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)

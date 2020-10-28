@@ -5,11 +5,10 @@
 
 TEST(ResidualNetwork, residual_capacity)
 {
-  auto p = LibTEN::TEN_Node::createNewNode(LibTEN::TEN_Node::NodeType::SOURCE);
-  auto q = LibTEN::TEN_Node::createNewNode(LibTEN::TEN_Node::NodeType::SINK);
-  q->addParent(p);
-
   auto network = LibTEN::ResidualNetwork();
+  auto p = network.source;
+  auto q = network.sink;
+  q->addParent(p);
 
   ASSERT_EQ(network.getCapacity(p, q), 1);
   ASSERT_EQ(network.getCapacity(q, p), 0);
@@ -22,6 +21,4 @@ TEST(ResidualNetwork, residual_capacity)
   network.setFlow(q, p);
   ASSERT_EQ(network.getCapacity(p, q), 1);
   ASSERT_EQ(network.getCapacity(q, p), 0);
-
-  LibTEN::TEN_Node::clear();
 }

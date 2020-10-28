@@ -23,26 +23,12 @@ namespace LibTEN
     TEN_Nodes parents;
     TEN_Nodes children;
 
-    static std::unordered_map<std::string, TEN_Node*> all_nodes;
-
     TEN_Node(NodeType _type, Node* _v, Node* _u, int _t);
     void addParent(TEN_Node* parent);
     void removeParent(TEN_Node* parent);
 
-    static TEN_Node* createNewNode(NodeType _type, Node* _v, Node* _u, int _t);
-    static TEN_Node* createNewNode(NodeType _type, Node* _v, int _t);
-    static TEN_Node* createNewNode(NodeType _type);
-
     static std::string getName(NodeType _type, Node* _v, Node* _u, int _t);
     static std::string getName(NodeType _type, Node* _v, int _t);
-
-    static TEN_Node* getNode(NodeType _type, Node* _v, Node* _u, int _t);
-    static TEN_Node* getNode(NodeType _type, Node* _v, int _t);
-
-    static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
-    static int getNodesNum();
-    static int getEdgesNum();
-    static void clear();  // memory management
   };
 
   struct ResidualNetwork {

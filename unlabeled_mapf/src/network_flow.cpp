@@ -16,16 +16,15 @@ NetworkFlow::~NetworkFlow() {}
 
 void NetworkFlow::run()
 {
-  TEN* flow_network;
-  if (use_incremental) flow_network = new TEN_INCREMENTAL(P);
+  std::unique_ptr<TEN> flow_network;
+  if (use_incremental) flow_network = std::make_unique<TEN_INCREMENTAL>(P);
 
-  // simple test
   for (int t = 1; t <= max_timestep; ++t) {
     if (overCompTime()) break;
 
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t);
 
-    if (!use_incremental) flow_network = new TEN(P, t);
+    if (!use_incremental) flow_network = std::make_unique<TEN>(P, t);
     flow_network->update();
 
     if (flow_network->isValid()) {
@@ -33,11 +32,7 @@ void NetworkFlow::run()
       solution = flow_network->getPlan();
       break;
     }
-
-    if (!use_incremental) delete flow_network;
   }
-
-  if (use_incremental) delete flow_network;
 }
 
 void NetworkFlow::setParams(int argc, char* argv[])

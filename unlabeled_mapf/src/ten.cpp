@@ -11,7 +11,9 @@ TEN::TEN(Problem* const _P, const int _T)
 {
 }
 
-TEN::~TEN() {}
+TEN::~TEN()
+{
+}
 
 void TEN::update()
 {
