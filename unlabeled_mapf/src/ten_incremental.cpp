@@ -28,8 +28,8 @@ void TEN_INCREMENTAL::updateGraph()
 
   // add sink
   for (auto v : P->getConfigGoal()) {
-    network.sink->addParent(
-        network.getNode(NodeType::V_OUT, v, current_timestep));
+    network.sink->addParent(network.getNode(NodeType::V_OUT, v, current_timestep));
+    network.sink->t = current_timestep;
   }
 
   // inherit flow of previous iteration

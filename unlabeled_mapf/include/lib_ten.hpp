@@ -29,6 +29,8 @@ namespace LibTEN
 
     static std::string getName(NodeType _type, Node* _v, Node* _u, int _t);
     static std::string getName(NodeType _type, Node* _v, int _t);
+
+    std::string getStr();
   };
 
   struct ResidualNetwork {
@@ -36,6 +38,7 @@ namespace LibTEN
     TEN_Node* sink;
     std::unordered_map<std::string, TEN_Node*> body;
     std::unordered_map<std::string, int> capacity;
+    std::unordered_map<Node*, int> reachable_filter;
 
     ResidualNetwork();
     ~ResidualNetwork();
@@ -62,6 +65,7 @@ namespace LibTEN
     void setFlow(TEN_Node* from, TEN_Node* to);
 
     void FordFulkerson();
+    void createFilter(const Nodes& goals);
 
     int getFlowSum();
   };

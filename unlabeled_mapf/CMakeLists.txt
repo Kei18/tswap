@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 file(GLOB SRCS "./src/*.cpp")
-# set(lib-unlabled-mapf)
 project(lib-unlabeled-mapf)
 add_library(${PROJECT_NAME} STATIC ${SRCS})
 add_definitions(-D_MAPDIR_="${CMAKE_CURRENT_LIST_DIR}/../map/")

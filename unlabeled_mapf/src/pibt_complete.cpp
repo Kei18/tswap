@@ -22,10 +22,8 @@ void PIBT_COMPLETE::run()
   }
 
   // solve by PIBT
-  auto goals = P->getConfigGoal();
-  std::shuffle(goals.begin(), goals.end(), *MT);
   Problem* _P =
-      new Problem(P, P->getConfigStart(), goals, max_comp_time, LB_makespan);
+    new Problem(P, P->getConfigStart(), P->getConfigGoal(), max_comp_time, LB_makespan);
   Solver* init_solver = new PIBT(_P);
   info(" ", "run PIBT until timestep", LB_makespan);
   init_solver->solve();

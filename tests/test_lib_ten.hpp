@@ -10,6 +10,9 @@ TEST(ResidualNetwork, residual_capacity)
   auto q = network.sink;
   q->addParent(p);
 
+  ASSERT_EQ(p->getStr(), "source");
+  ASSERT_EQ(q->getStr(), "sink");
+
   ASSERT_EQ(network.getCapacity(p, q), 1);
   ASSERT_EQ(network.getCapacity(q, p), 0);
 

@@ -9,6 +9,7 @@ TEN::TEN(Problem* const _P, const int _T)
       valid_network(false),
       max_timestep(_T)
 {
+  // network.createFilter(P->getConfigGoal());
 }
 
 TEN::~TEN()
@@ -61,6 +62,7 @@ void TEN::updateGraph()
   for (auto v : P->getConfigGoal()) {
     network.sink->addParent(network.getNode(NodeType::V_OUT, v, max_timestep));
   }
+  network.sink->t = max_timestep;
 }
 
 void TEN::createPlan() { createPlan(max_timestep); }

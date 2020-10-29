@@ -74,8 +74,6 @@ void Graph::registerPath(const Path& path)
 
 /*
  * A* search using cache (already known paths) as much as possible.
- *
- * Note: I tried smart pointer but it was slow.
  */
 Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
 {
@@ -93,16 +91,25 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     return false;
   };
 
-  AstarNodes GC;  // garbage collection
+  // avoid "new" operation
+  const int MEMORY_SIZE = V.size();
+  AstarNode GC[MEMORY_SIZE];
+  int node_total_cnt = 0;
+
   auto createNewNode = [&](Node* v, int g, int f, AstarNode* p) {
-    AstarNode* new_node = new AstarNode{v, g, f, p};
-    GC.push_back(new_node);
-    return new_node;
+    if (node_total_cnt >= MEMORY_SIZE) halt("memory over, increase MEMORY_SIZE...");
+    auto q = &(GC[node_total_cnt++]);
+    q->v = v;
+    q->g = g;
+    q->f = f;
+    q->p = p;
+    return q;
   };
 
   // OPEN and CLOSE
   std::priority_queue<AstarNode*, AstarNodes, decltype(compare)> OPEN(compare);
-  std::unordered_map<int, bool> CLOSE;
+  bool CLOSE[MEMORY_SIZE];
+  std::memset(CLOSE, false, sizeof(CLOSE));
 
   // initial node
   AstarNode* n = createNewNode(s, 0, dist(s, g), nullptr);
@@ -116,7 +123,7 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     OPEN.pop();
 
     // check CLOSE list
-    if (CLOSE.find(n->v->id) != CLOSE.end()) continue;
+    if (CLOSE[n->v->id]) continue;
 
     // update CLOSE list
     CLOSE[n->v->id] = true;
@@ -144,7 +151,7 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     C.push_back(n->v);
     for (auto u : C) {
       // already searched?
-      if (CLOSE.find(u->id) != CLOSE.end()) continue;
+      if (CLOSE[u->id]) continue;
       int g_value = n->g + 1;
       int h_value = g_value + dist(u, g);
       // use real cost whenever available
@@ -167,9 +174,6 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     n = n->p;
   }
   std::reverse(path.begin(), path.end());
-
-  // free
-  for (auto p : GC) delete p;
 
   return path;
 }
