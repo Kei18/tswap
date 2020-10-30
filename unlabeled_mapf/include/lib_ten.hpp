@@ -40,13 +40,13 @@ namespace LibTEN
     std::unordered_map<std::string, int> capacity;
 
     const bool apply_filter;
-    const Nodes goals;
+    Problem* P;
     std::unordered_map<Node*, int> reachable_filter;
 
     int dfs_cnt;
 
     ResidualNetwork();
-    ResidualNetwork(bool _filter, const Config& goals);
+    ResidualNetwork(bool _filter, Problem* _P);
     ~ResidualNetwork();
     void init();
 
@@ -72,7 +72,7 @@ namespace LibTEN
     void setFlow(TEN_Node* from, TEN_Node* to);
 
     void FordFulkerson();
-    void createFilter(const Nodes& goals);
+    void createFilter();
 
     int getFlowSum();
   };

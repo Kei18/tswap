@@ -77,12 +77,13 @@ LibTEN::ResidualNetwork::ResidualNetwork()
   init();
 }
 
-LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, const Config& goals)
+LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
   : apply_filter(_filter),
+    P(_P),
     dfs_cnt(0)
 {
   init();
-  if (apply_filter) createFilter(goals);
+  if (apply_filter) createFilter();
 }
 
 LibTEN::ResidualNetwork::~ResidualNetwork()
@@ -217,12 +218,12 @@ void LibTEN::ResidualNetwork::FordFulkerson()
 
   while (true) {
     // depth first search
-    std::unordered_map<std::string, bool> CLOSED;
+    std::unordered_map<TEN_Node*, bool> CLOSED;
     auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
       ++dfs_cnt;
 
       // update closed list
-      CLOSED[p->name] = true;
+      CLOSED[p] = true;
 
       // reach goal
       if (p == sink) return p;
@@ -233,16 +234,19 @@ void LibTEN::ResidualNetwork::FordFulkerson()
       next.insert(next.end(), p->parents.begin(), p->parents.end());
       for (auto q : next) {
         // already searched
-        if (CLOSED.find(q->name) != CLOSED.end()) continue;
+        if (CLOSED.find(q) != CLOSED.end()) continue;
 
         // fulfill
         if (getCapacity(p, q) == 0) continue;
 
         // apply filter
         if (apply_filter) {
-          if (q->type == NodeType::V_OUT) {
+          if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
+            if (reachable_filter[q->v] > sink->t) continue;
+          } else if ((p->type == NodeType::V_IN || p->type == NodeType::W_OUT)
+              && q->type == NodeType::V_OUT) {
             if (reachable_filter[q->v] + q->t > sink->t) continue;
-          } else if (q->type == NodeType::W_IN) {
+          } else if (p->type == NodeType::V_IN && q->type == NodeType::W_IN) {
             auto u = (q->v == p->v) ? q->u : q->v;
             if (reachable_filter[u] + q->t > sink->t) continue;
           }
@@ -266,14 +270,14 @@ void LibTEN::ResidualNetwork::FordFulkerson()
   }
 }
 
-void LibTEN::ResidualNetwork::createFilter(const Config& goals)
+void LibTEN::ResidualNetwork::createFilter()
 {
   // bfs
   std::vector<Node*> OPEN, OPEN_NEXT;
 
   // initialize
   int t = 0;
-  for (auto v : goals) {
+  for (auto v : P->getConfigGoal()) {
     OPEN.push_back(v);
     reachable_filter[v] = t;
   }

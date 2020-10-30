@@ -5,7 +5,7 @@ using NodeType = LibTEN::TEN_Node::NodeType;
 TEN::TEN(Problem* const _P, const int _T, const bool _filter)
   : P(_P) ,
     V(P->getG()->getV()),
-    network(LibTEN::ResidualNetwork(_filter, P->getConfigGoal())),
+    network(LibTEN::ResidualNetwork(_filter, P)),
     valid_network(false),
     max_timestep(_T)
 {
