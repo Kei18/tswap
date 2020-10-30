@@ -2,14 +2,13 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN::TEN(Problem* const _P, const int _T)
-    : P(_P),
-      V(P->getG()->getV()),
-      network(LibTEN::ResidualNetwork()),
-      valid_network(false),
-      max_timestep(_T)
+TEN::TEN(Problem* const _P, const int _T, const bool _filter)
+  : P(_P) ,
+    V(P->getG()->getV()),
+    network(LibTEN::ResidualNetwork(_filter, P->getConfigGoal())),
+    valid_network(false),
+    max_timestep(_T)
 {
-  // network.createFilter(P->getConfigGoal());
 }
 
 TEN::~TEN()
@@ -106,3 +105,5 @@ void TEN::createPlan(const int T)
 int TEN::getNodesNum() { return network.getNodesNum(); }
 
 int TEN::getEdgesNum() { return network.getEdgesNum(); }
+
+int TEN::getDfsCnt() { return network.dfs_cnt; };

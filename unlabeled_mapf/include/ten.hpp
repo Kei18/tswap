@@ -23,7 +23,7 @@ protected:
   virtual void createPlan();
 
 public:
-  TEN(Problem* const _P, const int _T);
+  TEN(Problem* const _P, const int _T, const bool _apply_filter=false);
   virtual ~TEN();
 
   virtual void update();
@@ -33,4 +33,5 @@ public:
 
   int getNodesNum();
   int getEdgesNum();
+  int getDfsCnt();
 };

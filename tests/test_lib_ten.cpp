@@ -1,9 +1,8 @@
-#pragma once
 #include <lib_ten.hpp>
 
 #include "gtest/gtest.h"
 
-TEST(ResidualNetwork, residual_capacity)
+TEST(ResidualNetwork, capacity)
 {
   auto network = LibTEN::ResidualNetwork();
   auto p = network.source;

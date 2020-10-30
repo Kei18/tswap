@@ -1,0 +1,7 @@
+map_file=4x1.map
+agents=1
+seed=0
+random_problem=0
+max_timestep=100
+max_comp_time=5000
+0,0,2,0

@@ -2,8 +2,8 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P)
-    : TEN(_P, 0), current_timestep(0)
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter)
+  : TEN(_P, 0, _filter), current_timestep(0)
 {
 }
 

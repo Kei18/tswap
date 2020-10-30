@@ -10,7 +10,7 @@ private:
   void createPlan();
 
 public:
-  TEN_INCREMENTAL(Problem* const _P);
+  TEN_INCREMENTAL(Problem* const _P, const bool _filter=false);
   ~TEN_INCREMENTAL();
 
   void update();

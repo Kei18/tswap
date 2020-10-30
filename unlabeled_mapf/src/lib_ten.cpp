@@ -71,9 +71,18 @@ std::string LibTEN::TEN_Node::getStr()
 }
 
 LibTEN::ResidualNetwork::ResidualNetwork()
+  : apply_filter(false),
+    dfs_cnt(0)
 {
-  source = createNewNode(LibTEN::TEN_Node::SOURCE);
-  sink = createNewNode(LibTEN::TEN_Node::SINK);
+  init();
+}
+
+LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, const Config& goals)
+  : apply_filter(_filter),
+    dfs_cnt(0)
+{
+  init();
+  if (apply_filter) createFilter(goals);
 }
 
 LibTEN::ResidualNetwork::~ResidualNetwork()
@@ -81,6 +90,12 @@ LibTEN::ResidualNetwork::~ResidualNetwork()
   for (auto itr = body.begin(); itr != body.end(); ++itr) delete itr->second;
   body.clear();
   capacity.clear();
+}
+
+void LibTEN::ResidualNetwork::init()
+{
+  source = createNewNode(LibTEN::TEN_Node::SOURCE);
+  sink = createNewNode(LibTEN::TEN_Node::SINK);
 }
 
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
@@ -202,8 +217,7 @@ void LibTEN::ResidualNetwork::FordFulkerson()
     // depth first search
     std::unordered_map<std::string, bool> CLOSED;
     auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
-
-      // std::cout << p->getStr() << std::endl;
+      ++dfs_cnt;
 
       // update closed list
       CLOSED[p->name] = true;
@@ -223,21 +237,16 @@ void LibTEN::ResidualNetwork::FordFulkerson()
         if (getCapacity(p, q) == 0) continue;
 
         // apply filter
-        // if (q->type == NodeType::V_OUT) {
-        //   auto itr = reachable_filter.find(q->v);
-        //   if (itr != reachable_filter.end()) {
-        //     if (itr->second + q->t > sink->t) continue;
-        //   }
-        // }
-        // if (q->type == NodeType::W_IN) {
-        //   auto u = (q->v == p->v) ? q->u : q->v;
-        //   auto itr = reachable_filter.find(u);
-        //   if (itr != reachable_filter.end()) {
-        //     if (itr->second + q->t > sink->t) continue;
-        //   }
-        // }
+        if (apply_filter) {
+          if (q->type == NodeType::V_OUT) {
+            if (reachable_filter[q->v] + q->t > sink->t) continue;
+          } else if (q->type == NodeType::W_IN) {
+            auto u = (q->v == p->v) ? q->u : q->v;
+            if (reachable_filter[u] + q->t > sink->t) continue;
+          }
+        }
 
-        // call dfs recursively
+        // recursive call
         auto res = self(self, q);
 
         // success
@@ -251,14 +260,11 @@ void LibTEN::ResidualNetwork::FordFulkerson()
       return nullptr;
     };
 
-    // if (dfs(dfs, source) == nullptr) break;
-    auto res = dfs(dfs, source);
-    // std::cout << CLOSED.size() << std::endl;
-    if (res == nullptr) break;
+    if (dfs(dfs, source) == nullptr) break;
   }
 }
 
-void LibTEN::ResidualNetwork::createFilter(const Nodes& goals)
+void LibTEN::ResidualNetwork::createFilter(const Config& goals)
 {
   // bfs
   std::vector<Node*> OPEN, OPEN_NEXT;

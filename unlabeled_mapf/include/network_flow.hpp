@@ -8,6 +8,7 @@ public:
 
 private:
   bool use_incremental;  // choose TEN_INCREMENTAL or TEN
+  bool use_filter;       // apply filter or not
 
   void run();
 

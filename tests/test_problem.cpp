@@ -1,10 +1,9 @@
-#pragma once
 #include <plan.hpp>
 #include <problem.hpp>
 
 #include "gtest/gtest.h"
 
-TEST(Problem, unlabeled_mapf)
+TEST(Problem, loading)
 {
   Problem* P = new Problem("../tests/instances/01.txt");
   Graph* G = P->getG();
@@ -22,6 +21,14 @@ TEST(Problem, unlabeled_mapf)
   ASSERT_EQ(goals.size(), 2);
   ASSERT_EQ(goals[0], G->getNode(1, 0));
   ASSERT_EQ(goals[1], G->getNode(0, 1));
+
+  delete P;
+}
+
+TEST(Problem, plan)
+{
+  Problem* P = new Problem("../tests/instances/01.txt");
+  Graph* G = P->getG();
 
   Plan plan0;
   Config c0_0 = {G->getNode(0, 0), G->getNode(1, 1)};

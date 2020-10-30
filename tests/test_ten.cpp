@@ -1,4 +1,3 @@
-#pragma once
 #include <problem.hpp>
 #include <ten.hpp>
 
@@ -21,4 +20,17 @@ TEST(TEN, update)
   ASSERT_EQ(network2.getPlan().getSOC(), 4);
 
   delete P;
+}
+
+TEST(TEN, dfs)
+{
+  Problem* P = new Problem("../tests/instances/04.txt");
+
+  auto network1 = TEN(P, 2);
+  network1.update();
+  ASSERT_EQ(network1.getDfsCnt(), 16 + 1);
+
+  auto network2 = TEN(P, 2, true);
+  network2.update();
+  ASSERT_EQ(network2.getDfsCnt(), 10 + 1);
 }

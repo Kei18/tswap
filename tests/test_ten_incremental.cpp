@@ -1,4 +1,3 @@
-#pragma once
 #include <problem.hpp>
 #include <ten_incremental.hpp>
 

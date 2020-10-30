@@ -38,10 +38,17 @@ namespace LibTEN
     TEN_Node* sink;
     std::unordered_map<std::string, TEN_Node*> body;
     std::unordered_map<std::string, int> capacity;
+
+    const bool apply_filter;
+    const Nodes goals;
     std::unordered_map<Node*, int> reachable_filter;
 
+    int dfs_cnt;
+
     ResidualNetwork();
+    ResidualNetwork(bool _filter, const Config& goals);
     ~ResidualNetwork();
+    void init();
 
     using NodeType = TEN_Node::NodeType;
 
