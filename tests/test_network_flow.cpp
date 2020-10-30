@@ -15,6 +15,24 @@ TEST(NetworkFlow, TEN_INCREMENTAL)
   delete solver;
 }
 
+TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
+{
+  Problem* P = new Problem("../tests/instances/02.txt");
+  Solver* solver = new NetworkFlow(P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-m";
+  char* argv[] = {argv0, argv1};
+  solver->setParams(2, argv);
+  solver->solve();
+
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(solver->getSolution().validate(P));
+
+  delete P;
+  delete solver;
+}
+
 TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
 {
   Problem* P = new Problem("../tests/instances/02.txt");
@@ -34,24 +52,6 @@ TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
 }
 
 TEST(NetworkFlow, TEN)
-{
-  Problem* P = new Problem("../tests/instances/02.txt");
-  Solver* solver = new NetworkFlow(P);
-
-  char argv0[] = "dummy";
-  char argv1[] = "-n";
-  char* argv[] = {argv0, argv1};
-  solver->setParams(2, argv);
-  solver->solve();
-
-  ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(P));
-
-  delete P;
-  delete solver;
-}
-
-TEST(NetworkFlow, TEN_NO_FILTER)
 {
   Problem* P = new Problem("../tests/instances/02.txt");
   Solver* solver = new NetworkFlow(P);

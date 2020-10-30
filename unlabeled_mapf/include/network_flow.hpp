@@ -7,8 +7,9 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  bool use_incremental;  // choose TEN_INCREMENTAL or TEN
-  bool use_filter;       // apply filter or not
+  bool use_incremental;   // choose TEN_INCREMENTAL or TEN
+  bool use_filter;        // apply filter or not
+  bool use_minimum_step;  // use minimum step
 
   void run();
 

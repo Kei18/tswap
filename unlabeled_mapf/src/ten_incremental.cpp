@@ -7,6 +7,12 @@ TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter)
 {
 }
 
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter)
+  : TEN(_P, _t-1, _filter), current_timestep(_t-1)
+{
+  if (_t > 1) TEN::updateGraph();
+}
+
 TEN_INCREMENTAL::~TEN_INCREMENTAL() {}
 
 void TEN_INCREMENTAL::update()

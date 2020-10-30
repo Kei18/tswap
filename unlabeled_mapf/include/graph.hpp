@@ -53,7 +53,7 @@ struct Pos {
   {
     return Pos{x - other.x, y - other.y};
   }
-  Pos operator*(const int i) const { return Pos{x * i, y * i}; }
+  Pos operator*(const int i) const { return Pos(x * i, y * i); }
   void operator+=(const Pos& other)
   {
     x = x + other.x;

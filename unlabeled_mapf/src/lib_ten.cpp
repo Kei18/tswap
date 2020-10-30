@@ -213,6 +213,8 @@ int LibTEN::ResidualNetwork::getFlowSum()
 
 void LibTEN::ResidualNetwork::FordFulkerson()
 {
+  dfs_cnt = 0;
+
   while (true) {
     // depth first search
     std::unordered_map<std::string, bool> CLOSED;
