@@ -22,9 +22,8 @@ void PIBT_COMPLETE::run()
   }
 
   // solve by PIBT
-  Problem* _P =
-    new Problem(P, P->getConfigStart(), P->getConfigGoal(), max_comp_time, LB_makespan);
-  Solver* init_solver = new PIBT(_P);
+  Problem _P = Problem(P, P->getConfigStart(), P->getConfigGoal(), max_comp_time, LB_makespan);
+  std::unique_ptr<Solver> init_solver = std::make_unique<PIBT>(&_P);
   info(" ", "run PIBT until timestep", LB_makespan);
   init_solver->solve();
   solution = init_solver->getSolution();
@@ -41,21 +40,15 @@ void PIBT_COMPLETE::run()
 
     // solved by ICBS
     int comp_time_limit = max_comp_time - (int)getSolverElapsedTime();
-    Problem* _Q = new Problem(P, solution.last(), P->getConfigGoal(),
-                              comp_time_limit, max_timestep - LB_makespan);
-    Solver* second_solver = new ICBS(_Q);
+    Problem _Q = Problem(P, solution.last(), P->getConfigGoal(),
+                         comp_time_limit, max_timestep - LB_makespan);
+    std::unique_ptr<Solver> second_solver = std::make_unique<ICBS>(&_Q);
     second_solver->solve();
     solution += second_solver->getSolution();
     if (second_solver->succeed()) solved = true;
 
     comp_time_complement = getElapsedTime(t_complement);
-
-    delete second_solver;
-    delete _Q;
   }
-
-  delete init_solver;
-  delete _P;
 }
 
 void PIBT_COMPLETE::printHelp()

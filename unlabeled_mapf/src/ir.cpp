@@ -61,11 +61,11 @@ void IR::run()
 Plan IR::getInitialPlan()
 {
   // set problem
-  Problem* _P = new Problem(P, P->getConfigStart(), P->getConfigGoal(),
-                            max_comp_time, max_timestep);
+  Problem _P = Problem(P, P->getConfigStart(), P->getConfigGoal(),
+                       max_comp_time, max_timestep);
 
   // set solver
-  Solver* solver = new PIBT_COMPLETE(_P);
+  std::unique_ptr<Solver> solver = std::make_unique<PIBT_COMPLETE>(&_P);
 
   // set solver options
   solver->setVerbose(verbose_underlying_solver);
@@ -76,10 +76,6 @@ Plan IR::getInitialPlan()
   // success
   Plan plan;
   if (solver->succeed()) plan = solver->getSolution();
-
-  // memory management
-  delete solver;
-  delete _P;
 
   return plan;
 }
@@ -121,17 +117,15 @@ Plan IR::refinePlan(const Config& config_s, const Config& config_g,
   int comp_time_limit =
       std::min(max_comp_time - (int)getSolverElapsedTime(), timeout_refinement);
   if (comp_time_limit <= 0) return current_plan;  // timeout
-  Problem* _P =
-      new Problem(P, config_s, config_g, comp_time_limit, max_timestep);
+  Problem _P = Problem(P, config_s, config_g, comp_time_limit, max_timestep);
 
   // solve
-  auto res = getOptimalPlan(_P, current_plan, sample);
+  auto res = getOptimalPlan(&_P, current_plan, sample);
 
   Plan plan = std::get<1>(res);
   if (!std::get<0>(res) || plan.getSOC() == current_plan.getSOC()) {
     CLOSE.push_back(id_largest_gap);
   }
-  delete _P;
   return plan;
 }
 

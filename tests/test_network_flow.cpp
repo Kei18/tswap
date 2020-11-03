@@ -4,21 +4,18 @@
 
 TEST(NetworkFlow, TEN_INCREMENTAL)
 {
-  Problem* P = new Problem("../tests/instances/02.txt");
-  Solver* solver = new NetworkFlow(P);
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
   solver->solve();
 
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(P));
-
-  delete P;
-  delete solver;
+  ASSERT_TRUE(solver->getSolution().validate(&P));
 }
 
 TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
 {
-  Problem* P = new Problem("../tests/instances/02.txt");
-  Solver* solver = new NetworkFlow(P);
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-m";
@@ -27,16 +24,13 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
   solver->solve();
 
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(P));
-
-  delete P;
-  delete solver;
+  ASSERT_TRUE(solver->getSolution().validate(&P));
 }
 
 TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
 {
-  Problem* P = new Problem("../tests/instances/02.txt");
-  Solver* solver = new NetworkFlow(P);
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-f";
@@ -45,16 +39,13 @@ TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
   solver->solve();
 
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(P));
-
-  delete P;
-  delete solver;
+  ASSERT_TRUE(solver->getSolution().validate(&P));
 }
 
 TEST(NetworkFlow, TEN)
 {
-  Problem* P = new Problem("../tests/instances/02.txt");
-  Solver* solver = new NetworkFlow(P);
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-n";
@@ -64,8 +55,5 @@ TEST(NetworkFlow, TEN)
   solver->solve();
 
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(P));
-
-  delete P;
-  delete solver;
+  ASSERT_TRUE(solver->getSolution().validate(&P));
 }
