@@ -11,10 +11,7 @@ GoalAllocator::~GoalAllocator()
 
 void GoalAllocator::assign()
 {
-  std::priority_queue<LibGA::Edge*,
-                      LibGA::Edges,
-                      std::function<bool(LibGA::Edge*, LibGA::Edge*)>>
-    OPEN(LibGA::Edge::compare);
+  LibGA::OpenList OPEN(LibGA::Edge::compare);
 
   // setup open list
   LibGA::Edges GC_Edge;

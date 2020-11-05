@@ -5,6 +5,7 @@ namespace LibGA
 {
   struct Edge;
   using Edges = std::vector<Edge*>;
+  using OpenList = std::priority_queue<Edge*, Edges, std::function<bool(Edge*, Edge*)>>;
 
   struct FlowNode;
   using FlowNodes = std::vector<FlowNode*>;
