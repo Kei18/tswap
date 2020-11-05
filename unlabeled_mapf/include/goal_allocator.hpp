@@ -1,5 +1,6 @@
 #pragma once
 #include "problem.hpp"
+#include "lib_ga.hpp"
 
 class GoalAllocator {
 private:

@@ -4,6 +4,7 @@
 
 #include "../include/icbs.hpp"
 #include "../include/pibt.hpp"
+#include "../include/goal_allocator.hpp"
 
 const std::string PIBT_COMPLETE::SOLVER_NAME = "PIBT_COMPLETE";
 
@@ -15,14 +16,22 @@ PIBT_COMPLETE::PIBT_COMPLETE(Problem* _P) : Solver(_P)
 
 void PIBT_COMPLETE::run()
 {
+  // goal assignment
+  GoalAllocator allocator = GoalAllocator(P);
+  allocator.assign();
+  auto goals = allocator.getAssignedGoals();
+
+  info(" ", "elapsed:", getSolverElapsedTime(), ", finish goal assignment");
+
   // find lower bound of makespan
   int LB_makespan = 0;
   for (int i = 0; i < P->getNum(); ++i) {
-    if (pathDist(i) > LB_makespan) LB_makespan = pathDist(i);
+    int d = pathDist(P->getStart(i), goals[i]);
+    if (d > LB_makespan) LB_makespan = d;
   }
 
   // solve by PIBT
-  Problem _P = Problem(P, P->getConfigStart(), P->getConfigGoal(), max_comp_time, LB_makespan);
+  Problem _P = Problem(P, P->getConfigStart(), goals, max_comp_time, LB_makespan);
   std::unique_ptr<Solver> init_solver = std::make_unique<PIBT>(&_P);
   info(" ", "run PIBT until timestep", LB_makespan);
   init_solver->solve();
@@ -40,7 +49,7 @@ void PIBT_COMPLETE::run()
 
     // solved by ICBS
     int comp_time_limit = max_comp_time - (int)getSolverElapsedTime();
-    Problem _Q = Problem(P, solution.last(), P->getConfigGoal(),
+    Problem _Q = Problem(P, solution.last(), goals,
                          comp_time_limit, max_timestep - LB_makespan);
     std::unique_ptr<Solver> second_solver = std::make_unique<ICBS>(&_Q);
     second_solver->solve();
