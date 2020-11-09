@@ -11,21 +11,20 @@ GoalAllocator::~GoalAllocator()
 
 void GoalAllocator::assign()
 {
-  LibGA::OpenList OPEN(LibGA::Edge::compare);
+  LibGA::OpenList OPEN(LibGA::FieldEdge::compare);
 
   // setup open list
-  LibGA::Edges GC_Edge;
+  LibGA::FieldEdges GC_Edge;
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
-      auto p = new LibGA::Edge(i, j, s, g, s->manhattanDist(g));
+      auto p = new LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g));
       GC_Edge.push_back(p);
       OPEN.push(p);
     }
   }
 
-  // auto network = LibGA::FlowNetwork(P);
   auto matching = LibGA::Matching(P);
 
   while (!OPEN.empty()) {
