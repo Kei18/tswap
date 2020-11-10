@@ -50,6 +50,7 @@ void LibGA::FlowNode::addParent(FlowNode* parent)
 LibGA::Matching::Matching(Problem* P)
   : source(createNewNode(NodeType::SOURCE)),
     sink(createNewNode(NodeType::SINK)),
+    assigned_goals(P->getNum(), nullptr),
     start_cnt(0),
     goal_cnt(0)
 {
@@ -114,7 +115,6 @@ bool LibGA::Matching::unused(FlowNode* from, FlowNode* to) const
 {
   auto itr = unused_edge.find(getEdgeName(from, to));
   if (itr != unused_edge.end()) return itr->second;
-  halt("unknown flow");
   return false;
 }
 
@@ -139,6 +139,7 @@ void LibGA::Matching::update()
       FlowNodes next;
       next.insert(next.end(), p->children.begin(), p->children.end());
       next.insert(next.end(), p->parents.begin(), p->parents.end());
+
       for (auto q : next) {
         // already searched
         if (CLOSED.find(q) != CLOSED.end()) continue;
@@ -152,6 +153,14 @@ void LibGA::Matching::update()
         // success
         if (res != nullptr) {
           use(p, q);
+
+          // assign
+          if (p->type == NodeType::START && q->type == NodeType::GOAL) {
+            int index =
+              std::distance(starts.begin(), std::find(starts.begin(), starts.end(), p));
+            assigned_goals[index] = q->v;
+          }
+
           return res;
         }
       }
@@ -172,22 +181,7 @@ int LibGA::Matching::getMatchedNum()
                            return acc + (int)unused(itr, source); });
 }
 
-bool LibGA::Matching::matchedToSomeone(int index) const
+bool LibGA::Matching::isPotentialAugumentedPath(FieldEdge* e) const
 {
-  if (index < 0 || starts.size() <= index) halt("FlowNode::addEdge, invalid");
-  return !unused(source, starts[index]);
-}
-
-Nodes LibGA::Matching::getAssignedGoals() const
-{
-  Nodes assigned_goals;
-  for (auto p : starts) {
-    for (auto q : p->children) {
-      if (!unused(p, q)) {
-        assigned_goals.push_back(q->v);
-        continue;
-      }
-    }
-  }
-  return assigned_goals;
+  return unused(source, starts[e->start_index]) || unused(goals[e->goal_index], sink);
 }

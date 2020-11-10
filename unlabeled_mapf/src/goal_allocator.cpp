@@ -45,7 +45,7 @@ void GoalAllocator::assign()
     if (matching.start_cnt < P->getNum() || matching.goal_cnt < P->getNum()) continue;
 
     // matching result will not be changed -> skip
-    if (matching.matchedToSomeone(p->start_index)) continue;
+    if (!matching.isPotentialAugumentedPath(p)) continue;
 
     // update matching
     matching.update();
@@ -53,7 +53,7 @@ void GoalAllocator::assign()
     if (matching.getMatchedNum() == P->getNum()) break;
   }
 
-  assigned_goals = matching.getAssignedGoals();
+  assigned_goals = matching.assigned_goals;
 
   // memory management
   for (auto p : GC_Edge) delete p;

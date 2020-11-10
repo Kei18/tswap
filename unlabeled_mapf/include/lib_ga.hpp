@@ -9,7 +9,6 @@ namespace LibGA
   using FieldEdges = std::vector<FieldEdge*>;
   using OpenList = std::priority_queue<FieldEdge*, FieldEdges,
                                        std::function<bool(FieldEdge*, FieldEdge*)>>;
-
   struct FlowNode;
   using FlowNodes = std::vector<FlowNode*>;
 
@@ -51,6 +50,7 @@ namespace LibGA
     LibGA::FlowNodes starts;
     LibGA::FlowNodes goals;
     std::unordered_map<std::string, bool> unused_edge;
+    Nodes assigned_goals;
 
     int start_cnt;
     int goal_cnt;
@@ -69,6 +69,6 @@ namespace LibGA
     void update();
     int getMatchedNum();
     bool matchedToSomeone(int index) const;
-    Nodes getAssignedGoals() const;
+    bool isPotentialAugumentedPath(FieldEdge* e) const;
   };
 };
