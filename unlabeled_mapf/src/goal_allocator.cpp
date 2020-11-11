@@ -38,19 +38,8 @@ void GoalAllocator::assign()
       continue;
     }
 
-    // add edge
-    matching.addEdge(p);
-
-    // skip matching, check goal & start
-    if (matching.start_cnt < P->getNum() || matching.goal_cnt < P->getNum()) continue;
-
-    // matching result will not be changed -> skip
-    if (!matching.isPotentialAugumentedPath(p)) continue;
-
-    // update matching
-    matching.update();
-
-    if (matching.getMatchedNum() == P->getNum()) break;
+    matching.update(p);
+    if (matching.matched_num == P->getNum()) break;
   }
 
   assigned_goals = matching.assigned_goals;
