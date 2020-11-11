@@ -68,43 +68,35 @@ namespace LibGA
       adj[s].push_back(g);
       adj[g].push_back(s);
 
+      std::vector<bool> visited(N*2, false);
+      std::function<bool(int)> dfs = [&](int v) {   // start/goal
+        if (visited[v]) return false;
+        visited[v] = true;
+        // expand neighbors
+        for (int u : adj[v]) {  // u: goal/start
+          int w = mate[u];      // w: start/goal
+          // unmatched goal/start is found || found augmented path
+          if (w == NIL || (!visited[w] && dfs(w))) {
+            if (v < N) {  // start
+              mariage(v, u);
+            } else {  // goal
+              mariage(u, v);
+            }
+            return true;
+          }
+        }
+        return false;
+      };
+
       if (mate[s] == NIL) {
         dfs(s);
       } else if (mate[g] == NIL) {
         dfs(g);
       } else {
-        std::vector<bool> visited(N*2, false);
         for (int v = 0; v < N; ++v) {
-          if (mate[v] == NIL && dfs(v, visited)) break;
+          if (mate[v] == NIL && dfs(v)) break;
         }
       }
-    }
-
-    bool dfs(const int v, std::vector<bool>& visited)  // start/goal
-    {
-      if (visited[v]) return false;
-      visited[v] = true;
-      // expand neighbors
-      for (int u : adj[v]) {  // u: goal/start
-        int w = mate[u];      // w: start/goal
-
-        // unmatched goal/start is found || found augmented path
-        if (w == NIL || (!visited[w] && dfs(w, visited))) {
-          if (v < N) {  // start
-            mariage(v, u);
-          } else {  // goal
-            mariage(u, v);
-          }
-          return true;
-        }
-      }
-      return false;
-    }
-
-    bool dfs(const int v)
-    {
-      std::vector<bool> visited(N*2, false);
-      return dfs(v, visited);
     }
   };
 };
