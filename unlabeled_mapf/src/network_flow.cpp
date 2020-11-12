@@ -23,7 +23,7 @@ void NetworkFlow::run()
 {
   // determine lower bound
   int minimum_step = 1;
-  if (use_minimum_step) {
+  if (use_minimum_step || use_ilp_solver) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g = *std::min_element(goals.begin(), goals.end(),
