@@ -43,7 +43,7 @@ void TEN_INCREMENTAL::updateGraph()
     for (auto v : P->getConfigGoal()) {
       auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
       // agent has already reached goal in previous iteration
-      if (network.getCapacity(p, network.sink) == 0) {
+      if (!network.use_ilp_solver && network.getCapacity(p, network.sink) == 0) {
         auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
         auto q = network.getNode(NodeType::V_IN, v, current_timestep);
         auto r = network.getNode(NodeType::V_OUT, v, current_timestep);
