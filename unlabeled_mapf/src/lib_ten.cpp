@@ -72,13 +72,15 @@ std::string LibTEN::TEN_Node::getStr()
 
 LibTEN::ResidualNetwork::ResidualNetwork()
   : apply_filter(false),
+    use_ilp_solver(false),
     dfs_cnt(0)
 {
   init();
 }
 
-LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
+LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, bool _ilp, Problem* _P)
   : apply_filter(_filter),
+    use_ilp_solver(_ilp),
     P(_P),
     dfs_cnt(0)
 {
@@ -97,6 +99,14 @@ void LibTEN::ResidualNetwork::init()
 {
   source = createNewNode(LibTEN::TEN_Node::SOURCE);
   sink = createNewNode(LibTEN::TEN_Node::SINK);
+
+  if (use_ilp_solver) {
+    grb_env = std::make_unique<GRBEnv>(true);
+    grb_env->set("OutputFlag", "0");
+    grb_env->start();
+    grb_model = std::make_unique<GRBModel>(*grb_env);
+    grb_obj = 0;
+  }
 }
 
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
@@ -234,6 +244,15 @@ int LibTEN::ResidualNetwork::getFlowSum()
       [&](int acc, TEN_Node* p) { return acc + getCapacity(p, source); });
 }
 
+void LibTEN::ResidualNetwork::solve()
+{
+  if (use_ilp_solver) {
+    solveByGUROBI();
+  } else {
+    FordFulkerson();
+  }
+}
+
 void LibTEN::ResidualNetwork::FordFulkerson()
 {
   dfs_cnt = 0;
@@ -320,49 +339,62 @@ void LibTEN::ResidualNetwork::createFilter()
   }
 }
 
-void LibTEN::ResidualNetwork::solveByGUROBI()
+void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
 {
-  // create an environment
-  GRBEnv env = GRBEnv(true);
-  env.set("OutputFlag", "0");
-  env.start();
+  child->addParent(parent);
 
-  // create an empty model
-  GRBModel model = GRBModel(env);
+  if (use_ilp_solver) {
+    // add variable
+    auto name = getEdgeName(parent, child);
+    auto var = grb_model->addVar(0.0, 1.0, 0, GRB_BINARY, name);
+    grb_table_vars[name] = var;
 
-  std::unordered_map<std::string, GRBVar> table_vars;
+    // set objective
+    if (parent == source) {
+      grb_obj += var;
+      if (source->children.size() == P->getNum()) {
+        grb_model->setObjective(grb_obj, GRB_MAXIMIZE);
+      }
+    }
 
-  // create variables & set objective: maximize flow
-  GRBLinExpr obj = 0;
-  for (auto itr = body.begin(); itr != body.end(); ++itr) {
-    auto p = itr->second;
-    for (auto q : p->children) {
-      auto edge_name = getEdgeName(p, q);
-      auto var = model.addVar(0.0, 1.0, 0, GRB_BINARY, edge_name);
-      table_vars[edge_name] = var;
-      if (p == source) obj += var;
+    // add constraints
+    auto updateConstr = [&] (TEN_Node* p) {
+      if (p == source || p == sink) return;
+      auto itr = grb_table_constr.find(p->name);
+      if (itr != grb_table_constr.end()) grb_model->remove(itr->second);
+      GRBLinExpr lhs = 0;
+      for (auto q : p->children) lhs += grb_table_vars[getEdgeName(p, q)];
+      for (auto q : p->parents)  lhs -= grb_table_vars[getEdgeName(q, p)];
+      grb_table_constr[p->name] = grb_model->addConstr(lhs == 0, p->name);
+    };
+
+    updateConstr(parent);
+    updateConstr(child);
+  }
+}
+
+void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
+{
+  child->removeParent(parent);
+
+  if (use_ilp_solver) {
+    // remove variable
+    auto itr = grb_table_vars.find(getEdgeName(parent, child));
+    if (itr != grb_table_vars.end()) {
+      grb_model->remove(itr->second);
+      grb_table_vars.erase(itr);
     }
   }
+}
 
-  // set objective
-  model.setObjective(obj, GRB_MAXIMIZE);
-
-  // add constraint, flow
-  for (auto itr = body.begin(); itr != body.end(); ++itr) {
-    auto p = itr->second;
-    if (p == source || p == sink) continue;
-    GRBLinExpr lhs = 0;
-    for (auto q : p->children) lhs += table_vars[getEdgeName(p, q)];
-    for (auto q : p->parents) lhs -= table_vars[getEdgeName(q, p)];
-    model.addConstr(lhs == 0, p->name);
-  }
-
+void LibTEN::ResidualNetwork::solveByGUROBI()
+{
   // optimize model
-  model.optimize();
+  grb_model->optimize();
 
-  if (model.get(GRB_DoubleAttr_ObjVal) == source->children.size()) {
+  if (grb_model->get(GRB_DoubleAttr_ObjVal) == source->children.size()) {
     // apply flow
-    for (auto itr = table_vars.begin(); itr != table_vars.end(); ++itr) {
+    for (auto itr = grb_table_vars.begin(); itr != grb_table_vars.end(); ++itr) {
       if (itr->second.get(GRB_DoubleAttr_X) == 1.0) {
         setFlow(itr->first);
       } else {

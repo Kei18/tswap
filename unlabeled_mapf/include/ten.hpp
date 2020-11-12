@@ -23,21 +23,15 @@ protected:
   virtual void createPlan();
 
 public:
-  TEN(Problem* const _P, const int _T, const bool _apply_filter=false);
+  TEN(Problem* const _P, const int _T,
+      const bool _apply_filter=false,
+      const bool _use_ilp_solver=false);
   virtual ~TEN();
 
-  virtual void update(bool use_ilp_solver=false);
+  virtual void update();
 
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }
-
-  void solveByGUROBI()
-  {
-    updateGraph();
-    network.solveByGUROBI();
-    valid_network = (network.getFlowSum() == P->getNum());
-    createPlan();
-  }
 
   int getNodesNum();
   int getEdgesNum();

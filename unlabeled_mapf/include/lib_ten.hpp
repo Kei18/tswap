@@ -42,13 +42,22 @@ namespace LibTEN
     std::unordered_map<std::string, int> capacity;
 
     const bool apply_filter;
+    const bool use_ilp_solver;
     Problem* P;
     std::unordered_map<Node*, int> reachable_filter;
 
     int dfs_cnt;
 
+    // ILP
+    std::unique_ptr<GRBEnv> grb_env;
+    std::unique_ptr<GRBModel> grb_model;
+    std::unordered_map<std::string, GRBVar> grb_table_vars;
+    std::unordered_map<std::string, GRBConstr> grb_table_constr;
+    GRBLinExpr grb_obj;
+
+
     ResidualNetwork();
-    ResidualNetwork(bool _filter, Problem* _P);
+    ResidualNetwork(bool _filter, bool _ilp, Problem* _P);
     ~ResidualNetwork();
     void init();
 
@@ -75,7 +84,10 @@ namespace LibTEN
     void setFlow(TEN_Node* from, TEN_Node* to);
     void setFlow(const std::string edge_name);
     void setReverseFlow(const std::string edge_name);
+    void addParent(TEN_Node* child, TEN_Node* parent);
+    void removeParent(TEN_Node* child, TEN_Node* parent);
 
+    void solve();
     void FordFulkerson();
     void createFilter();
 

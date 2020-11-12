@@ -37,13 +37,13 @@ void NetworkFlow::run()
 
   std::unique_ptr<TEN> flow_network;
   if (use_incremental) {
-    flow_network = std::make_unique<TEN_INCREMENTAL>(P, minimum_step, use_filter);
+    flow_network = std::make_unique<TEN_INCREMENTAL>(P, minimum_step, use_filter, use_ilp_solver);
   }
 
   for (int t = minimum_step; t <= max_timestep; ++t) {
     if (overCompTime()) break;
-    if (!use_incremental) flow_network = std::make_unique<TEN>(P, t, use_filter);
-    flow_network->update(use_ilp_solver);
+    if (!use_incremental) flow_network = std::make_unique<TEN>(P, t, use_filter, use_ilp_solver);
+    flow_network->update();
 
     if (use_ilp_solver) {
       info(" ", "elapsed:", getSolverElapsedTime(),
@@ -103,7 +103,7 @@ void NetworkFlow::printHelp()
             << "implement without cache\n"
             << "  -f --no-filter"
             << "                "
-            << "implement without filter"
+            << "implement without filter\n"
             << "  -m --use-minimum-step"
             << "          "
             << "implement with minimum-step\n"
