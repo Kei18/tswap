@@ -100,6 +100,7 @@ void LibTEN::ResidualNetwork::init()
   source = createNewNode(LibTEN::TEN_Node::SOURCE);
   sink = createNewNode(LibTEN::TEN_Node::SINK);
 
+#ifdef _GUROBI_
   if (use_ilp_solver) {
     grb_env = std::make_unique<GRBEnv>(true);
     grb_env->set("OutputFlag", "0");
@@ -107,6 +108,7 @@ void LibTEN::ResidualNetwork::init()
     grb_model = std::make_unique<GRBModel>(*grb_env);
     grb_obj = 0;
   }
+#endif
 }
 
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
@@ -246,11 +248,15 @@ int LibTEN::ResidualNetwork::getFlowSum()
 
 void LibTEN::ResidualNetwork::solve()
 {
+#ifdef _GUROBI_
   if (use_ilp_solver) {
     solveByGUROBI();
   } else {
     FordFulkerson();
   }
+#else
+  FordFulkerson();
+#endif
 }
 
 void LibTEN::ResidualNetwork::FordFulkerson()
@@ -343,6 +349,7 @@ void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
 {
   child->addParent(parent);
 
+#ifdef _GUROBI_
   if (use_ilp_solver) {
     // add variable
     auto name = getEdgeName(parent, child);
@@ -371,12 +378,14 @@ void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
     updateConstr(parent);
     updateConstr(child);
   }
+#endif
 }
 
 void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
 {
   child->removeParent(parent);
 
+#ifdef _GUROBI_
   if (use_ilp_solver) {
     // remove variable
     auto itr = grb_table_vars.find(getEdgeName(parent, child));
@@ -385,8 +394,10 @@ void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
       grb_table_vars.erase(itr);
     }
   }
+#endif
 }
 
+#ifdef _GUROBI_
 void LibTEN::ResidualNetwork::solveByGUROBI()
 {
   // optimize model
@@ -403,3 +414,4 @@ void LibTEN::ResidualNetwork::solveByGUROBI()
     }
   }
 }
+#endif

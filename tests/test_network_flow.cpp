@@ -58,6 +58,7 @@ TEST(NetworkFlow, TEN)
   ASSERT_TRUE(solver->getSolution().validate(&P));
 }
 
+#ifdef _GUROBI_
 TEST(NetworkFlow, TEN_ILP)
 {
   Problem P = Problem("../tests/instances/02.txt");
@@ -88,3 +89,4 @@ TEST(NetworkFlow, TEN_INCREMENTAL_ILP)
   ASSERT_TRUE(solver->succeed());
   ASSERT_TRUE(solver->getSolution().validate(&P));
 }
+#endif

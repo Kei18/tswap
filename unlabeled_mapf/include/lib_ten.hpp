@@ -4,7 +4,8 @@
 
 #pragma once
 #include "problem.hpp"
-#include <gurobi_c++.h>
+#include "gurobi.hpp"
+// #include <gurobi_c++.h>
 
 
 namespace LibTEN
@@ -93,7 +94,9 @@ namespace LibTEN
 
     int getFlowSum();
 
+#ifdef _GUROBI_
     void solveByGUROBI();
+#endif
   };
 
 };
