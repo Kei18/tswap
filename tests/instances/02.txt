@@ -3,7 +3,7 @@ agents=10
 seed=0
 random_problem=0
 max_timestep=100
-max_comp_time=5000
+max_comp_time=20000
 5,1,29,15
 12,7,15,0
 14,28,22,0

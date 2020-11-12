@@ -15,10 +15,10 @@ TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _fi
 
 TEN_INCREMENTAL::~TEN_INCREMENTAL() {}
 
-void TEN_INCREMENTAL::update()
+void TEN_INCREMENTAL::update(bool use_ilp_solver)
 {
   ++current_timestep;
-  TEN::update();
+  TEN::update(use_ilp_solver);
 }
 
 void TEN_INCREMENTAL::updateGraph()

@@ -40,63 +40,10 @@ namespace LibGA
     int matched_num;
     Nodes assigned_goals;
 
-    Matching(Problem* P)
-      : starts(P->getConfigStart()),
-        goals(P->getConfigGoal()),
-        N(P->getNum()),
-        NIL(N*2+1),
-        adj(N*2),
-        mate(N*2, NIL),
-        matched_num(0),
-        assigned_goals(N, nullptr)
-    {
-    }
+    Matching(Problem *P);
 
-    void mariage(int s, int g)
-    {
-      if (mate[s] == NIL) ++matched_num;
-      mate[s] = g;
-      mate[g] = s;
-      assigned_goals[s] = goals[g - N];
-    }
+    void mariage(const int s, const int g);
 
-    void update(FieldEdge* e)
-    {
-      // add new edge
-      int s = e->start_index;
-      int g = N + e->goal_index;
-      adj[s].push_back(g);
-      adj[g].push_back(s);
-
-      std::vector<bool> visited(N*2, false);
-      std::function<bool(int)> dfs = [&](int v) {   // start/goal
-        if (visited[v]) return false;
-        visited[v] = true;
-        // expand neighbors
-        for (int u : adj[v]) {  // u: goal/start
-          int w = mate[u];      // w: start/goal
-          // unmatched goal/start is found || found augmented path
-          if (w == NIL || (!visited[w] && dfs(w))) {
-            if (v < N) {  // start
-              mariage(v, u);
-            } else {  // goal
-              mariage(u, v);
-            }
-            return true;
-          }
-        }
-        return false;
-      };
-
-      if (mate[s] == NIL) {
-        dfs(s);
-      } else if (mate[g] == NIL) {
-        dfs(g);
-      } else {
-        for (int v = 0; v < N; ++v) {
-          if (mate[v] == NIL && dfs(v)) break;
-        }
-      }
-    }
+    void update(FieldEdge const *e);
   };
 };

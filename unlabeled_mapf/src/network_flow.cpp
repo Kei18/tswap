@@ -11,7 +11,8 @@ NetworkFlow::NetworkFlow(Problem* _P)
   : Solver(_P),
     use_incremental(true),
     use_filter(true),
-    use_minimum_step(false)
+    use_minimum_step(false),
+    use_ilp_solver(false)
 {
   solver_name = NetworkFlow::SOLVER_NAME;
 }
@@ -42,13 +43,18 @@ void NetworkFlow::run()
   for (int t = minimum_step; t <= max_timestep; ++t) {
     if (overCompTime()) break;
     if (!use_incremental) flow_network = std::make_unique<TEN>(P, t, use_filter);
-    flow_network->update();
+    flow_network->update(use_ilp_solver);
 
-    float visited_rate = (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
-    info(" ", "elapsed:", getSolverElapsedTime(),
-         ", makespan_limit:", t,
-         ", visited_ndoes:", flow_network->getDfsCnt(),
-         "/", flow_network->getNodesNum(), "=", visited_rate);
+    if (use_ilp_solver) {
+      info(" ", "elapsed:", getSolverElapsedTime(),
+           ", makespan_limit:", t);
+    } else {
+      float visited_rate = (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
+      info(" ", "elapsed:", getSolverElapsedTime(),
+           ", makespan_limit:", t,
+           ", visited_ndoes:", flow_network->getDfsCnt(),
+           "/", flow_network->getNodesNum(), "=", visited_rate);
+    }
 
     if (flow_network->isValid()) {
       solved = true;
@@ -64,19 +70,25 @@ void NetworkFlow::setParams(int argc, char* argv[])
     {"no-cache", no_argument, 0, 'n'},
     {"no-filter", no_argument, 0, 'f'},
     {"use-minimum-step", no_argument, 0, 'm'},
+    {"use-ilp-solver", no_argument, 0, 'g'},
     {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "nfm", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "nfmg", longopts, &longindex)) != -1) {
     switch (opt) {
       case 'n':
         use_incremental = false;
         break;
       case 'f':
         use_filter = false;
+        break;
       case 'm':
         use_minimum_step = true;
+        break;
+      case 'g':
+        use_ilp_solver = true;
+        break;
       default:
         break;
     }
@@ -94,6 +106,9 @@ void NetworkFlow::printHelp()
             << "implement without filter"
             << "  -m --use-minimum-step"
             << "          "
-            << "implement with minimum-step"
+            << "implement with minimum-step\n"
+            << "  -g --use-ilp-solver"
+            << "           "
+            << "implement with ILP solver (GUROBI)"
             << std::endl;
 }

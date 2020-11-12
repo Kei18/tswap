@@ -32,3 +32,15 @@ TEST(TEN, dfs)
   network2.update();
   ASSERT_EQ(network2.getDfsCnt(), 10 + 1);
 }
+
+TEST(TEN, ILP)
+{
+  Problem P = Problem("../tests/instances/03.txt");
+  auto network = TEN(&P, 2);
+  network.solveByGUROBI();
+  auto plan = network.getPlan();
+
+  ASSERT_TRUE(network.isValid());
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getSOC() >= 3);
+}

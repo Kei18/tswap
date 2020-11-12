@@ -15,10 +15,14 @@ TEN::~TEN()
 {
 }
 
-void TEN::update()
+void TEN::update(bool use_ilp_solver)
 {
   updateGraph();
-  network.FordFulkerson();
+  if (use_ilp_solver) {
+    network.solveByGUROBI();
+  } else {
+    network.FordFulkerson();
+  }
   valid_network = (network.getFlowSum() == P->getNum());
   createPlan();
 }

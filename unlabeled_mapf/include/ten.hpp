@@ -26,10 +26,18 @@ public:
   TEN(Problem* const _P, const int _T, const bool _apply_filter=false);
   virtual ~TEN();
 
-  virtual void update();
+  virtual void update(bool use_ilp_solver=false);
 
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }
+
+  void solveByGUROBI()
+  {
+    updateGraph();
+    network.solveByGUROBI();
+    valid_network = (network.getFlowSum() == P->getNum());
+    createPlan();
+  }
 
   int getNodesNum();
   int getEdgesNum();

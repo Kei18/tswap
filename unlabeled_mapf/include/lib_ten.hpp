@@ -4,6 +4,8 @@
 
 #pragma once
 #include "problem.hpp"
+#include <gurobi_c++.h>
+
 
 namespace LibTEN
 {
@@ -60,6 +62,7 @@ namespace LibTEN
     TEN_Node* getNode(NodeType _type, Node* _v, int _t);
 
     static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
+    static std::string getReverseEdgeName(const std::string s);
 
     int getNodesNum();
     int getEdgesNum();
@@ -70,11 +73,15 @@ namespace LibTEN
     void increment(TEN_Node* p, TEN_Node* q);
     void decrement(TEN_Node* p, TEN_Node* q);
     void setFlow(TEN_Node* from, TEN_Node* to);
+    void setFlow(const std::string edge_name);
+    void setReverseFlow(const std::string edge_name);
 
     void FordFulkerson();
     void createFilter();
 
     int getFlowSum();
+
+    void solveByGUROBI();
   };
 
-};  // namespace LibTEN
+};

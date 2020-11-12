@@ -14,5 +14,5 @@ public:
   TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter=false);
   ~TEN_INCREMENTAL();
 
-  void update();
+  void update(bool use_ilp_solver=false);
 };

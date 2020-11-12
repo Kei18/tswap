@@ -57,3 +57,34 @@ TEST(NetworkFlow, TEN)
   ASSERT_TRUE(solver->succeed());
   ASSERT_TRUE(solver->getSolution().validate(&P));
 }
+
+TEST(NetworkFlow, TEN_ILP)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-n";
+  char argv2[] = "-g";
+  char* argv[] = {argv0, argv1, argv2};
+  solver->setParams(3, argv);
+  solver->solve();
+
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(solver->getSolution().validate(&P));
+}
+
+TEST(NetworkFlow, TEN_INCREMENTAL_ILP)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-g";
+  char* argv[] = {argv0, argv1};
+  solver->setParams(2, argv);
+  solver->solve();
+
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(solver->getSolution().validate(&P));
+}

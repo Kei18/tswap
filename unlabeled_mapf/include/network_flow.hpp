@@ -10,6 +10,7 @@ private:
   bool use_incremental;   // choose TEN_INCREMENTAL or TEN
   bool use_filter;        // apply filter or not
   bool use_minimum_step;  // use minimum step
+  bool use_ilp_solver;    // use ILP solver
 
   void run();
 

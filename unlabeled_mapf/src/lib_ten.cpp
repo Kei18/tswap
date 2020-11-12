@@ -143,6 +143,16 @@ std::string LibTEN::ResidualNetwork::getEdgeName(LibTEN::TEN_Node* p,
   return p->name + "__" + q->name;
 }
 
+std::string LibTEN::ResidualNetwork::getReverseEdgeName(const std::string s)
+{
+  for (int i = 0; i < s.size() - 1; ++i) {
+    if (s[i] == '_' && s[i+1] == '_') {
+      return s.substr(i+2, s.size()) + "__" + s.substr(0, i);
+    }
+  }
+  return "";
+}
+
 int LibTEN::ResidualNetwork::getNodesNum() { return body.size(); }
 
 int LibTEN::ResidualNetwork::getEdgesNum()
@@ -203,6 +213,18 @@ void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)
 {
   decrement(from, to);
   increment(to, from);
+}
+
+void LibTEN::ResidualNetwork::setFlow(const std::string edge_name)
+{
+  capacity[edge_name] = 0;
+  capacity[getReverseEdgeName(edge_name)] = 1;
+}
+
+void LibTEN::ResidualNetwork::setReverseFlow(const std::string edge_name)
+{
+  capacity[edge_name] = 1;
+  capacity[getReverseEdgeName(edge_name)] = 0;
 }
 
 int LibTEN::ResidualNetwork::getFlowSum()
@@ -295,5 +317,57 @@ void LibTEN::ResidualNetwork::createFilter()
 
     OPEN = OPEN_NEXT;
     OPEN_NEXT.clear();
+  }
+}
+
+void LibTEN::ResidualNetwork::solveByGUROBI()
+{
+  // create an environment
+  GRBEnv env = GRBEnv(true);
+  env.set("OutputFlag", "0");
+  env.start();
+
+  // create an empty model
+  GRBModel model = GRBModel(env);
+
+  std::unordered_map<std::string, GRBVar> table_vars;
+
+  // create variables & set objective: maximize flow
+  GRBLinExpr obj = 0;
+  for (auto itr = body.begin(); itr != body.end(); ++itr) {
+    auto p = itr->second;
+    for (auto q : p->children) {
+      auto edge_name = getEdgeName(p, q);
+      auto var = model.addVar(0.0, 1.0, 0, GRB_BINARY, edge_name);
+      table_vars[edge_name] = var;
+      if (p == source) obj += var;
+    }
+  }
+
+  // set objective
+  model.setObjective(obj, GRB_MAXIMIZE);
+
+  // add constraint, flow
+  for (auto itr = body.begin(); itr != body.end(); ++itr) {
+    auto p = itr->second;
+    if (p == source || p == sink) continue;
+    GRBLinExpr lhs = 0;
+    for (auto q : p->children) lhs += table_vars[getEdgeName(p, q)];
+    for (auto q : p->parents) lhs -= table_vars[getEdgeName(q, p)];
+    model.addConstr(lhs == 0, p->name);
+  }
+
+  // optimize model
+  model.optimize();
+
+  if (model.get(GRB_DoubleAttr_ObjVal) == source->children.size()) {
+    // apply flow
+    for (auto itr = table_vars.begin(); itr != table_vars.end(); ++itr) {
+      if (itr->second.get(GRB_DoubleAttr_X) == 1.0) {
+        setFlow(itr->first);
+      } else {
+        setReverseFlow(itr->first);
+      }
+    }
   }
 }
