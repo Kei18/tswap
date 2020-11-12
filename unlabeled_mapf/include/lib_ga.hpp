@@ -30,45 +30,73 @@ namespace LibGA
     static bool compare(FieldEdge* a, FieldEdge* b);
   };
 
-  struct FlowNode {
-    enum NodeType { SOURCE, START, GOAL, SINK };
-
-    NodeType type;
-    Node* v;
-    FlowNodes children;
-    FlowNodes parents;
-    std::string name;
-
-    FlowNode(NodeType _type, Node* _v);
-
-    void addParent(FlowNode* parent);
-  };
-
   struct Matching {
-    FlowNode* source;
-    FlowNode* sink;
-    LibGA::FlowNodes starts;
-    LibGA::FlowNodes goals;
-    std::unordered_map<std::string, bool> unused_edge;
+    const Nodes starts;
+    const Nodes goals;
+    const int N;
+    const int NIL;
+    std::vector<std::vector<int>> adj;
+    std::vector<int> mate;
+    int matched_num;
     Nodes assigned_goals;
 
-    int start_cnt;
-    int goal_cnt;
+    Matching(Problem* P)
+      : starts(P->getConfigStart()),
+        goals(P->getConfigGoal()),
+        N(P->getNum()),
+        NIL(N*2+1),
+        adj(N*2),
+        mate(N*2, NIL),
+        matched_num(0),
+        assigned_goals(N, nullptr)
+    {
+    }
 
-    using NodeType = FlowNode::NodeType;
+    void mariage(int s, int g)
+    {
+      if (mate[s] == NIL) ++matched_num;
+      mate[s] = g;
+      mate[g] = s;
+      assigned_goals[s] = goals[g - N];
+    }
 
-    Matching(Problem* P);
-    ~Matching();
+    void update(FieldEdge* e)
+    {
+      // add new edge
+      int s = e->start_index;
+      int g = N + e->goal_index;
+      adj[s].push_back(g);
+      adj[g].push_back(s);
 
-    FlowNode* createNewNode(FlowNode::NodeType type, Node* v=nullptr);
-    void addEdge(FieldEdge* e);
-    void initEdge(FlowNode* from, FlowNode* to);
-    void use(FlowNode* from, FlowNode* to);
-    bool unused(FlowNode* from, FlowNode* to) const;
-    static std::string getEdgeName(FlowNode* from, FlowNode* to);
-    void update();
-    int getMatchedNum();
-    bool matchedToSomeone(int index) const;
-    bool isPotentialAugumentedPath(FieldEdge* e) const;
+      std::vector<bool> visited(N*2, false);
+      std::function<bool(int)> dfs = [&](int v) {   // start/goal
+        if (visited[v]) return false;
+        visited[v] = true;
+        // expand neighbors
+        for (int u : adj[v]) {  // u: goal/start
+          int w = mate[u];      // w: start/goal
+          // unmatched goal/start is found || found augmented path
+          if (w == NIL || (!visited[w] && dfs(w))) {
+            if (v < N) {  // start
+              mariage(v, u);
+            } else {  // goal
+              mariage(u, v);
+            }
+            return true;
+          }
+        }
+        return false;
+      };
+
+      if (mate[s] == NIL) {
+        dfs(s);
+      } else if (mate[g] == NIL) {
+        dfs(g);
+      } else {
+        for (int v = 0; v < N; ++v) {
+          if (mate[v] == NIL && dfs(v)) break;
+        }
+      }
+    }
   };
 };
