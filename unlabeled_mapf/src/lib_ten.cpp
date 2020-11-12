@@ -85,7 +85,7 @@ LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, bool _ilp, Problem* _P)
     dfs_cnt(0)
 {
   init();
-  if (apply_filter) createFilter();
+  if (apply_filter && !use_ilp_solver) createFilter();
 }
 
 LibTEN::ResidualNetwork::~ResidualNetwork()
