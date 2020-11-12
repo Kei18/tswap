@@ -36,8 +36,8 @@ TEST(TEN, dfs)
 TEST(TEN, ILP)
 {
   Problem P = Problem("../tests/instances/03.txt");
-  auto network = TEN(&P, 2);
-  network.solveByGUROBI();
+  auto network = TEN(&P, 2, false, true);
+  network.update();
   auto plan = network.getPlan();
 
   ASSERT_TRUE(network.isValid());

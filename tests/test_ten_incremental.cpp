@@ -19,3 +19,15 @@ TEST(TEN_INCREMENTAL, update)
   ASSERT_TRUE(network.isValid());
   ASSERT_EQ(network.getPlan().getSOC(), 3);
 }
+
+TEST(TEN_INCREMENTAL, ILP)
+{
+  Problem P = Problem("../tests/instances/03.txt");
+  auto network = TEN_INCREMENTAL(&P, false, true);
+
+  network.update();
+  ASSERT_FALSE(network.isValid());
+
+  network.update();
+  ASSERT_TRUE(network.isValid());
+}

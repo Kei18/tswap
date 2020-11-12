@@ -2,23 +2,23 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter)
-  : TEN(_P, 0, _filter), current_timestep(0)
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter, const bool _ilp)
+  : TEN(_P, 0, _filter, _ilp), current_timestep(0)
 {
 }
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter)
-  : TEN(_P, _t-1, _filter), current_timestep(_t-1)
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter, const bool _ilp)
+  : TEN(_P, _t-1, _filter, _ilp), current_timestep(_t-1)
 {
   if (_t > 1) TEN::updateGraph();
 }
 
 TEN_INCREMENTAL::~TEN_INCREMENTAL() {}
 
-void TEN_INCREMENTAL::update(bool use_ilp_solver)
+void TEN_INCREMENTAL::update()
 {
   ++current_timestep;
-  TEN::update(use_ilp_solver);
+  TEN::update();
 }
 
 void TEN_INCREMENTAL::updateGraph()
@@ -28,13 +28,13 @@ void TEN_INCREMENTAL::updateGraph()
   // add source
   if (current_timestep == 1) {
     for (auto v : P->getConfigStart()) {
-      network.getNode(NodeType::V_IN, v, 1)->addParent(network.source);
+      network.addParent(network.getNode(NodeType::V_IN, v, 1), network.source);
     }
   }
 
   // add sink
   for (auto v : P->getConfigGoal()) {
-    network.sink->addParent(network.getNode(NodeType::V_OUT, v, current_timestep));
+    network.addParent(network.sink, network.getNode(NodeType::V_OUT, v, current_timestep));
     network.sink->t = current_timestep;
   }
 
@@ -52,7 +52,7 @@ void TEN_INCREMENTAL::updateGraph()
         network.setFlow(r, network.sink);
       }
       network.deleteEdge(p, network.sink);
-      network.sink->removeParent(p);
+      network.removeParent(network.sink, p);
     }
   }
 }
