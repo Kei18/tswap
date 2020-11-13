@@ -8,7 +8,12 @@ add_executable(app ./app.cpp)
 target_compile_features(app PUBLIC cxx_std_17)
 target_link_libraries(app lib-unlabeled-mapf)
 
-#  test
+# for ILP
+if(DEFINED ENV{GUROBI_HOME})
+  add_definitions(-D_GUROBI_=1)
+endif()
+
+# test
 set(TEST_MAIN_FUNC ./third_party/googletest/googletest/src/gtest_main.cc)
 set(TEST_ALL_SRC ${TEST_MAIN_FUNC})
 macro(add_test name target)

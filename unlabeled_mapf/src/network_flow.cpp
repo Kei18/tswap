@@ -21,9 +21,9 @@ NetworkFlow::~NetworkFlow() {}
 
 void NetworkFlow::run()
 {
-  // determine lower bound
+  // determine lower bouned with manhattanDist
   int minimum_step = 1;
-  if (use_minimum_step || use_ilp_solver) {
+  if (use_minimum_step) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g = *std::min_element(goals.begin(), goals.end(),
@@ -86,9 +86,11 @@ void NetworkFlow::setParams(int argc, char* argv[])
       case 'm':
         use_minimum_step = true;
         break;
+#ifdef _GUROBI_
       case 'g':
         use_ilp_solver = true;
         break;
+#endif
       default:
         break;
     }
@@ -106,9 +108,13 @@ void NetworkFlow::printHelp()
             << "implement without filter\n"
             << "  -m --use-minimum-step"
             << "          "
-            << "implement with minimum-step\n"
-            << "  -g --use-ilp-solver"
+            << "implement with minimum-step (Manhattan distance)";
+
+#ifdef _GUROBI_
+  std::cout << "\n  -g --use-ilp-solver"
             << "           "
-            << "implement with ILP solver (GUROBI)"
-            << std::endl;
+            << "implement with ILP solver (GUROBI)";
+#endif
+
+  std::cout << std::endl;
 }

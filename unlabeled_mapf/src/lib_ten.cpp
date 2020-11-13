@@ -106,7 +106,6 @@ void LibTEN::ResidualNetwork::init()
     grb_env->set("OutputFlag", "0");
     grb_env->start();
     grb_model = std::make_unique<GRBModel>(*grb_env);
-    grb_obj = 0;
   }
 #endif
 }
@@ -357,22 +356,31 @@ void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
     grb_table_vars[name] = var;
 
     // set objective
-    if (parent == source) {
-      grb_obj += var;
-      if (source->children.size() == P->getNum()) {
-        grb_model->setObjective(grb_obj, GRB_MAXIMIZE);
+    if (parent == source && source->children.size() == P->getNum()) {
+      GRBLinExpr grb_obj = 0;
+      for (auto p : source->children) {
+        grb_obj += grb_table_vars[getEdgeName(source, p)];
       }
+      grb_model->setObjective(grb_obj, GRB_MAXIMIZE);
     }
 
     // add constraints
     auto updateConstr = [&] (TEN_Node* p) {
       if (p == source || p == sink) return;
-      auto itr = grb_table_constr.find(p->name);
-      if (itr != grb_table_constr.end()) grb_model->remove(itr->second);
-      GRBLinExpr lhs = 0;
-      for (auto q : p->children) lhs += grb_table_vars[getEdgeName(p, q)];
-      for (auto q : p->parents)  lhs -= grb_table_vars[getEdgeName(q, p)];
-      grb_table_constr[p->name] = grb_model->addConstr(lhs == 0, p->name);
+
+      // check update condition
+      if ((p->type == NodeType::W_IN  && p->parents.size() == 2 && p->children.size() == 1) ||
+          (p->type == NodeType::W_OUT && p->parents.size() == 1 && p->children.size() == 2) ||
+          (p->type == NodeType::V_OUT && p->parents.size() == p->v->neighbor.size() + 1) ||
+          (p->type == NodeType::V_IN  && p->children.size() == p->v->neighbor.size() + 1)) {
+        // update
+        auto itr = grb_table_constr.find(p->name);
+        if (itr != grb_table_constr.end()) grb_model->remove(itr->second);
+        GRBLinExpr lhs = 0;
+        for (auto q : p->children) lhs += grb_table_vars[getEdgeName(p, q)];
+        for (auto q : p->parents)  lhs -= grb_table_vars[getEdgeName(q, p)];
+        grb_table_constr[p->name] = grb_model->addConstr(lhs == 0, p->name);
+      }
     };
 
     updateConstr(parent);
@@ -403,7 +411,8 @@ void LibTEN::ResidualNetwork::solveByGUROBI()
   // optimize model
   grb_model->optimize();
 
-  if (grb_model->get(GRB_DoubleAttr_ObjVal) == source->children.size()) {
+  // feasible solution
+  if (grb_model->get(GRB_DoubleAttr_ObjVal) == P->getNum()) {
     // apply flow
     for (auto itr = grb_table_vars.begin(); itr != grb_table_vars.end(); ++itr) {
       if (itr->second.get(GRB_DoubleAttr_X) == 1.0) {

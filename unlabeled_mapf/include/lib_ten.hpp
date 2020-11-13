@@ -54,8 +54,6 @@ namespace LibTEN
     std::unique_ptr<GRBModel> grb_model;
     std::unordered_map<std::string, GRBVar> grb_table_vars;
     std::unordered_map<std::string, GRBConstr> grb_table_constr;
-    GRBLinExpr grb_obj;
-
 
     ResidualNetwork();
     ResidualNetwork(bool _filter, bool _ilp, Problem* _P);
