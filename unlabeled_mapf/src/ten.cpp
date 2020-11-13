@@ -108,6 +108,7 @@ int TEN::getEdgesNum() { return network.getEdgesNum(); }
 
 int TEN::getDfsCnt() { return network.dfs_cnt; };
 
+#ifdef _GUROBI_
 int TEN::getVariantsCnt() { return network.variants_cnt; };
-
 int TEN::getConstraintsCnt() { return network.constraints_cnt; };
+#endif
