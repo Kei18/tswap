@@ -401,7 +401,8 @@ void ECBS::setParams(int argc, char* argv[])
     switch (opt) {
       case 'w':
         sub_optimality = std::atof(optarg);
-        if (sub_optimality < 1) halt("sub-optimality should be >= 1");
+        if (sub_optimality < 1) halt("sub-optimality should be >= 1: "
+                                     + std::to_string(sub_optimality));
         solver_name = ECBS::SOLVER_NAME + "-" + std::to_string(sub_optimality);
         break;
       default:

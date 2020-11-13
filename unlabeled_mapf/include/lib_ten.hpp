@@ -47,9 +47,16 @@ namespace LibTEN
     Problem* P;
     std::unordered_map<Node*, int> reachable_filter;
 
+    int time_limit;
+
+    // for FordFulkerson
     int dfs_cnt;
 
-    // ILP
+    // for ILP
+    int variants_cnt;
+    int constraints_cnt;
+
+    // for ILP
     std::unique_ptr<GRBEnv> grb_env;
     std::unique_ptr<GRBModel> grb_model;
     std::unordered_map<std::string, GRBVar> grb_table_vars;
@@ -59,6 +66,8 @@ namespace LibTEN
     ResidualNetwork(bool _filter, bool _ilp, Problem* _P);
     ~ResidualNetwork();
     void init();
+
+    void setTimeLimit(int _time_limit) { time_limit = _time_limit; }
 
     using NodeType = TEN_Node::NodeType;
 

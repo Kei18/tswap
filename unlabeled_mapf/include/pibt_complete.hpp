@@ -11,6 +11,10 @@ private:
   // time required to complement plan, default zero
   double comp_time_complement;
 
+  enum COMPLEMENT_SOLVER_TYPE { S_ECBS, S_ICBS };
+  COMPLEMENT_SOLVER_TYPE complement_solver_type;
+  double ecbs_suboptimality;
+
 public:
   static const std::string SOLVER_NAME;
 
@@ -20,6 +24,7 @@ public:
   PIBT_COMPLETE(Problem* _P);
   ~PIBT_COMPLETE() {}
 
+  void setParams(int argc, char* argv[]);
   void makeLog(const std::string& logfile);
   static void printHelp();
 };

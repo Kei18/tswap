@@ -227,7 +227,7 @@ void IR::printHelp()
 
             << "  -n --max-iteration [INT]"
             << "      "
-            << "max iteration\n"
+            << "max iteration"
 
             << std::endl;
 }

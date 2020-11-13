@@ -43,11 +43,20 @@ void NetworkFlow::run()
   for (int t = minimum_step; t <= max_timestep; ++t) {
     if (overCompTime()) break;
     if (!use_incremental) flow_network = std::make_unique<TEN>(P, t, use_filter, use_ilp_solver);
+
+    // set time limit
+    flow_network->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
+
+    // update network
     flow_network->update();
 
     if (use_ilp_solver) {
+#ifdef _GUROBI_
       info(" ", "elapsed:", getSolverElapsedTime(),
-           ", makespan_limit:", t);
+           ", makespan_limit:", t,
+           ", variants:", flow_network->getVariantsCnt(),
+           ", constraints:", flow_network->getConstraintsCnt());
+#endif
     } else {
       float visited_rate = (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
       info(" ", "elapsed:", getSolverElapsedTime(),

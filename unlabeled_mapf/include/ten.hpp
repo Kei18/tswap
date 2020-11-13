@@ -33,7 +33,16 @@ public:
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }
 
+  void setTimeLimit(int _time_limit) { network.setTimeLimit(_time_limit); }
+
   int getNodesNum();
   int getEdgesNum();
+
+  // for Ford Furlkerson
   int getDfsCnt();
+
+#ifdef _GUROBI_
+  int getVariantsCnt();
+  int getConstraintsCnt();
+#endif
 };

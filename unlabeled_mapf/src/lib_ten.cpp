@@ -73,7 +73,10 @@ std::string LibTEN::TEN_Node::getStr()
 LibTEN::ResidualNetwork::ResidualNetwork()
   : apply_filter(false),
     use_ilp_solver(false),
-    dfs_cnt(0)
+    time_limit(-1),
+    dfs_cnt(0),
+    variants_cnt(0),
+    constraints_cnt(0)
 {
   init();
 }
@@ -82,7 +85,10 @@ LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, bool _ilp, Problem* _P)
   : apply_filter(_filter),
     use_ilp_solver(_ilp),
     P(_P),
-    dfs_cnt(0)
+    time_limit(-1),
+    dfs_cnt(0),
+    variants_cnt(0),
+    constraints_cnt(0)
 {
   init();
   if (apply_filter && !use_ilp_solver) createFilter();
@@ -385,6 +391,9 @@ void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
 
     updateConstr(parent);
     updateConstr(child);
+
+    variants_cnt = grb_table_vars.size();
+    constraints_cnt = grb_table_constr.size();
   }
 #endif
 }
@@ -401,6 +410,9 @@ void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
       grb_model->remove(itr->second);
       grb_table_vars.erase(itr);
     }
+
+    variants_cnt = grb_table_vars.size();
+    constraints_cnt = grb_table_constr.size();
   }
 #endif
 }
@@ -408,6 +420,11 @@ void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
 #ifdef _GUROBI_
 void LibTEN::ResidualNetwork::solveByGUROBI()
 {
+  // set time limit
+  if (time_limit != -1) {
+    grb_model->set("TimeLimit", std::to_string((double)time_limit / 1000));
+  }
+
   // optimize model
   grb_model->optimize();
 

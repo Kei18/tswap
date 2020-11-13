@@ -8,8 +8,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL)
   std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
 TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
@@ -23,8 +25,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
   solver->setParams(2, argv);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
 TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
@@ -38,8 +42,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
   solver->setParams(2, argv);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
 TEST(NetworkFlow, TEN)
@@ -54,8 +60,10 @@ TEST(NetworkFlow, TEN)
   solver->setParams(3, argv);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
 #ifdef _GUROBI_
@@ -67,12 +75,15 @@ TEST(NetworkFlow, TEN_ILP)
   char argv0[] = "dummy";
   char argv1[] = "-n";
   char argv2[] = "-g";
-  char* argv[] = {argv0, argv1, argv2};
-  solver->setParams(3, argv);
+  char argv3[] = "-m";
+  char* argv[] = {argv0, argv1, argv2, argv3};
+  solver->setParams(4, argv);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
 TEST(NetworkFlow, TEN_INCREMENTAL_ILP)
@@ -82,11 +93,14 @@ TEST(NetworkFlow, TEN_INCREMENTAL_ILP)
 
   char argv0[] = "dummy";
   char argv1[] = "-g";
-  char* argv[] = {argv0, argv1};
-  solver->setParams(2, argv);
+  char argv2[] = "-m";
+  char* argv[] = {argv0, argv1, argv2};
+  solver->setParams(3, argv);
   solver->solve();
 
+  auto plan = solver->getSolution();
   ASSERT_TRUE(solver->succeed());
-  ASSERT_TRUE(solver->getSolution().validate(&P));
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
 }
 #endif
