@@ -40,7 +40,7 @@ LibGA::Matching::Matching(Problem *P)
   : starts(P->getConfigStart()),
     goals(P->getConfigGoal()),
     N(P->getNum()),
-    NIL(N*2+1),
+    NIL(-1),
     adj(N*2, std::vector<int>()),
     mate(N*2, NIL),
     cost(N, std::vector<int>(N, NIL)),
@@ -125,81 +125,128 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const *e)
 void LibGA::Matching::solveBySuccessiveShortestPath()
 {
   resetCurrentMate();
+
+  // setup sink node
   const int SINK = N*2;
+
+  // setup neighbors
+  std::vector<int> adj_sink(N);
+  std::iota(adj_sink.begin(), adj_sink.end(), N);
+  adj.push_back(adj_sink);
+  for (int v = N; v < N*2; ++v) adj[v].push_back(SINK);
+  std::vector<bool> f_to_sink(N, false);
+
+  // potential
   std::vector<int> potential(N*2+1, 0);
 
-  while (true) {
-    // agents + sink
-    std::vector<int> dist(N*2+1, INT_MAX);
-    std::vector<int> parent(N*2+1, NIL);
+  struct DijkstraNode {
+    int v;  // node
+    int d;  // distance
+    DijkstraNode* p;  // parent
+    DijkstraNode(int _v, int _d, DijkstraNode* _p) : v(_v), d(_d), p(_p) {}
+  };
+  using DijkstraNodes = std::vector<DijkstraNode*>;
+  auto compare = [&] (DijkstraNode* v, DijkstraNode* u) { return v->d > u->d; };
 
+  for (int _i = 0; _i < N; ++_i) {
     // priority queue
-    auto compare = [&] (int v, int u) { return dist[v] > dist[u]; };
-    std::priority_queue<int, std::vector<int>, decltype(compare)> OPEN(compare);
+    std::priority_queue<DijkstraNode*, DijkstraNodes, decltype(compare)> OPEN(compare);
+
+    DijkstraNodes GC;
+    auto createNewNode = [&] (int _v, int _d, DijkstraNode* _p) {
+      auto v = new DijkstraNode(_v, _d, _p);
+      GC.push_back(v);
+      return v;
+    };
 
     // close list
     std::vector<bool> CLOSE(N*2+1, false);
+    std::vector<int> dist(N*2+1, INT_MAX);
 
-    // setup OPEN list, only for unmatched starts (avoid using source node)
+    // for backtracking
+    DijkstraNode* sink_p = nullptr;
+
+    // initialize
     for (int v = 0; v < N; ++v) {
       if (mate[v] != NIL) continue;
       dist[v] = 0;
-      OPEN.push(v);
+      OPEN.push(createNewNode(v, 0, nullptr));
     }
 
-    // calculate distance/parent by Dijkstra
+    // calculate distance
     while (!OPEN.empty()) {
       // minimum node
       auto n = OPEN.top();
       OPEN.pop();
 
       // check CLOSE list
-      if (CLOSE[n]) continue;
-      CLOSE[n] = true;
-
-      // special case, sink
-      if (n == SINK) continue;
+      if (CLOSE[n->v]) continue;
+      CLOSE[n->v] = true;
 
       // expand neighbors
-      for (auto m : adj[n]) {
+      for (auto m : adj[n->v]) {
+
+        // already searched
         if (CLOSE[m]) continue;
-        if (n <  N && mate[m] == n) continue;  // n: start -> m: goal
-        if (n >= N && mate[m] != n) continue;  // n: goal  -> m: start
+
+        // check connectivity
+        if (n->v < N) {  // start -> goal
+          if (mate[n->v] == m) continue;
+        } else if (n->v < N*2 && m < N) {  // goal -> start
+          if (mate[n->v] != m) continue;
+        } else if (n->v < N*2 && m == SINK) {  // goal -> sink
+          if (f_to_sink[n->v - N]) continue;
+        } else if (n->v == SINK) {  // sink -> goal
+          if (!f_to_sink[m - N]) continue;
+        } else {
+          halt("unknown case");
+        }
+
         // update distance, s -> g or g -> s
-        int d = dist[n] + (((n < N) ? cost[n][m-N] : -cost[m][n-N]) + potential[n] - potential[m]);
+        int _c = (m == SINK || n->v == SINK)
+          ? 0
+          : ((n->v < N) ? cost[n->v][m-N] : - cost[m][n->v-N]);
+        int c = _c + potential[n->v] - potential[m];
+        int d = dist[n->v] + c;
+
+        if (c < 0) halt("invalid cost: " + std::to_string(c));
+
         if (d < dist[m]) {
           dist[m] = d;
-          parent[m] = n;
-          OPEN.push(m);
-        }
-      }
+          auto p = createNewNode(m, d, n);
+          OPEN.push(p);
 
-      // check sink
-      if (n >= N && !CLOSE[SINK] && mate[n] == NIL) {
-        int d = dist[n] + 0 + potential[n] - potential[SINK];
-        if (d < dist[SINK]) {
-          dist[SINK] = d;
-          parent[SINK] = n;
-          OPEN.push(SINK);
+          // for backtracking
+          if (p->v == SINK) sink_p = p;
         }
       }
     }
 
     // update potential
-    for (int v = 0; v <= N*2; ++v) {
-      if (dist[v] == INT_MAX) continue;
+    for (int v = 0; v < N*2+1; ++v) {
+      if (!CLOSE[v]) halt("unknown place: " + std::to_string(v));
       potential[v] += dist[v];
     }
 
-    if (parent[SINK] == NIL) {  // no path is found
-      break;
-    } else {  // found path
-      int n = parent[SINK];
-      while (n != NIL) {
-        mariage(parent[n], n);
-        n = parent[parent[n]];
+    // backtracking
+    if (sink_p != nullptr) {
+      auto n = sink_p;
+      while (n->p != nullptr) {
+        if (n->v == SINK) {  // goal -> sink
+          f_to_sink[n->p->v - N] = true;
+        } else if (n->p->v == SINK) {  // sink -> goal
+          // never be used
+          f_to_sink[n->v - N] = false;
+        } else if (n->v >= N) {  // start -> goal
+          mariage(n->p->v, n->v);
+        } else {  // goal -> start
+          // pass
+        }
+        n = n->p;
       }
-      if (matched_num == N) break;  // maximum match
     }
+
+    // free
+    for (auto p : GC) delete p;
   }
 }
