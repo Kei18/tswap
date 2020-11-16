@@ -1,4 +1,5 @@
 #include "../include/lib_ga.hpp"
+#include <climits>
 
 LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d)
   : start_index(sindex),
@@ -124,28 +125,12 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const *e)
 void LibGA::Matching::solveBySuccessiveShortestPath()
 {
   resetCurrentMate();
-
-  std::cout << "adj" << std::endl;
-  for (auto _adj : adj) {
-    for (auto a: _adj) std::cout << a << ",";
-    std::cout << std::endl;
-  }
-  std::cout << "cost" << std::endl;
-  for (auto _cost : cost) {
-    for (auto c: _cost) std::cout << c << ",";
-    std::cout << std::endl;
-  }
-  std::cout << "mate" << std::endl;
-  for (auto m : mate) std::cout << m << ",";
-  std::cout << std::endl;
-
-  const int INF = 100000;
   const int SINK = N*2;
   std::vector<int> potential(N*2+1, 0);
 
   while (true) {
     // agents + sink
-    std::vector<int> dist(N*2+1, INF);
+    std::vector<int> dist(N*2+1, INT_MAX);
     std::vector<int> parent(N*2+1, NIL);
 
     // priority queue
@@ -202,7 +187,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
 
     // update potential
     for (int v = 0; v <= N*2; ++v) {
-      if (dist[v] == INF) continue;
+      if (dist[v] == INT_MAX) continue;
       potential[v] += dist[v];
     }
 
