@@ -62,7 +62,10 @@ void LibGA::Matching::resetCurrentMate()
   matched_num = 0;
   for (int i = 0; i < N*2; ++i) {
     if (i < N) assigned_goals[i] = nullptr;
-    mate[i] = NIL;
+    if (mate[i] != NIL) {
+      mate[mate[i]] = NIL;
+      mate[i] = NIL;
+    }
   }
 }
 

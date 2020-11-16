@@ -34,10 +34,8 @@ TEST(GoalAllocator, large_field)
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
 
-  for (auto v : assigned_goals) std::cout << v->id << ",";
-  std::cout << std::endl;
-
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
+  ASSERT_EQ(allocator.getMakespan(), 40);
   ASSERT_EQ(allocator.getCost(), 7296);
 }
 
@@ -49,5 +47,6 @@ TEST(GoalAllocator, large_field_without_optimization)
   Nodes assigned_goals = allocator.getAssignedGoals();
 
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
+  ASSERT_EQ(allocator.getMakespan(), 40);
   ASSERT_TRUE(allocator.getCost() >= 7296);
 }

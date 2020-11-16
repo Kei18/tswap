@@ -1,7 +1,10 @@
 #include "../include/goal_allocator.hpp"
 
 GoalAllocator::GoalAllocator(Problem* _P, bool _use_min_cost)
-  : P(_P), use_min_cost(_use_min_cost), matching_cost(0)
+  : P(_P),
+    use_min_cost(_use_min_cost),
+    matching_cost(0),
+    matching_makespan(0)
 {
 }
 
@@ -39,7 +42,10 @@ void GoalAllocator::assign()
     }
 
     matching.updateByIncrementalFordFulkerson(p);
-    if (matching.matched_num == P->getNum()) break;
+    if (matching.matched_num == P->getNum()) {
+      matching_makespan = p->d;
+      break;
+    }
   }
 
   // use min cost maximum matching
@@ -62,4 +68,9 @@ Nodes GoalAllocator::getAssignedGoals() const
 int GoalAllocator::getCost() const
 {
   return matching_cost;
+}
+
+int GoalAllocator::getMakespan() const
+{
+  return matching_makespan;
 }

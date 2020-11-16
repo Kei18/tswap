@@ -9,6 +9,7 @@ private:
 
   const bool use_min_cost;
   int matching_cost;
+  int matching_makespan;
 
 public:
   GoalAllocator(Problem* _P, bool _use_min_cost=true);
@@ -16,5 +17,6 @@ public:
 
   void assign();
   Nodes getAssignedGoals() const;
+  int getMakespan() const;
   int getCost() const;
 };
