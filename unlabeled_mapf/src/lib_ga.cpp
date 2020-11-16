@@ -125,6 +125,20 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
 {
   resetCurrentMate();
 
+  std::cout << "adj" << std::endl;
+  for (auto _adj : adj) {
+    for (auto a: _adj) std::cout << a << ",";
+    std::cout << std::endl;
+  }
+  std::cout << "cost" << std::endl;
+  for (auto _cost : cost) {
+    for (auto c: _cost) std::cout << c << ",";
+    std::cout << std::endl;
+  }
+  std::cout << "mate" << std::endl;
+  for (auto m : mate) std::cout << m << ",";
+  std::cout << std::endl;
+
   const int INF = 100000;
   const int SINK = N*2;
   std::vector<int> potential(N*2+1, 0);
@@ -135,7 +149,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
     std::vector<int> parent(N*2+1, NIL);
 
     // priority queue
-    auto compare = [&] (int v, int u) { return dist.at(v) > dist.at(u); };
+    auto compare = [&] (int v, int u) { return dist[v] > dist[u]; };
     std::priority_queue<int, std::vector<int>, decltype(compare)> OPEN(compare);
 
     // close list
@@ -143,8 +157,8 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
 
     // setup OPEN list, only for unmatched starts (avoid using source node)
     for (int v = 0; v < N; ++v) {
-      if (mate.at(v) != NIL) continue;
-      dist.at(v) = 0;
+      if (mate[v] != NIL) continue;
+      dist[v] = 0;
       OPEN.push(v);
     }
 
@@ -155,33 +169,32 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
       OPEN.pop();
 
       // check CLOSE list
-      if (CLOSE.at(n)) continue;
-      CLOSE.at(n) = true;
+      if (CLOSE[n]) continue;
+      CLOSE[n] = true;
 
       // special case, sink
       if (n == SINK) continue;
 
       // expand neighbors
-      for (auto m : adj.at(n)) {
-        if (CLOSE.at(m)) continue;
-        if (n <  N && mate.at(m) == n) continue;  // n: start -> m: goal
-        if (n >= N && mate.at(m) != n) continue;  // n: goal  -> m: start
+      for (auto m : adj[n]) {
+        if (CLOSE[m]) continue;
+        if (n <  N && mate[m] == n) continue;  // n: start -> m: goal
+        if (n >= N && mate[m] != n) continue;  // n: goal  -> m: start
         // update distance, s -> g or g -> s
-        int c = (n < N) ? cost.at(n).at(m-N) : -cost.at(m).at(n-N);
-        int d = dist[n] + c + potential.at(n) - potential.at(m);
-        if (d < dist.at(m)) {
-          dist.at(m) = d;
-          parent.at(m) = n;
+        int d = dist[n] + (((n < N) ? cost[n][m-N] : -cost[m][n-N]) + potential[n] - potential[m]);
+        if (d < dist[m]) {
+          dist[m] = d;
+          parent[m] = n;
           OPEN.push(m);
         }
       }
 
       // check sink
-      if (n >= N && !CLOSE.at(SINK) && mate.at(n) == NIL) {
-        int d = dist.at(n) + 0 + potential.at(n) - potential.at(SINK);
-        if (d < dist.at(SINK)) {
-          dist.at(SINK) = d;
-          parent.at(SINK) = n;
+      if (n >= N && !CLOSE[SINK] && mate[n] == NIL) {
+        int d = dist[n] + 0 + potential[n] - potential[SINK];
+        if (d < dist[SINK]) {
+          dist[SINK] = d;
+          parent[SINK] = n;
           OPEN.push(SINK);
         }
       }
@@ -189,17 +202,17 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
 
     // update potential
     for (int v = 0; v <= N*2; ++v) {
-      if (dist.at(v) == INF) continue;
-      potential.at(v) += dist.at(v);
+      if (dist[v] == INF) continue;
+      potential[v] += dist[v];
     }
 
-    if (parent.at(SINK) == NIL) {  // no path is found
+    if (parent[SINK] == NIL) {  // no path is found
       break;
     } else {  // found path
-      int n = parent.at(SINK);
+      int n = parent[SINK];
       while (n != NIL) {
-        mariage(parent.at(n), n);
-        n = parent.at(parent.at(n));
+        mariage(parent[n], n);
+        n = parent[parent[n]];
       }
       if (matched_num == N) break;  // maximum match
     }
