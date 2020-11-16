@@ -40,7 +40,7 @@ LibGA::Matching::Matching(Problem *P)
     goals(P->getConfigGoal()),
     N(P->getNum()),
     NIL(N*2+1),
-    adj(N*2),
+    adj(N*2, std::vector<int>()),
     mate(N*2, NIL),
     cost(N, std::vector<int>(N, NIL)),
     matched_num(0),
@@ -62,10 +62,7 @@ void LibGA::Matching::resetCurrentMate()
   matched_num = 0;
   for (int i = 0; i < N*2; ++i) {
     if (i < N) assigned_goals[i] = nullptr;
-    if (mate[i] != NIL) {
-      mate[mate[i]] = NIL;
-      mate[i] = NIL;
-    }
+    mate[i] = NIL;
   }
 }
 
