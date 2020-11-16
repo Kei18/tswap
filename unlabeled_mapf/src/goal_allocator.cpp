@@ -1,7 +1,7 @@
 #include "../include/goal_allocator.hpp"
 
-GoalAllocator::GoalAllocator(Problem* _P)
-  : P(_P)
+GoalAllocator::GoalAllocator(Problem* _P, bool _use_min_cost)
+  : P(_P), use_min_cost(_use_min_cost), matching_cost(0)
 {
 }
 
@@ -38,11 +38,17 @@ void GoalAllocator::assign()
       continue;
     }
 
-    matching.update(p);
+    matching.updateByIncrementalFordFulkerson(p);
     if (matching.matched_num == P->getNum()) break;
   }
 
+  // use min cost maximum matching
+  if (use_min_cost) {
+    matching.solveBySuccessiveShortestPath();
+  }
+
   assigned_goals = matching.assigned_goals;
+  matching_cost = matching.getCost();
 
   // memory management
   for (auto p : GC_Edge) delete p;
@@ -51,4 +57,9 @@ void GoalAllocator::assign()
 Nodes GoalAllocator::getAssignedGoals() const
 {
   return assigned_goals;
+}
+
+int GoalAllocator::getCost() const
+{
+  return matching_cost;
 }
