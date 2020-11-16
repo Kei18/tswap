@@ -1,0 +1,9 @@
+map_file=10x1.map
+agents=3
+seed=0
+random_problem=0
+max_timestep=20
+max_comp_time=100
+5,0,4,0
+6,0,0,0
+9,0,7,0

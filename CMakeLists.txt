@@ -30,6 +30,7 @@ add_test(test_ten_incremental ./tests/test_ten_incremental.cpp)
 add_test(test_network_flow ./tests/test_network_flow.cpp)
 add_test(test_pibt_complete ./tests/test_pibt_complete.cpp)
 add_test(test_ir ./tests/test_ir.cpp)
+add_test(test_lib_ga ./tests/test_lib_ga.cpp)
 add_test(test_goal_allocator ./tests/test_goal_allocator.cpp)
 
 add_executable(test ${TEST_ALL_SRC})

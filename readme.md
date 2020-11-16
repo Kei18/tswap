@@ -8,6 +8,8 @@ It is written in C++(17) with [CMake](https://cmake.org/) build and tested on OS
 The repository uses [Google Test](https://github.com/google/googletest).
 The visualizer uses [openFrameworks](https://openframeworks.cc).
 
+GUROBI9.1
+
 ## Demo
 
 ## Building
