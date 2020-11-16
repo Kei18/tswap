@@ -30,9 +30,12 @@ TEST(GoalAllocator, small_case)
 TEST(GoalAllocator, large_field)
 {
   Problem P = Problem("../instances/den520d_500agents_1.txt");
-  GoalAllocator allocator = GoalAllocator(&P, true);
+  GoalAllocator allocator = GoalAllocator(&P);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
+
+  for (auto v : assigned_goals) std::cout << v->id << ",";
+  std::cout << std::endl;
 
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
   ASSERT_EQ(allocator.getCost(), 7296);
