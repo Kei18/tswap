@@ -30,7 +30,7 @@ TEST(GoalAllocator, small_case)
 TEST(GoalAllocator, large_field)
 {
   Problem P = Problem("../instances/den520d_500agents_1.txt");
-  GoalAllocator allocator = GoalAllocator(&P);
+  GoalAllocator allocator = GoalAllocator(&P, true);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
 
