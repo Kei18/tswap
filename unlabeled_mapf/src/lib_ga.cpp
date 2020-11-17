@@ -1,5 +1,6 @@
 #include "../include/lib_ga.hpp"
 #include <climits>
+#include <cstring>
 
 LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d)
   : start_index(sindex),

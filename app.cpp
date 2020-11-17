@@ -12,6 +12,7 @@
 #include <pibt_complete.hpp>
 #include <ir.hpp>
 #include <network_flow.hpp>
+#include <goal_swapper.hpp>
 
 void printHelp();
 std::unique_ptr<Solver> getSolver
@@ -126,6 +127,8 @@ std::unique_ptr<Solver> getSolver
     solver = std::make_unique<IR>(P);
   } else if (solver_name == "NetworkFlow") {
     solver = std::make_unique<NetworkFlow>(P);
+  } else if (solver_name == "GoalSwapper") {
+    solver = std::make_unique<GoalSwapper>(P);
   } else {
     warn("unknown solver name, " + solver_name + ", continue by PIBT");
     solver = std::make_unique<PIBT>(P);
@@ -154,4 +157,5 @@ void printHelp() {
   PIBT_COMPLETE::printHelp();
   IR::printHelp();
   NetworkFlow::printHelp();
+  GoalSwapper::printHelp();
 }
