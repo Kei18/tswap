@@ -89,15 +89,17 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const *e)
 {
   addEdge(e);
 
-  std::vector<bool> visited(N*2, false);
+  // close list
+  std::vector<bool> CLOSE(N*2, false);
+
   std::function<bool(int)> dfs = [&](int v) {   // start/goal
-    if (visited[v]) return false;
-    visited[v] = true;
+    if (CLOSE[v]) return false;
+    CLOSE[v] = true;
     // expand neighbors
     for (int u : adj[v]) {  // u: goal/start
       int w = mate[u];      // w: start/goal
       // unmatched goal/start is found || found augmented path
-      if (w == NIL || (!visited[w] && dfs(w))) {
+      if (w == NIL || (!CLOSE[w] && dfs(w))) {
         if (v < N) {  // start
           mariage(v, u);
         } else {  // goal
@@ -143,7 +145,6 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
     int v;  // node
     int d;  // distance
     DijkstraNode* p;  // parent
-    DijkstraNode(int _v, int _d, DijkstraNode* _p) : v(_v), d(_d), p(_p) {}
   };
   using DijkstraNodes = std::vector<DijkstraNode*>;
   auto compare = [&] (DijkstraNode* v, DijkstraNode* u) { return v->d > u->d; };
@@ -152,15 +153,25 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
     // priority queue
     std::priority_queue<DijkstraNode*, DijkstraNodes, decltype(compare)> OPEN(compare);
 
-    DijkstraNodes GC;
+    // avoid "new" operation
+    const int MEMORY_SIZE = N*10;
+    DijkstraNode GC[MEMORY_SIZE];
+    int node_total_cnt = 0;
+
     auto createNewNode = [&] (int _v, int _d, DijkstraNode* _p) {
-      auto v = new DijkstraNode(_v, _d, _p);
-      GC.push_back(v);
-      return v;
+      if (node_total_cnt >= MEMORY_SIZE) halt("memory over, increase MEMORY_SIZE...");
+      auto q = &(GC[node_total_cnt++]);
+      q->v = _v;
+      q->d = _d;
+      q->p = _p;
+      return q;
     };
 
     // close list
-    std::vector<bool> CLOSE(N*2+1, false);
+    bool CLOSE[N*2+1];
+    std::memset(CLOSE, false, sizeof(CLOSE));
+
+    // distance from source
     std::vector<int> dist(N*2+1, INT_MAX);
 
     // for backtracking
@@ -235,8 +246,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
         if (n->v == SINK) {  // goal -> sink
           f_to_sink[n->p->v - N] = true;
         } else if (n->p->v == SINK) {  // sink -> goal
-          // never be used
-          f_to_sink[n->v - N] = false;
+          f_to_sink[n->v - N] = false;  // meaningless
         } else if (n->v >= N) {  // start -> goal
           mariage(n->p->v, n->v);
         } else {  // goal -> start
@@ -245,8 +255,5 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
         n = n->p;
       }
     }
-
-    // free
-    for (auto p : GC) delete p;
   }
 }
