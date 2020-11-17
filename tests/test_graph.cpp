@@ -44,7 +44,7 @@ TEST(Graph, distance)
 TEST(Graph, large_field)
 {
   Grid G("brc202d.map");
-  Node* v = G.getNode(216,138);
-  Node* u = G.getNode(203,303);
+  Node* v = G.getNode(216, 138);
+  Node* u = G.getNode(203, 303);
   ASSERT_EQ(G.pathDist(v, u), 782);
 }

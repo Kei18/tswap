@@ -97,7 +97,8 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
   int node_total_cnt = 0;
 
   auto createNewNode = [&](Node* v, int g, int f, AstarNode* p) {
-    if (node_total_cnt >= MEMORY_SIZE) halt("memory over, increase MEMORY_SIZE...");
+    if (node_total_cnt >= MEMORY_SIZE)
+      halt("memory over, increase MEMORY_SIZE...");
     auto q = &(GC[node_total_cnt++]);
     q->v = v;
     q->g = g;

@@ -1,17 +1,18 @@
 #pragma once
+#include <functional>
+
 #include "graph.hpp"
 #include "problem.hpp"
-#include <functional>
 
 namespace LibGA
 {
   struct FieldEdge;
   using FieldEdges = std::vector<FieldEdge*>;
-  using OpenList = std::priority_queue<FieldEdge*, FieldEdges,
-                                       std::function<bool(FieldEdge*, FieldEdge*)>>;
+  using OpenList =
+      std::priority_queue<FieldEdge*, FieldEdges,
+                          std::function<bool(FieldEdge*, FieldEdge*)>>;
   struct FlowNode;
   using FlowNodes = std::vector<FlowNode*>;
-
 
   struct FieldEdge {
     int start_index;
@@ -21,7 +22,7 @@ namespace LibGA
 
     bool evaled;  // whether real distance is computed or not
     int inst_d;   // instance distance
-    int d;  // real distance
+    int d;        // real distance
 
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);
 
@@ -41,14 +42,14 @@ namespace LibGA
     int matched_num;
     Nodes assigned_goals;
 
-    Matching(Problem *P);
+    Matching(Problem* P);
 
-    void addEdge(FieldEdge const *e);
+    void addEdge(FieldEdge const* e);
     void resetCurrentMate();
     void mariage(const int s, const int g);
     int getCost();
 
-    void updateByIncrementalFordFulkerson(FieldEdge const *e);
+    void updateByIncrementalFordFulkerson(FieldEdge const* e);
     void solveBySuccessiveShortestPath();
   };
-};
+};  // namespace LibGA

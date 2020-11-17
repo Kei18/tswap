@@ -1,17 +1,15 @@
 #include "../include/goal_swapper.hpp"
+
 #include "../include/goal_allocator.hpp"
 
 const std::string GoalSwapper::SOLVER_NAME = "GoalSwapper";
 
-GoalSwapper::GoalSwapper(Problem* _P)
-  : Solver(_P)
+GoalSwapper::GoalSwapper(Problem* _P) : Solver(_P)
 {
   solver_name = SOLVER_NAME;
 }
 
-GoalSwapper::~GoalSwapper()
-{
-}
+GoalSwapper::~GoalSwapper() {}
 
 void GoalSwapper::run()
 {
@@ -33,7 +31,8 @@ void GoalSwapper::run()
   };
 
   // agents have not decided their next locations
-  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)> undecided(compare);
+  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)> undecided(
+      compare);
 
   // work as reservation table
   std::unordered_map<Node*, Agent*> occupied_now;
@@ -187,7 +186,6 @@ Node* GoalSwapper::planOneStep(Agent* a,
     return getRandomBoolean(MT);
   });
 }
-
 
 void GoalSwapper::printHelp()
 {

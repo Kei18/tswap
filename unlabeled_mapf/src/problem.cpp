@@ -6,7 +6,7 @@
 #include "../include/util.hpp"
 
 Problem::Problem(const std::string& _instance)
-  : instance(_instance), instance_initialized(true)
+    : instance(_instance), instance_initialized(true)
 {
   // read instance file
   std::ifstream file(instance);

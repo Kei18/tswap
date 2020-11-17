@@ -3,10 +3,9 @@
  */
 
 #pragma once
-#include "problem.hpp"
 #include "gurobi.hpp"
+#include "problem.hpp"
 // #include <gurobi_c++.h>
-
 
 namespace LibTEN
 {
@@ -106,4 +105,4 @@ namespace LibTEN
 #endif
   };
 
-};
+};  // namespace LibTEN

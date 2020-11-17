@@ -8,11 +8,11 @@
 const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
 
 NetworkFlow::NetworkFlow(Problem* _P)
-  : Solver(_P),
-    use_incremental(true),
-    use_filter(true),
-    use_minimum_step(false),
-    use_ilp_solver(false)
+    : Solver(_P),
+      use_incremental(true),
+      use_filter(true),
+      use_minimum_step(false),
+      use_ilp_solver(false)
 {
   solver_name = NetworkFlow::SOLVER_NAME;
 }
@@ -26,23 +26,27 @@ void NetworkFlow::run()
   if (use_minimum_step) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
-      Node* g = *std::min_element(goals.begin(), goals.end(),
-                                  [&](Node* v, Node* u)
-                                  { return s->manhattanDist(v) < s->manhattanDist(u); });
+      Node* g =
+          *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
+            return s->manhattanDist(v) < s->manhattanDist(u);
+          });
       int d = s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
     }
-    info(" ", "elapsed: ", getSolverElapsedTime(), ", minimum_step:", minimum_step);
+    info(" ", "elapsed: ", getSolverElapsedTime(),
+         ", minimum_step:", minimum_step);
   }
 
   std::unique_ptr<TEN> flow_network;
   if (use_incremental) {
-    flow_network = std::make_unique<TEN_INCREMENTAL>(P, minimum_step, use_filter, use_ilp_solver);
+    flow_network = std::make_unique<TEN_INCREMENTAL>(
+        P, minimum_step, use_filter, use_ilp_solver);
   }
 
   for (int t = minimum_step; t <= max_timestep; ++t) {
     if (overCompTime()) break;
-    if (!use_incremental) flow_network = std::make_unique<TEN>(P, t, use_filter, use_ilp_solver);
+    if (!use_incremental)
+      flow_network = std::make_unique<TEN>(P, t, use_filter, use_ilp_solver);
 
     // set time limit
     flow_network->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
@@ -52,17 +56,16 @@ void NetworkFlow::run()
 
     if (use_ilp_solver) {
 #ifdef _GUROBI_
-      info(" ", "elapsed:", getSolverElapsedTime(),
-           ", makespan_limit:", t,
+      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
            ", variants:", flow_network->getVariantsCnt(),
            ", constraints:", flow_network->getConstraintsCnt());
 #endif
     } else {
-      float visited_rate = (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
-      info(" ", "elapsed:", getSolverElapsedTime(),
-           ", makespan_limit:", t,
-           ", visited_ndoes:", flow_network->getDfsCnt(),
-           "/", flow_network->getNodesNum(), "=", visited_rate);
+      float visited_rate =
+          (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
+      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
+           ", visited_ndoes:", flow_network->getDfsCnt(), "/",
+           flow_network->getNodesNum(), "=", visited_rate);
     }
 
     if (flow_network->isValid()) {
@@ -76,11 +79,11 @@ void NetworkFlow::run()
 void NetworkFlow::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"no-cache", no_argument, 0, 'n'},
-    {"no-filter", no_argument, 0, 'f'},
-    {"use-minimum-step", no_argument, 0, 'm'},
-    {"use-ilp-solver", no_argument, 0, 'g'},
-    {0, 0, 0, 0},
+      {"no-cache", no_argument, 0, 'n'},
+      {"no-filter", no_argument, 0, 'f'},
+      {"use-minimum-step", no_argument, 0, 'm'},
+      {"use-ilp-solver", no_argument, 0, 'g'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;

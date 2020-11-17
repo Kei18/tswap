@@ -1,7 +1,8 @@
 #pragma once
 #include "solver.hpp"
 
-class GoalSwapper : public Solver {
+class GoalSwapper : public Solver
+{
 public:
   static const std::string SOLVER_NAME;
 
@@ -14,8 +15,7 @@ private:
     int called;
   };
 
-  Node* planOneStep(Agent* a,
-                    std::unordered_map<Node*, Agent*>& occupied_now,
+  Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
                     std::unordered_map<Node*, Agent*>& occupied_next);
 
   void run();

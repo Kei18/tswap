@@ -1,16 +1,11 @@
 #include "../include/goal_allocator.hpp"
 
 GoalAllocator::GoalAllocator(Problem* _P, bool _use_min_cost)
-  : P(_P),
-    use_min_cost(_use_min_cost),
-    matching_cost(0),
-    matching_makespan(0)
+    : P(_P), use_min_cost(_use_min_cost), matching_cost(0), matching_makespan(0)
 {
 }
 
-GoalAllocator::~GoalAllocator()
-{
-}
+GoalAllocator::~GoalAllocator() {}
 
 void GoalAllocator::assign()
 {
@@ -60,17 +55,8 @@ void GoalAllocator::assign()
   for (auto p : GC_Edge) delete p;
 }
 
-Nodes GoalAllocator::getAssignedGoals() const
-{
-  return assigned_goals;
-}
+Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }
 
-int GoalAllocator::getCost() const
-{
-  return matching_cost;
-}
+int GoalAllocator::getCost() const { return matching_cost; }
 
-int GoalAllocator::getMakespan() const
-{
-  return matching_makespan;
-}
+int GoalAllocator::getMakespan() const { return matching_makespan; }

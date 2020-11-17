@@ -2,17 +2,17 @@
 
 #include <fstream>
 
-#include "../include/icbs.hpp"
 #include "../include/ecbs.hpp"
-#include "../include/pibt.hpp"
 #include "../include/goal_allocator.hpp"
+#include "../include/icbs.hpp"
+#include "../include/pibt.hpp"
 
 const std::string PIBT_COMPLETE::SOLVER_NAME = "PIBT_COMPLETE";
 
 PIBT_COMPLETE::PIBT_COMPLETE(Problem* _P)
-  : Solver(_P),
-    complement_solver_type(COMPLEMENT_SOLVER_TYPE::S_ECBS),
-    ecbs_suboptimality(1.1)
+    : Solver(_P),
+      complement_solver_type(COMPLEMENT_SOLVER_TYPE::S_ECBS),
+      ecbs_suboptimality(1.1)
 {
   solver_name = SOLVER_NAME;
   comp_time_complement = 0;
@@ -35,7 +35,8 @@ void PIBT_COMPLETE::run()
   }
 
   // solve by PIBT
-  Problem _P = Problem(P, P->getConfigStart(), goals, max_comp_time, LB_makespan);
+  Problem _P =
+      Problem(P, P->getConfigStart(), goals, max_comp_time, LB_makespan);
   std::unique_ptr<Solver> init_solver = std::make_unique<PIBT>(&_P);
   info(" ", "run PIBT until timestep", LB_makespan);
   init_solver->solve();
@@ -50,19 +51,19 @@ void PIBT_COMPLETE::run()
 
     // solved by ICBS
     int comp_time_limit = max_comp_time - (int)getSolverElapsedTime();
-    Problem _Q = Problem(P, solution.last(), goals,
-                         comp_time_limit, max_timestep - LB_makespan);
+    Problem _Q = Problem(P, solution.last(), goals, comp_time_limit,
+                         max_timestep - LB_makespan);
 
     // setup complement solver
     std::unique_ptr<Solver> second_solver;
     switch (complement_solver_type) {
-    case COMPLEMENT_SOLVER_TYPE::S_ICBS:
-      second_solver = std::make_unique<ICBS>(&_Q);
-      break;
-    case COMPLEMENT_SOLVER_TYPE::S_ECBS:
-    default:
-      second_solver = std::make_unique<ECBS>(&_Q);
-      break;
+      case COMPLEMENT_SOLVER_TYPE::S_ICBS:
+        second_solver = std::make_unique<ICBS>(&_Q);
+        break;
+      case COMPLEMENT_SOLVER_TYPE::S_ECBS:
+      default:
+        second_solver = std::make_unique<ECBS>(&_Q);
+        break;
     }
 
     // set ECBS suboptimality
@@ -72,13 +73,12 @@ void PIBT_COMPLETE::run()
       auto str_w = std::to_string(ecbs_suboptimality);
       char arg2[str_w.size() + 1];
       for (int i = 0; i < str_w.size(); ++i) arg2[i] = str_w[i];
-      char* argv[] = { arg0, arg1, arg2 };
+      char* argv[] = {arg0, arg1, arg2};
       second_solver->setParams(3, argv);
     }
 
-    info(" ", "elapsed:", getSolverElapsedTime(),
-         ", use", second_solver->getSolverName(),
-         "to complement the remain");
+    info(" ", "elapsed:", getSolverElapsedTime(), ", use",
+         second_solver->getSolverName(), "to complement the remain");
 
     second_solver->solve();
     solution += second_solver->getSolution();
@@ -91,29 +91,29 @@ void PIBT_COMPLETE::run()
 void PIBT_COMPLETE::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"complement-solver", required_argument, 0, 'c'},
-    {"ecbs-suboptimality", required_argument, 0, 'w'},
-    {0, 0, 0, 0},
+      {"complement-solver", required_argument, 0, 'c'},
+      {"ecbs-suboptimality", required_argument, 0, 'w'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
   while ((opt = getopt_long(argc, argv, "w:c:", longopts, &longindex)) != -1) {
     switch (opt) {
-    case 'c':
-      if (std::string(optarg) == "ICBS") {
-        complement_solver_type = COMPLEMENT_SOLVER_TYPE::S_ICBS;
-      } else if (std::string(optarg) == "ICBS") {
-        complement_solver_type = COMPLEMENT_SOLVER_TYPE::S_ECBS;
-      } else {
-        warn("unknown type of complement solver");
-      }
-      break;
-    case 'w':
-      ecbs_suboptimality = std::atof(optarg);
-      if (ecbs_suboptimality < 1) halt("sub-optimality should be >= 1");
-      break;
-    default:
-      break;
+      case 'c':
+        if (std::string(optarg) == "ICBS") {
+          complement_solver_type = COMPLEMENT_SOLVER_TYPE::S_ICBS;
+        } else if (std::string(optarg) == "ICBS") {
+          complement_solver_type = COMPLEMENT_SOLVER_TYPE::S_ECBS;
+        } else {
+          warn("unknown type of complement solver");
+        }
+        break;
+      case 'w':
+        ecbs_suboptimality = std::atof(optarg);
+        if (ecbs_suboptimality < 1) halt("sub-optimality should be >= 1");
+        break;
+      default:
+        break;
     }
   }
 }

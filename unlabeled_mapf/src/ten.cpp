@@ -2,18 +2,17 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN::TEN(Problem* const _P, const int _T, const bool _filter, const bool _use_ilp_solver)
-  : P(_P) ,
-    V(P->getG()->getV()),
-    network(LibTEN::ResidualNetwork(_filter, _use_ilp_solver, P)),
-    valid_network(false),
-    max_timestep(_T)
+TEN::TEN(Problem* const _P, const int _T, const bool _filter,
+         const bool _use_ilp_solver)
+    : P(_P),
+      V(P->getG()->getV()),
+      network(LibTEN::ResidualNetwork(_filter, _use_ilp_solver, P)),
+      valid_network(false),
+      max_timestep(_T)
 {
 }
 
-TEN::~TEN()
-{
-}
+TEN::~TEN() {}
 
 void TEN::update()
 {
@@ -31,7 +30,8 @@ void TEN::extendGraphOneTimestep(const int t)
     auto v_out = network.createNewNode(NodeType::V_OUT, v, t);
     network.addParent(v_out, v_in);
 
-    if (t > 1) network.addParent(v_in, network.getNode(NodeType::V_OUT, v, t - 1));
+    if (t > 1)
+      network.addParent(v_in, network.getNode(NodeType::V_OUT, v, t - 1));
 
     // add edges
     for (auto u : v->neighbor) {
@@ -59,7 +59,8 @@ void TEN::updateGraph()
 
   // add sink
   for (auto v : P->getConfigGoal()) {
-    network.addParent(network.sink, network.getNode(NodeType::V_OUT, v, max_timestep));
+    network.addParent(network.sink,
+                      network.getNode(NodeType::V_OUT, v, max_timestep));
   }
   network.sink->t = max_timestep;
 }

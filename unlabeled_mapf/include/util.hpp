@@ -67,7 +67,9 @@ static T randomChoose(std::vector<T>& arr, std::mt19937* MT)
       .count();
 }
 
-#define MEASURE_ELAPSED_TIME(msg, body) {\
-  auto t_start = Time::now();\
-  body;\
-  std::cout << getElapsedTime(t_start) << ": " << msg << std::endl;}
+#define MEASURE_ELAPSED_TIME(msg, body)                               \
+  {                                                                   \
+    auto t_start = Time::now();                                       \
+    body;                                                             \
+    std::cout << getElapsedTime(t_start) << ": " << msg << std::endl; \
+  }

@@ -1,8 +1,9 @@
 #pragma once
-#include "problem.hpp"
 #include "lib_ga.hpp"
+#include "problem.hpp"
 
-class GoalAllocator {
+class GoalAllocator
+{
 private:
   Problem* P;
   Nodes assigned_goals;
@@ -12,7 +13,7 @@ private:
   int matching_makespan;
 
 public:
-  GoalAllocator(Problem* _P, bool _use_min_cost=true);
+  GoalAllocator(Problem* _P, bool _use_min_cost = true);
   ~GoalAllocator();
 
   void assign();

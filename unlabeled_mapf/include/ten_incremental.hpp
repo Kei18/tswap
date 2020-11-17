@@ -10,8 +10,10 @@ private:
   void createPlan();
 
 public:
-  TEN_INCREMENTAL(Problem* const _P, const bool _filter=false, const bool _ilp=false);
-  TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter=false, const bool _ilp=false);
+  TEN_INCREMENTAL(Problem* const _P, const bool _filter = false,
+                  const bool _ilp = false);
+  TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter = false,
+                  const bool _ilp = false);
   ~TEN_INCREMENTAL();
 
   void update();
