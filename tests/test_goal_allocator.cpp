@@ -36,7 +36,7 @@ TEST(GoalAllocator, large_field)
 
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
   ASSERT_EQ(allocator.getMakespan(), 40);
-  ASSERT_EQ(allocator.getCost(), 7294);
+  ASSERT_EQ(allocator.getCost(), 7288);
 }
 
 TEST(GoalAllocator, large_field_without_optimization)
@@ -48,5 +48,5 @@ TEST(GoalAllocator, large_field_without_optimization)
 
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
   ASSERT_EQ(allocator.getMakespan(), 40);
-  ASSERT_TRUE(allocator.getCost() >= 7294);
+  ASSERT_TRUE(allocator.getCost() >= 7288);
 }

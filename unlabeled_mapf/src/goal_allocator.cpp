@@ -45,6 +45,23 @@ void GoalAllocator::assign()
 
   // use min cost maximum matching
   if (use_min_cost) {
+
+    // add equal cost edges
+    while (!OPEN.empty()) {
+      auto p = OPEN.top();
+      OPEN.pop();
+
+      // lazy evaluation
+      if (!p->evaled) {
+        p->setRealDist(P->getG()->pathDist(p->s, p->g));
+        OPEN.push(p);
+        continue;
+      }
+
+      if (p->d > matching_makespan) break;
+      matching.addEdge(p);
+    }
+
     matching.solveBySuccessiveShortestPath();
   }
 

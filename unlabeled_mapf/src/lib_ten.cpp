@@ -1,6 +1,6 @@
 #include "../include/lib_ten.hpp"
 
-#include <queue>
+#include <stack>
 
 LibTEN::TEN_Node::TEN_Node(NodeType _type, Node* _v, Node* _u, int _t)
     : type(_type), v(_v), u(_u), t(_t)
@@ -264,34 +264,74 @@ void LibTEN::ResidualNetwork::solve()
 #endif
 }
 
+/*
+ * notice: DFS
+ * Recursive call is much faster, however,
+ * when problems become huge, I found several stack overflows.
+ * Here I use stack based implementation
+ */
 void LibTEN::ResidualNetwork::FordFulkerson()
 {
   dfs_cnt = 0;
 
+  struct DFSNode {
+    TEN_Node* v;
+    DFSNode* p;
+  };
+
   while (true) {
     // depth first search
-    std::unordered_map<TEN_Node*, bool> CLOSED;
-    auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
+    std::stack<DFSNode*> OPEN;
+    std::unordered_map<TEN_Node*, bool> CLOSE;
+
+    std::vector<DFSNode*> GC;
+    auto createNewNode = [&] (TEN_Node* v, DFSNode* p) {
+      auto q = new DFSNode { v, p };
+      GC.push_back(q);
+      return q;
+    };
+
+    // setup initial node
+    OPEN.push(createNewNode(source, nullptr));
+
+    // goal dfs node
+    DFSNode* bottom = nullptr;
+
+    // main loop
+    while (!OPEN.empty()) {
       ++dfs_cnt;
 
-      // update closed list
-      CLOSED[p] = true;
+      auto top = OPEN.top();
+      auto p = top->v;
+      OPEN.pop();
+
+      // check close list
+      if (CLOSE.find(p) != CLOSE.end()) continue;
+
+      // update CLOSE
+      CLOSE[p] = true;
 
       // reach goal
-      if (p == sink) return p;
+      if (p == sink) {
+        bottom = top;
+        break;
+      }
 
-      // check children
+      // set neighbors
       LibTEN::TEN_Nodes next;
       next.insert(next.end(), p->children.begin(), p->children.end());
       next.insert(next.end(), p->parents.begin(), p->parents.end());
+      std::reverse(next.begin(), next.end());
+
+      // expand
       for (auto q : next) {
         // already searched
-        if (CLOSED.find(q) != CLOSED.end()) continue;
+        if (CLOSE.find(q) != CLOSE.end()) continue;
 
         // fulfill
         if (getCapacity(p, q) == 0) continue;
 
-        // apply filter
+        // filter
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
             if (reachable_filter[q->v] > sink->t) continue;
@@ -305,23 +345,88 @@ void LibTEN::ResidualNetwork::FordFulkerson()
           }
         }
 
-        // recursive call
-        auto res = self(self, q);
-
-        // success
-        if (res != nullptr) {
-          setFlow(p, q);
-          return res;
-        }
+        OPEN.push(createNewNode(q, top));
       }
+    }
 
-      // failed
-      return nullptr;
-    };
+    // success
+    if (bottom != nullptr) {
+      auto q = bottom;
+      while (q->p != nullptr) {
+        setFlow(q->p->v, q->v);
+        q = q->p;
+      }
+    }
 
-    if (dfs(dfs, source) == nullptr) break;
+    // free
+    for (auto p : GC) delete p;
+
+    // end
+    if (bottom == nullptr) break;
   }
 }
+
+/*
+ * This is recursive version
+ */
+// void LibTEN::ResidualNetwork::FordFulkerson()
+// {
+//   dfs_cnt = 0;
+
+//   while (true) {
+//     // depth first search
+//     std::unordered_map<TEN_Node*, bool> CLOSED;
+//     auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
+//       ++dfs_cnt;
+
+//       // update closed list
+//       CLOSED[p] = true;
+
+//       // reach goal
+//       if (p == sink) return p;
+
+//       // check children
+//       LibTEN::TEN_Nodes next;
+//       next.insert(next.end(), p->children.begin(), p->children.end());
+//       next.insert(next.end(), p->parents.begin(), p->parents.end());
+//       for (auto q : next) {
+//         // already searched
+//         if (CLOSED.find(q) != CLOSED.end()) continue;
+
+//         // fulfill
+//         if (getCapacity(p, q) == 0) continue;
+
+//         // apply filter
+//         if (apply_filter) {
+//           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
+//             if (reachable_filter[q->v] > sink->t) continue;
+//           } else if ((p->type == NodeType::V_IN ||
+//                       p->type == NodeType::W_OUT) &&
+//                      q->type == NodeType::V_OUT) {
+//             if (reachable_filter[q->v] + q->t > sink->t) continue;
+//           } else if (p->type == NodeType::V_IN && q->type == NodeType::W_IN) {
+//             auto u = (q->v == p->v) ? q->u : q->v;
+//             if (reachable_filter[u] + q->t > sink->t) continue;
+//           }
+//         }
+
+//         // recursive call
+//         auto res = self(self, q);
+
+//         // success
+//         if (res != nullptr) {
+//           setFlow(p, q);
+//           return res;
+//         }
+//       }
+
+//       // failed
+//       return nullptr;
+//     };
+
+//     if (dfs(dfs, source) == nullptr) break;
+//   }
+// }
 
 void LibTEN::ResidualNetwork::createFilter()
 {

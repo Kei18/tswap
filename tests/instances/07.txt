@@ -1,0 +1,6 @@
+map_file=random-64-64-20.map
+agents=1000
+seed=1
+random_problem=1
+max_timestep=30
+max_comp_time=100000

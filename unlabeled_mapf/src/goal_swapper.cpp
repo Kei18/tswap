@@ -16,6 +16,7 @@ void GoalSwapper::run()
   Plan plan;  // will be solution
 
   // goal assignment
+  info(" ", "start task allocation");
   GoalAllocator allocator = GoalAllocator(P);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
@@ -31,19 +32,21 @@ void GoalSwapper::run()
   };
 
   // agents have not decided their next locations
-  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)> undecided(
-      compare);
+  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)>
+    undecided(compare);
 
   // work as reservation table
   std::unordered_map<Node*, Agent*> occupied_now;
   std::unordered_map<Node*, Agent*> occupied_next;
 
+  // move action
   auto moveTo = [&](Agent* a, Node* v) {
     a->v_next = v;
     occupied_next[v] = a;
   };
   auto stay = [&](Agent* a) { moveTo(a, a->v_now); };
 
+  // change goal
   auto swapGoal = [&](Agent* a, Agent* b) {
     Node* v = b->g;
     b->g = a->g;
@@ -56,13 +59,15 @@ void GoalSwapper::run()
   // setup agents
   for (int i = 0; i < P->getNum(); ++i) {
     auto a = &(A[i]);
-    a->id = i;
-    a->v_now = P->getStart(i);
-    a->v_next = nullptr;
-    a->g = goals[i];
-    a->called = 0;
-    undecided.push(a);
+    a->id = i;  // id
+    a->v_now = P->getStart(i);  // current node
+    a->v_next = nullptr;  // next node
+    a->g = goals[i];  // goal
+    a->called = 0;  // how many times an agent is called
     occupied_now[a->v_now] = a;
+
+    // insert OPEN set
+    undecided.push(a);
   }
 
   // set initial config
@@ -89,6 +94,7 @@ void GoalSwapper::run()
       // desired node
       Node* u = planOneStep(a_i, occupied_now, occupied_next);
 
+      // rule 2. if u is occupied in next timestep -> stay
       auto itr_next = occupied_next.find(u);
       if (itr_next != occupied_next.end()) {
         Agent* a_j = itr_next->second;
@@ -97,21 +103,25 @@ void GoalSwapper::run()
         continue;
       }
 
+      // rule 3. if u is occupied in current timestep
       auto itr_now = occupied_now.find(u);
       if (itr_now != occupied_now.end()) {
         Agent* a_j = itr_now->second;
         if (a_j->v_now == a_j->g) swapGoal(a_i, a_j);
         if (a_j->v_next == nullptr) {
+          // skip
           undecided.push(a_i);
         } else if (a_j->v_next == u) {
+          // wait
           stay(a_i);
         } else {
+          // move
           moveTo(a_i, u);
         }
         continue;
       }
 
-      // otherwise
+      // rule4. otherwise (u is free)
       moveTo(a_i, u);
       continue;
     }

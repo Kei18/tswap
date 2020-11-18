@@ -3,6 +3,7 @@
 #include <cbs.hpp>
 #include <default_params.hpp>
 #include <ecbs.hpp>
+#include <naive_goal_swapper.hpp>
 #include <goal_swapper.hpp>
 #include <icbs.hpp>
 #include <iostream>
@@ -120,6 +121,8 @@ std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem *P,
     solver = std::make_unique<IR>(P);
   } else if (solver_name == "NetworkFlow") {
     solver = std::make_unique<NetworkFlow>(P);
+  } else if (solver_name == "NaiveGoalSwapper") {
+    solver = std::make_unique<NaiveGoalSwapper>(P);
   } else if (solver_name == "GoalSwapper") {
     solver = std::make_unique<GoalSwapper>(P);
   } else {
