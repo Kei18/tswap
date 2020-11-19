@@ -37,13 +37,8 @@ void TEN::extendGraphOneTimestep(const int t)
     for (auto u : v->neighbor) {
       if (u->id >= v->id) continue;  // avoid duplication
       // u->id < v->id
-      auto w_in = network.createNewNode(NodeType::W_IN, u, v, t);
-      auto w_out = network.createNewNode(NodeType::W_OUT, u, v, t);
-      network.addParent(w_in, network.getNode(NodeType::V_IN, u, t));
-      network.addParent(w_in, network.getNode(NodeType::V_IN, v, t));
-      network.addParent(w_out, w_in);
-      network.addParent(network.getNode(NodeType::V_OUT, u, t), w_out);
-      network.addParent(network.getNode(NodeType::V_OUT, v, t), w_out);
+      network.addParent(network.getNode(NodeType::V_OUT, u, t), v_in);
+      network.addParent(v_out, network.getNode(NodeType::V_IN, u, t));
     }
   }
 }
@@ -80,15 +75,16 @@ void TEN::createPlan(const int T)
       Node* next_node = nullptr;
       // move
       for (auto u : v->neighbor) {
-        auto first = (v->id < u->id) ? v : u;
-        auto second = (v->id < u->id) ? u : v;
-        auto p1 = network.getNode(NodeType::V_IN, v, t);
-        auto q1 = network.getNode(NodeType::W_IN, first, second, t);
-        auto p2 = network.getNode(NodeType::W_OUT, first, second, t);
-        auto q2 = network.getNode(NodeType::V_OUT, u, t);
-        if (network.getCapacity(p1, q1) == 0 &&
-            network.getCapacity(p2, q2) == 0) {
-          next_node = u;
+        auto v_in = network.getNode(NodeType::V_IN, v, t);
+        auto u_out = network.getNode(NodeType::V_OUT, u, t);
+        if (network.getCapacity(v_in, u_out) == 0) {
+          auto u_in = network.getNode(NodeType::V_IN, u, t);
+          auto v_out = network.getNode(NodeType::V_OUT, v, t);
+          if (network.getCapacity(u_in, v_out) == 0) {
+            next_node = v;  // stay
+          } else {
+            next_node = u;
+          }
           break;
         }
       }

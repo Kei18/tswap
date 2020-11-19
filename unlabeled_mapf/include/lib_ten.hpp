@@ -5,7 +5,6 @@
 #pragma once
 #include "gurobi.hpp"
 #include "problem.hpp"
-// #include <gurobi_c++.h>
 
 namespace LibTEN
 {
@@ -13,26 +12,21 @@ namespace LibTEN
   using TEN_Nodes = std::vector<TEN_Node*>;
 
   struct TEN_Node {
-    enum NodeType { SOURCE, V_IN, V_OUT, W_IN, W_OUT, SINK };
+    enum NodeType { SOURCE, V_IN, V_OUT, SINK };
 
     NodeType type;
     Node* v;  // original node
-    Node* u;  // default nullptr, used when type \in { W_IN, W_OUT }, v->id <
-              // w->id
     int t;    // timestep
     std::string name;
 
     TEN_Nodes parents;
     TEN_Nodes children;
 
-    TEN_Node(NodeType _type, Node* _v, Node* _u, int _t);
+    TEN_Node(NodeType _type, Node* _v, int _t);
     void addParent(TEN_Node* parent);
     void removeParent(TEN_Node* parent);
 
-    static std::string getName(NodeType _type, Node* _v, Node* _u, int _t);
     static std::string getName(NodeType _type, Node* _v, int _t);
-
-    std::string getStr();
   };
 
   struct ResidualNetwork {
@@ -70,7 +64,6 @@ namespace LibTEN
 
     using NodeType = TEN_Node::NodeType;
 
-    TEN_Node* createNewNode(NodeType _type, Node* _v, Node* _u, int _t);
     TEN_Node* createNewNode(NodeType _type, Node* _v, int _t);
     TEN_Node* createNewNode(NodeType _type);
 
