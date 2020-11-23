@@ -9,17 +9,31 @@ GoalAllocator::~GoalAllocator() {}
 
 void GoalAllocator::assign()
 {
-  LibGA::OpenList OPEN(LibGA::FieldEdge::compare);
+  // setup priority queue
+  auto compare = [](const LibGA::FieldEdge& a, const LibGA::FieldEdge& b)
+  {
+    if (a.evaled && b.evaled) {
+      if (a.d != b.d) return a.d > b.d;
+    } else if (!a.evaled && !b.evaled) {
+      if (a.inst_d != b.inst_d) return a.inst_d > b.inst_d;
+    } else if (a.evaled && !b.evaled) {
+      if (a.d != b.inst_d) return a.d > b.inst_d;
+    } else if (!a.evaled && b.evaled) {
+      if (a.inst_d != b.d) return a.inst_d > b.d;
+    }
+    // tie break
+    if (a.start_index != b.start_index) return a.start_index < b.start_index;
+    return a.g->id < b.g->id;
+  };
+  std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
+                      decltype(compare)> OPEN(compare);
 
   // setup open list
-  LibGA::FieldEdges GC_Edge;
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
-      auto p = new LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g));
-      GC_Edge.push_back(p);
-      OPEN.push(p);
+      OPEN.emplace(i, j, s, g, s->manhattanDist(g));
     }
   }
 
@@ -30,15 +44,16 @@ void GoalAllocator::assign()
     OPEN.pop();
 
     // lazy evaluation
-    if (!p->evaled) {
-      p->setRealDist(P->getG()->pathDist(p->s, p->g));
+    if (!p.evaled) {
+      p.setRealDist(P->getG()->pathDist(p.s, p.g));
       OPEN.push(p);
       continue;
     }
 
-    matching.updateByIncrementalFordFulkerson(p);
+    matching.updateByIncrementalFordFulkerson(&p);
+
     if (matching.matched_num == P->getNum()) {
-      matching_makespan = p->d;
+      matching_makespan = p.d;
       break;
     }
   }
@@ -52,14 +67,14 @@ void GoalAllocator::assign()
       OPEN.pop();
 
       // lazy evaluation
-      if (!p->evaled) {
-        p->setRealDist(P->getG()->pathDist(p->s, p->g));
+      if (!p.evaled) {
+        p.setRealDist(P->getG()->pathDist(p.s, p.g));
         OPEN.push(p);
         continue;
       }
 
-      if (p->d > matching_makespan) break;
-      matching.addEdge(p);
+      if (p.d > matching_makespan) break;
+      matching.addEdge(&p);
     }
 
     matching.solveBySuccessiveShortestPath();
@@ -67,9 +82,6 @@ void GoalAllocator::assign()
 
   assigned_goals = matching.assigned_goals;
   matching_cost = matching.getCost();
-
-  // memory management
-  for (auto p : GC_Edge) delete p;
 }
 
 Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }

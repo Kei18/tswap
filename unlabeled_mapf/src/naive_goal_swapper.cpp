@@ -46,6 +46,7 @@ void NaiveGoalSwapper::run()
       // desired node
       Node* u =  getPath(a->v, a->g)[1];
 
+      // simple implementation with O(A), for faster version, see goal_swapper
       auto itr = std::find_if(A.begin(), A.end(), [u](Agent* b) { return u == b->v; });
       if (itr == A.end()) {
         a->v = u;

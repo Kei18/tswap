@@ -22,22 +22,6 @@ void LibGA::FieldEdge::setRealDist(int _d)
   }
 }
 
-bool LibGA::FieldEdge::compare(FieldEdge* a, FieldEdge* b)
-{
-  if (a->evaled && b->evaled) {
-    if (a->d != b->d) return a->d > b->d;
-  } else if (!a->evaled && !b->evaled) {
-    if (a->inst_d != b->inst_d) return a->inst_d > b->inst_d;
-  } else if (a->evaled && !b->evaled) {
-    if (a->d != b->inst_d) return a->d > b->inst_d;
-  } else if (!a->evaled && b->evaled) {
-    if (a->inst_d != b->d) return a->inst_d > b->d;
-  }
-  // tie break
-  if (a->start_index != b->start_index) return a->start_index < b->start_index;
-  return a->g->id < b->g->id;
-}
-
 LibGA::Matching::Matching(Problem* P)
     : starts(P->getConfigStart()),
       goals(P->getConfigGoal()),
@@ -151,16 +135,17 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
   using DijkstraNodes = std::vector<DijkstraNode*>;
   auto compare = [&](DijkstraNode* v, DijkstraNode* u) { return v->d > u->d; };
 
+  // avoid "new" operation
+  const int MEMORY_SIZE = N * 10;
+  DijkstraNode GC[MEMORY_SIZE];
+
   for (int _i = 0; _i < N; ++_i) {
     // priority queue
-    std::priority_queue<DijkstraNode*, DijkstraNodes, decltype(compare)> OPEN(
-        compare);
+    std::priority_queue<DijkstraNode*,
+                        DijkstraNodes,
+                        decltype(compare)> OPEN(compare);
 
-    // avoid "new" operation
-    const int MEMORY_SIZE = N * 10;
-    DijkstraNode GC[MEMORY_SIZE];
     int node_total_cnt = 0;
-
     auto createNewNode = [&](int _v, int _d, DijkstraNode* _p) {
       if (node_total_cnt >= MEMORY_SIZE)
         halt("memory over, increase MEMORY_SIZE...");

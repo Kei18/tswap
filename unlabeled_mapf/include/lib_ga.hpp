@@ -7,10 +7,6 @@
 namespace LibGA
 {
   struct FieldEdge;
-  using FieldEdges = std::vector<FieldEdge*>;
-  using OpenList =
-      std::priority_queue<FieldEdge*, FieldEdges,
-                          std::function<bool(FieldEdge*, FieldEdge*)>>;
   struct FlowNode;
   using FlowNodes = std::vector<FlowNode*>;
 
@@ -27,8 +23,6 @@ namespace LibGA
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);
 
     void setRealDist(int _d);
-
-    static bool compare(FieldEdge* a, FieldEdge* b);
   };
 
   struct Matching {
