@@ -94,3 +94,9 @@ void NaiveGoalSwapper::run()
 
   solution = plan;
 }
+
+void NaiveGoalSwapper::printHelp()
+{
+  std::cout << NaiveGoalSwapper::SOLVER_NAME << "\n"
+            << "  (no option)" << std::endl;
+}

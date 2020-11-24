@@ -31,6 +31,41 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
+TEST(NetworkFlow, TEN_INCREMENTAL_USE_INSTRUCTED_TIMESTEP)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-t";
+  char argv2[] = "16";
+  char* argv[] = {argv0, argv1, argv2};
+  solver->setParams(3, argv);
+  solver->solve();
+
+  auto plan = solver->getSolution();
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
+}
+
+TEST(NetworkFlow, TEN_INCREMENTAL_USE_BINARY_SEARCH)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-b";
+  char* argv[] = {argv0, argv1};
+  solver->setParams(2, argv);
+  solver->solve();
+
+  auto plan = solver->getSolution();
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
+}
+
 TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
 {
   Problem P = Problem("../tests/instances/02.txt");

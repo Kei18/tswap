@@ -1,5 +1,7 @@
 #pragma once
 #include "solver.hpp"
+#include "../include/ten.hpp"
+#include "../include/ten_incremental.hpp"
 
 class NetworkFlow : public Solver
 {
@@ -11,6 +13,12 @@ private:
   bool use_filter;        // apply filter or not
   bool use_minimum_step;  // use minimum step
   bool use_ilp_solver;    // use ILP solver
+  bool use_binary_search;
+  int minimum_step;
+
+  void setupMinimumStep();
+  void printAdditionalInfo(int t, std::shared_ptr<TEN> flow_network);
+  void binaryRun();
 
   void run();
 

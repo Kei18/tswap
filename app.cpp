@@ -154,5 +154,6 @@ void printHelp()
   PIBT_COMPLETE::printHelp();
   IR::printHelp();
   NetworkFlow::printHelp();
+  NaiveGoalSwapper::printHelp();
   GoalSwapper::printHelp();
 }
