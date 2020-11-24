@@ -28,6 +28,7 @@ public:
   virtual ~TEN();
 
   virtual void update();
+  virtual void update(int t);
 
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }

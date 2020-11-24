@@ -17,4 +17,5 @@ public:
   ~TEN_INCREMENTAL();
 
   void update();
+  void update(int t);
 };

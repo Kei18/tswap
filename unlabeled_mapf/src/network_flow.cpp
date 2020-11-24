@@ -34,8 +34,8 @@ void NetworkFlow::run()
 
   std::shared_ptr<TEN> flow_network;
   if (use_incremental) {
-    flow_network = std::make_shared<TEN_INCREMENTAL>(
-        P, minimum_step, use_filter, use_ilp_solver);
+    flow_network = std::make_shared<TEN_INCREMENTAL>
+      (P, minimum_step, use_filter, use_ilp_solver);
   }
 
   for (int t = minimum_step; t <= max_timestep; ++t) {
@@ -103,6 +103,12 @@ void NetworkFlow::printAdditionalInfo(int t, std::shared_ptr<TEN> flow_network)
 
 void NetworkFlow::binaryRun()
 {
+  std::shared_ptr<TEN> network_flow;
+  if (use_incremental) {
+    network_flow = std::make_shared<TEN_INCREMENTAL>
+      (P, minimum_step, use_filter, use_ilp_solver);
+  }
+
   // binary search
   int lower_bound = 0;
   int upper_bound = -1;
@@ -111,28 +117,36 @@ void NetworkFlow::binaryRun()
     int t_real = t + minimum_step - 1;
 
     // build time expanded network
-    auto flow_network = std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+    if (!use_incremental) {
+      network_flow = std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+    }
 
     // set time limit
-    flow_network->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
+    network_flow->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
 
     // update network
-    flow_network->update();
+    network_flow->update(t_real);
 
     // verbose
-    printAdditionalInfo(t_real, flow_network);
+    printAdditionalInfo(t_real, network_flow);
 
-    if (flow_network->isValid()) {
+    if (network_flow->isValid()) {
       solved = true;
-      solution = flow_network->getPlan();
+      solution = network_flow->getPlan();
       upper_bound = t;
 
-    } else if (!flow_network->isValid()) {
+    } else if (!network_flow->isValid()) {
       lower_bound = t;
     }
 
     t = (upper_bound == -1) ? t*2 : (upper_bound - lower_bound) / 2 + lower_bound;
     if (t == lower_bound) break;
+
+    // setup new flow network
+    if (use_incremental && network_flow->isValid()) {
+      network_flow = std::make_shared<TEN_INCREMENTAL>
+        (P, t + minimum_step - 1, use_filter, use_ilp_solver);
+    }
   }
 }
 

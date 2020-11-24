@@ -23,6 +23,17 @@ void TEN_INCREMENTAL::update()
   TEN::update();
 }
 
+void TEN_INCREMENTAL::update(int t)
+{
+  while (current_timestep < t) {
+    ++current_timestep;
+    updateGraph();
+  }
+  network.solve();
+  valid_network = (network.getFlowSum() == P->getNum());
+  createPlan();
+}
+
 void TEN_INCREMENTAL::updateGraph()
 {
   extendGraphOneTimestep(current_timestep);
