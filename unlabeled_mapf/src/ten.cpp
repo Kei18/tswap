@@ -22,7 +22,7 @@ void TEN::update()
   createPlan();
 }
 
-void TEN::update(int t) { update(); }
+void TEN::update(const int t) { update(); }
 
 void TEN::extendGraphOneTimestep(const int t)
 {
@@ -68,6 +68,7 @@ void TEN::createPlan(const int T)
 {
   if (!valid_network) return;
 
+  solution.clear();
   Config C = P->getConfigStart();
   Config C_next;
   solution.add(C);

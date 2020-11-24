@@ -80,6 +80,11 @@ void Plan::operator+=(const Plan& other)
   for (int t = 1; t < other.size(); ++t) add(other.get(t));
 }
 
+void Plan::clear()
+{
+  configs.clear();
+}
+
 bool Plan::validate(Problem* P) const
 {
   if (configs.empty()) return false;

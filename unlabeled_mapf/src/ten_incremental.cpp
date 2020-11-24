@@ -23,12 +23,35 @@ void TEN_INCREMENTAL::update()
   TEN::update();
 }
 
-void TEN_INCREMENTAL::update(int t)
+void TEN_INCREMENTAL::update(const int t)
 {
-  while (current_timestep < t) {
-    ++current_timestep;
-    updateGraph();
+  if (current_timestep > t) {
+    // clear capacity
+    network.clearAllCapacity();
+
+    // update sink
+    network.sink->t = t;
+    for (auto q : network.sink->parents) {
+      network.removeParent(network.sink, q);
+    }
+
+    // delete edge t -> t+1, add sink edge
+    for (auto v : V) {
+      auto p = network.getNode(NodeType::V_OUT, v, t);
+      auto q = network.getNode(NodeType::V_IN, v, t+1);
+      network.removeParent(q, p);
+      if (inArray(v, P->getConfigGoal())) network.addParent(network.sink, p);
+    }
+
+    current_timestep = t;
+
+  } else {
+    while (current_timestep < t) {
+      ++current_timestep;
+      updateGraph();
+    }
   }
+
   network.solve();
   valid_network = (network.getFlowSum() == P->getNum());
   createPlan();

@@ -77,6 +77,7 @@ namespace LibTEN
     int getEdgesNum();
 
     int getCapacity(TEN_Node* p, TEN_Node* q);
+    void clearAllCapacity();
     void initEdge(TEN_Node* p, TEN_Node* q);
     void deleteEdge(TEN_Node* p, TEN_Node* q);
     void increment(TEN_Node* p, TEN_Node* q);

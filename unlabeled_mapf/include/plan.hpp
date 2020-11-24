@@ -40,6 +40,9 @@ public:
   Plan operator+(const Plan& other) const;
   void operator+=(const Plan& other);
 
+  // clear
+  void clear();
+
   // check the plan is valid or not
   bool validate(Problem* P) const;
 };

@@ -28,10 +28,12 @@ public:
   virtual ~TEN();
 
   virtual void update();
-  virtual void update(int t);
+  virtual void update(const int t);
 
   bool isValid() { return valid_network; }
   Plan getPlan() { return solution; }
+
+  void resetFlow() { network.clearAllCapacity(); }
 
   void setTimeLimit(int _time_limit) { network.setTimeLimit(_time_limit); }
 

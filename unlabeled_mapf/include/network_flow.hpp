@@ -16,6 +16,7 @@ private:
   bool use_minimum_step;  // use minimum step
   bool use_ilp_solver;    // use ILP solver
   bool use_binary_search;
+  bool use_past_flow;
   int minimum_step;
 
   void setupMinimumStep();

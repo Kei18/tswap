@@ -9,6 +9,7 @@ NetworkFlow::NetworkFlow(Problem* _P)
       use_minimum_step(false),
       use_ilp_solver(false),
       use_binary_search(false),
+      use_past_flow(true),
       minimum_step(1)
 {
   solver_name = NetworkFlow::SOLVER_NAME;
@@ -29,9 +30,9 @@ void NetworkFlow::run()
     return;
   }
 
-  std::shared_ptr<TEN> flow_network;
+  std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
-    flow_network = std::make_shared<TEN_INCREMENTAL>(
+    network_flow = std::make_shared<TEN_INCREMENTAL>(
         P, minimum_step, use_filter, use_ilp_solver);
   }
 
@@ -40,22 +41,25 @@ void NetworkFlow::run()
     if (overCompTime()) break;
 
     // build time expanded network
-    if (!use_incremental)
-      flow_network = std::make_shared<TEN>(P, t, use_filter, use_ilp_solver);
+    if (!use_incremental) {
+      network_flow = std::make_shared<TEN>(P, t, use_filter, use_ilp_solver);
+    } else if (!use_past_flow) {
+      network_flow->resetFlow();
+    }
 
     // set time limit
-    flow_network->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
+    network_flow->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
 
     // update network
-    flow_network->update();
+    network_flow->update();
 
     // verbose
-    printAdditionalInfo(t, flow_network);
+    printAdditionalInfo(t, network_flow);
 
     // solved
-    if (flow_network->isValid()) {
+    if (network_flow->isValid()) {
       solved = true;
-      solution = flow_network->getPlan();
+      solution = network_flow->getPlan();
       break;
     }
   }
@@ -77,22 +81,22 @@ void NetworkFlow::setupMinimumStep()
   }
 }
 
-void NetworkFlow::printAdditionalInfo(int t, std::shared_ptr<TEN> flow_network)
+void NetworkFlow::printAdditionalInfo(int t, std::shared_ptr<TEN> network_flow)
 {
   if (use_ilp_solver) {
 #ifdef _GUROBI_
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
-         ", valid:", flow_network->isValid(),
-         ", variants:", flow_network->getVariantsCnt(),
-         ", constraints:", flow_network->getConstraintsCnt());
+         ", valid:", network_flow->isValid(),
+         ", variants:", network_flow->getVariantsCnt(),
+         ", constraints:", network_flow->getConstraintsCnt());
 #endif
   } else {
     float visited_rate =
-        (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
+        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
-         ", valid:", flow_network->isValid(),
-         ", visited_ndoes:", flow_network->getDfsCnt(), "/",
-         flow_network->getNodesNum(), "=", visited_rate);
+         ", valid:", network_flow->isValid(),
+         ", visited_ndoes:", network_flow->getDfsCnt(), "/",
+         network_flow->getNodesNum(), "=", visited_rate);
   }
 }
 
@@ -115,6 +119,8 @@ void NetworkFlow::binaryRun()
     if (!use_incremental) {
       network_flow =
           std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+    } else if (!use_past_flow) {
+      network_flow->resetFlow();
     }
 
     // set time limit
@@ -138,12 +144,6 @@ void NetworkFlow::binaryRun()
     t = (upper_bound == -1) ? t * 2
                             : (upper_bound - lower_bound) / 2 + lower_bound;
     if (t == lower_bound) break;
-
-    // setup new flow network
-    if (use_incremental && network_flow->isValid()) {
-      network_flow = std::make_shared<TEN_INCREMENTAL>(
-          P, t + minimum_step - 1, use_filter, use_ilp_solver);
-    }
   }
 }
 
@@ -151,6 +151,7 @@ void NetworkFlow::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
       {"no-cache", no_argument, 0, 'n'},
+      {"no-past-flow", no_argument, 0, 'p'},
       {"no-filter", no_argument, 0, 'f'},
       {"use-minimum-step", no_argument, 0, 'm'},
       {"use-ilp-solver", no_argument, 0, 'g'},
@@ -160,11 +161,14 @@ void NetworkFlow::setParams(int argc, char* argv[])
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "nfmgt:b", longopts, &longindex)) !=
+  while ((opt = getopt_long(argc, argv, "nfmgpt:b", longopts, &longindex)) !=
          -1) {
     switch (opt) {
       case 'n':
         use_incremental = false;
+        break;
+      case 'p':
+        use_past_flow = false;
         break;
       case 'f':
         use_filter = false;
@@ -200,12 +204,16 @@ void NetworkFlow::printHelp()
             << "                 "
             << "implement without cache\n"
 
+            << "  -p --no-past-flow"
+            << "             "
+            << "implement without past flow\n"
+
             << "  -f --no-filter"
             << "                "
             << "implement without filter\n"
 
             << "  -m --use-minimum-step"
-            << "         "
+            << "          "
             << "implement with minimum-step (Manhattan distance)\n"
 
             << "  -b --use-binary-search"

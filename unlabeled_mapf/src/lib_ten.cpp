@@ -93,6 +93,8 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
     TEN_Node::NodeType _type, Node* _v, int _t)
 {
   LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _t);
+  auto itr = body.find(new_node->name);
+  if (itr != body.end()) delete itr->second;
   body[new_node->name] = new_node;
   return new_node;
 }
@@ -156,6 +158,11 @@ int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
   // require initialization
   initEdge(p, q);
   return capacity[key];
+}
+
+void LibTEN::ResidualNetwork::clearAllCapacity()
+{
+  capacity.clear();
 }
 
 void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
