@@ -1,7 +1,5 @@
 #include "../include/network_flow.hpp"
 
-#include <memory>
-
 const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
 
 NetworkFlow::NetworkFlow(Problem* _P)

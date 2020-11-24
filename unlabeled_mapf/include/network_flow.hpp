@@ -3,6 +3,8 @@
 #include "../include/ten.hpp"
 #include "../include/ten_incremental.hpp"
 
+#include <memory>
+
 class NetworkFlow : public Solver
 {
 public:
