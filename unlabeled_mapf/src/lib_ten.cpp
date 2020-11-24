@@ -34,9 +34,8 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
       break;
     case NodeType::V_IN:
     case NodeType::V_OUT:
-      return std::to_string(_v->id) + "_"
-        + std::to_string(_t) + "_"
-        + std::to_string(_type);
+      return std::to_string(_v->id) + "_" + std::to_string(_t) + "_" +
+             std::to_string(_type);
       break;
     default:
       halt("invalid operation, unknown LibTEN::TEN_Node type");
@@ -287,9 +286,11 @@ void LibTEN::ResidualNetwork::solve()
 
 //       // set neighbors
 //       LibTEN::TEN_Nodes next;
-//       for (auto itr = std::rbegin(p->parents); itr != std::rend(p->parents); ++itr)
+//       for (auto itr = std::rbegin(p->parents); itr != std::rend(p->parents);
+//       ++itr)
 //         next.push_back(*itr);
-//       for (auto itr = std::rbegin(p->children); itr != std::rend(p->children); ++itr)
+//       for (auto itr = std::rbegin(p->children); itr !=
+//       std::rend(p->children); ++itr)
 //         next.push_back(*itr);
 
 //       // expand
@@ -304,7 +305,8 @@ void LibTEN::ResidualNetwork::solve()
 //         if (apply_filter) {
 //           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
 //             if (reachable_filter[q->v] > sink->t) continue;
-//           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
+//           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT)
+//           {
 //             if (reachable_filter[q->v] + q->t > sink->t) continue;
 //           }
 //         }

@@ -27,7 +27,7 @@ void NaiveGoalSwapper::run()
   for (int i = 0; i < P->getNum(); ++i) {
     Node* s = P->getStart(i);
     Node* g = goals[i];
-    A.push_back(new Agent { i, s, g });
+    A.push_back(new Agent{i, s, g});
   }
 
   // set initial config
@@ -44,10 +44,11 @@ void NaiveGoalSwapper::run()
       if (a->v == a->g) continue;
 
       // desired node
-      Node* u =  getPath(a->v, a->g)[1];
+      Node* u = getPath(a->v, a->g)[1];
 
       // simple implementation with O(A), for faster version, see goal_swapper
-      auto itr = std::find_if(A.begin(), A.end(), [u](Agent* b) { return u == b->v; });
+      auto itr =
+          std::find_if(A.begin(), A.end(), [u](Agent* b) { return u == b->v; });
       if (itr == A.end()) {
         a->v = u;
         continue;

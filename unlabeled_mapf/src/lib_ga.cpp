@@ -141,9 +141,8 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
 
   for (int _i = 0; _i < N; ++_i) {
     // priority queue
-    std::priority_queue<DijkstraNode*,
-                        DijkstraNodes,
-                        decltype(compare)> OPEN(compare);
+    std::priority_queue<DijkstraNode*, DijkstraNodes, decltype(compare)> OPEN(
+        compare);
 
     int node_total_cnt = 0;
     auto createNewNode = [&](int _v, int _d, DijkstraNode* _p) {

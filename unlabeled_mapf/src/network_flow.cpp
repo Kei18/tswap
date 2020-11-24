@@ -29,11 +29,10 @@ void NetworkFlow::run()
     return;
   }
 
-
   std::shared_ptr<TEN> flow_network;
   if (use_incremental) {
-    flow_network = std::make_shared<TEN_INCREMENTAL>
-      (P, minimum_step, use_filter, use_ilp_solver);
+    flow_network = std::make_shared<TEN_INCREMENTAL>(
+        P, minimum_step, use_filter, use_ilp_solver);
   }
 
   for (int t = minimum_step; t <= max_timestep; ++t) {
@@ -69,9 +68,9 @@ void NetworkFlow::setupMinimumStep()
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g =
-        *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
-          return s->manhattanDist(v) < s->manhattanDist(u);
-        });
+          *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
+            return s->manhattanDist(v) < s->manhattanDist(u);
+          });
       int d = s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
     }
@@ -82,17 +81,15 @@ void NetworkFlow::printAdditionalInfo(int t, std::shared_ptr<TEN> flow_network)
 {
   if (use_ilp_solver) {
 #ifdef _GUROBI_
-    info(" ", "elapsed:", getSolverElapsedTime(),
-         ", makespan_limit:", t,
+    info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
          ", valid:", flow_network->isValid(),
          ", variants:", flow_network->getVariantsCnt(),
          ", constraints:", flow_network->getConstraintsCnt());
 #endif
   } else {
     float visited_rate =
-      (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
-    info(" ", "elapsed:", getSolverElapsedTime(),
-         ", makespan_limit:", t,
+        (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
+    info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
          ", valid:", flow_network->isValid(),
          ", visited_ndoes:", flow_network->getDfsCnt(), "/",
          flow_network->getNodesNum(), "=", visited_rate);
@@ -103,8 +100,8 @@ void NetworkFlow::binaryRun()
 {
   std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
-    network_flow = std::make_shared<TEN_INCREMENTAL>
-      (P, minimum_step, use_filter, use_ilp_solver);
+    network_flow = std::make_shared<TEN_INCREMENTAL>(
+        P, minimum_step, use_filter, use_ilp_solver);
   }
 
   // binary search
@@ -116,7 +113,8 @@ void NetworkFlow::binaryRun()
 
     // build time expanded network
     if (!use_incremental) {
-      network_flow = std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+      network_flow =
+          std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
     }
 
     // set time limit
@@ -137,13 +135,14 @@ void NetworkFlow::binaryRun()
       lower_bound = t;
     }
 
-    t = (upper_bound == -1) ? t*2 : (upper_bound - lower_bound) / 2 + lower_bound;
+    t = (upper_bound == -1) ? t * 2
+                            : (upper_bound - lower_bound) / 2 + lower_bound;
     if (t == lower_bound) break;
 
     // setup new flow network
     if (use_incremental && network_flow->isValid()) {
-      network_flow = std::make_shared<TEN_INCREMENTAL>
-        (P, t + minimum_step - 1, use_filter, use_ilp_solver);
+      network_flow = std::make_shared<TEN_INCREMENTAL>(
+          P, t + minimum_step - 1, use_filter, use_ilp_solver);
     }
   }
 }
@@ -161,7 +160,8 @@ void NetworkFlow::setParams(int argc, char* argv[])
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "nfmgt:b", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "nfmgt:b", longopts, &longindex)) !=
+         -1) {
     switch (opt) {
       case 'n':
         use_incremental = false;
@@ -172,16 +172,16 @@ void NetworkFlow::setParams(int argc, char* argv[])
       case 'm':
         use_minimum_step = true;
         break;
-    case 'b':
-      use_binary_search = true;
-      break;
-    case 't':
-      minimum_step = std::atoi(optarg);
-      if (minimum_step <= 0) {
-        minimum_step = 1;
-        warn("start timestep should be greater than 0");
-      }
-      break;
+      case 'b':
+        use_binary_search = true;
+        break;
+      case 't':
+        minimum_step = std::atoi(optarg);
+        if (minimum_step <= 0) {
+          minimum_step = 1;
+          warn("start timestep should be greater than 0");
+        }
+        break;
 #ifdef _GUROBI_
       case 'g':
         use_ilp_solver = true;

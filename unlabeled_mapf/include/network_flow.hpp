@@ -1,9 +1,9 @@
 #pragma once
-#include "solver.hpp"
+#include <memory>
+
 #include "../include/ten.hpp"
 #include "../include/ten_incremental.hpp"
-
-#include <memory>
+#include "solver.hpp"
 
 class NetworkFlow : public Solver
 {

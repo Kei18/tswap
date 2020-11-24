@@ -22,10 +22,7 @@ void TEN::update()
   createPlan();
 }
 
-void TEN::update(int t)
-{
-  update();
-}
+void TEN::update(int t) { update(); }
 
 void TEN::extendGraphOneTimestep(const int t)
 {

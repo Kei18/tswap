@@ -10,8 +10,7 @@ GoalAllocator::~GoalAllocator() {}
 void GoalAllocator::assign()
 {
   // setup priority queue
-  auto compare = [](const LibGA::FieldEdge& a, const LibGA::FieldEdge& b)
-  {
+  auto compare = [](const LibGA::FieldEdge& a, const LibGA::FieldEdge& b) {
     if (a.evaled && b.evaled) {
       if (a.d != b.d) return a.d > b.d;
     } else if (!a.evaled && !b.evaled) {
@@ -26,7 +25,8 @@ void GoalAllocator::assign()
     return a.g->id < b.g->id;
   };
   std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
-                      decltype(compare)> OPEN(compare);
+                      decltype(compare)>
+      OPEN(compare);
 
   // setup open list
   for (int i = 0; i < P->getNum(); ++i) {
@@ -60,7 +60,6 @@ void GoalAllocator::assign()
 
   // use min cost maximum matching
   if (use_min_cost) {
-
     // add equal cost edges
     while (!OPEN.empty()) {
       auto p = OPEN.top();

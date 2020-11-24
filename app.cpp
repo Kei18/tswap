@@ -3,11 +3,11 @@
 #include <cbs.hpp>
 #include <default_params.hpp>
 #include <ecbs.hpp>
-#include <naive_goal_swapper.hpp>
 #include <goal_swapper.hpp>
 #include <icbs.hpp>
 #include <iostream>
 #include <ir.hpp>
+#include <naive_goal_swapper.hpp>
 #include <network_flow.hpp>
 #include <pibt.hpp>
 #include <pibt_complete.hpp>

@@ -32,8 +32,8 @@ void GoalSwapper::run()
   };
 
   // agents have not decided their next locations
-  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)>
-    undecided(compare);
+  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)> undecided(
+      compare);
 
   // work as reservation table
   std::unordered_map<Node*, Agent*> occupied_now;
@@ -59,11 +59,11 @@ void GoalSwapper::run()
   // setup agents
   for (int i = 0; i < P->getNum(); ++i) {
     auto a = &(A[i]);
-    a->id = i;  // id
+    a->id = i;                  // id
     a->v_now = P->getStart(i);  // current node
-    a->v_next = nullptr;  // next node
-    a->g = goals[i];  // goal
-    a->called = 0;  // how many times an agent is called
+    a->v_next = nullptr;        // next node
+    a->g = goals[i];            // goal
+    a->called = 0;              // how many times an agent is called
     occupied_now[a->v_now] = a;
 
     // insert OPEN set

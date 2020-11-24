@@ -8,6 +8,14 @@ add_executable(app ./app.cpp)
 target_compile_features(app PUBLIC cxx_std_17)
 target_link_libraries(app lib-unlabeled-mapf)
 
+# format
+add_custom_target(clang-format
+  COMMAND clang-format -i
+  ../unlabeled_mapf/include/*.hpp
+  ../unlabeled_mapf/src/*.cpp
+  ../tests/*.cpp
+  ../app.cpp)
+
 # for ILP
 if(DEFINED ENV{GUROBI_HOME})
   add_definitions(-D_GUROBI_=1)
