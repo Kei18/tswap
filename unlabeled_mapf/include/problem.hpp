@@ -18,8 +18,10 @@ private:
 
   const bool instance_initialized;  // for memory manage
 
+  enum ScenarioType { USER_SPECIFIED, RANDOM };
+
   // set starts and goals randomly
-  void setRandomStartsGoals();
+  void setRandomStartsGoals(const int flocking_blocks=0);
 
 public:
   Problem(const std::string& _instance);

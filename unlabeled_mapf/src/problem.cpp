@@ -12,6 +12,9 @@ Problem::Problem(const std::string& _instance)
   std::ifstream file(instance);
   if (!file) halt("file " + instance + " is not found.");
 
+  ScenarioType scen_type = ScenarioType::USER_SPECIFIED;
+  int flocking_blocks = 0;
+
   std::string line;
   std::smatch results;
   std::regex r_comment = std::regex(R"(#.+)");
@@ -19,11 +22,11 @@ Problem::Problem(const std::string& _instance)
   std::regex r_agents = std::regex(R"(agents=(\d+))");
   std::regex r_seed = std::regex(R"(seed=(\d+))");
   std::regex r_random_problem = std::regex(R"(random_problem=(\d+))");
+  std::regex r_flocking_blocks = std::regex(R"(flocking_blocks=(\d+))");
   std::regex r_max_timestep = std::regex(R"(max_timestep=(\d+))");
   std::regex r_max_comp_time = std::regex(R"(max_comp_time=(\d+))");
   std::regex r_sg = std::regex(R"((\d+),(\d+),(\d+),(\d+))");
 
-  bool read_scen = true;
   while (getline(file, line)) {
     // comment
     if (std::regex_match(line, results, r_comment)) {
@@ -46,11 +49,17 @@ Problem::Problem(const std::string& _instance)
     }
     // skip reading initial/goal nodes
     if (std::regex_match(line, results, r_random_problem)) {
-      if (std::stoi(results[1].str())) {
-        read_scen = false;
-        config_s.clear();
-        config_g.clear();
+      int val = std::stoi(results[1].str());
+      if (val == (int)ScenarioType::USER_SPECIFIED) {
+        scen_type = ScenarioType::USER_SPECIFIED;
+      } else {
+        scen_type = ScenarioType::RANDOM;
       }
+      continue;
+    }
+    // set flocking blocks
+    if (std::regex_match(line, results, r_flocking_blocks)) {
+      flocking_blocks = std::stoi(results[1].str());
       continue;
     }
     // set max timestep
@@ -64,7 +73,8 @@ Problem::Problem(const std::string& _instance)
       continue;
     }
     // read initial/goal nodes
-    if (std::regex_match(line, results, r_sg) && read_scen &&
+    if (std::regex_match(line, results, r_sg) &&
+        scen_type == ScenarioType::USER_SPECIFIED &&
         config_s.size() < num_agents) {
       int x_s = std::stoi(results[1].str());
       int y_s = std::stoi(results[2].str());
@@ -96,8 +106,12 @@ Problem::Problem(const std::string& _instance)
   if (!config_s.empty() && num_agents > config_s.size()) {
     warn("given starts/goals are not sufficient\nrandomly create instances");
   }
-  if (num_agents > config_s.size()) {
-    setRandomStartsGoals();
+  if (num_agents > config_s.size() && scen_type == ScenarioType::USER_SPECIFIED) {
+    scen_type = ScenarioType::RANDOM;
+  }
+
+  if (scen_type == ScenarioType::RANDOM) {
+    setRandomStartsGoals(flocking_blocks);
   }
 
   // trimming
@@ -141,8 +155,12 @@ Node* Problem::getGoal(int i) const
   return config_g[i];
 }
 
-void Problem::setRandomStartsGoals()
+void Problem::setRandomStartsGoals(const int flocking_blocks)
 {
+  const int group_num = (flocking_blocks <= 0 || flocking_blocks > num_agents)
+    ? num_agents
+    : flocking_blocks;
+
   // initialize
   config_s.clear();
   config_g.clear();
@@ -151,34 +169,32 @@ void Problem::setRandomStartsGoals()
   Grid* grid = reinterpret_cast<Grid*>(G);
   const int N = grid->getWidth() * grid->getHeight();
 
-  // set starts
-  std::vector<int> starts(N);
-  std::iota(starts.begin(), starts.end(), 0);
-  std::shuffle(starts.begin(), starts.end(), *MT);
-  int i = 0;
-  while (true) {
-    while (G->getNode(starts[i]) == nullptr) {
-      ++i;
-      if (i >= N) halt("number of agents is too large.");
+  // set seeds of starts
+  std::vector<Node*> seed_starts, seed_goals;
+  for (int i = 0; i < group_num; ++i) {
+    Node* s = nullptr;
+    while (s == nullptr || inArray(s, seed_starts)) {
+      s = G->getNode(getRandomInt(0, N - 1, MT));
     }
-    config_s.push_back(G->getNode(starts[i]));
-    if (config_s.size() == num_agents) break;
-    ++i;
+    seed_starts.push_back(s);
+    Node* g = nullptr;
+    while (g == nullptr || inArray(g, seed_goals)) {
+      g = G->getNode(getRandomInt(0, N - 1, MT));
+    }
+    seed_goals.push_back(g);
   }
 
-  // set goals
-  std::vector<int> goals(N);
-  std::iota(goals.begin(), goals.end(), 0);
-  std::shuffle(goals.begin(), goals.end(), *MT);
-  int j = 0;
-  while (true) {
-    while (G->getNode(goals[j]) == nullptr) {
-      ++j;
-      if (j >= N) halt("set goal, number of agents is too large.");
+  int i = 0;
+  while (config_s.size() < num_agents) {
+    while (inArray(seed_starts[i], config_s)) {
+      seed_starts[i] = randomChoose(seed_starts[i]->neighbor, MT);
     }
-    config_g.push_back(G->getNode(goals[j]));
-    if (config_g.size() == num_agents) break;
-    ++j;
+    config_s.push_back(seed_starts[i]);
+    while (inArray(seed_goals[i], config_g)) {
+      seed_goals[i] = randomChoose(seed_goals[i]->neighbor, MT);
+    }
+    config_g.push_back(seed_goals[i]);
+    i = (i + 1) % group_num;
   }
 }
 

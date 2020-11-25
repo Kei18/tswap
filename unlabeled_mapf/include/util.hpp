@@ -66,10 +66,3 @@ static T randomChoose(std::vector<T>& arr, std::mt19937* MT)
   return std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start)
       .count();
 }
-
-#define MEASURE_ELAPSED_TIME(msg, body)                               \
-  {                                                                   \
-    auto t_start = Time::now();                                       \
-    body;                                                             \
-    std::cout << getElapsedTime(t_start) << ": " << msg << std::endl; \
-  }
