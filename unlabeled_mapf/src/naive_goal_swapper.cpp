@@ -20,7 +20,10 @@ void NaiveGoalSwapper::run()
   GoalAllocator allocator = GoalAllocator(P);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
-  info(" ", "elapsed:", getSolverElapsedTime(), ", finish goal assignment");
+  info(" ", "elapsed:", getSolverElapsedTime(),
+       ", finish goal assignment",
+       ", soc: >=", allocator.getCost(),
+       ", makespan: >=", allocator.getMakespan());
 
   // setup agent
   std::vector<Agent*> A;
@@ -36,8 +39,6 @@ void NaiveGoalSwapper::run()
   // main loop
   int timestep = 0;
   while (true) {
-    info(" ", "elapsed:", getSolverElapsedTime(), ", timestep:", timestep);
-
     // planning
     for (auto a : A) {
       // already at goal
@@ -89,6 +90,8 @@ void NaiveGoalSwapper::run()
       break;
     }
   }
+
+  info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
 
   // free
   for (auto a : A) delete a;

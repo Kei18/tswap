@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include "../include/ecbs.hpp"
-#include "../include/goal_allocator.hpp"
 #include "../include/icbs.hpp"
 #include "../include/pibt.hpp"
 
@@ -20,10 +19,7 @@ PIBT_COMPLETE::PIBT_COMPLETE(Problem* _P)
 
 void PIBT_COMPLETE::run()
 {
-  // goal assignment
-  GoalAllocator allocator = GoalAllocator(P);
-  allocator.assign();
-  auto goals = allocator.getAssignedGoals();
+  auto goals = P->getConfigGoal();
 
   info(" ", "elapsed:", getSolverElapsedTime(), ", finish goal assignment");
 

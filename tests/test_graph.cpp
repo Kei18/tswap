@@ -48,3 +48,11 @@ TEST(Graph, large_field)
   Node* u = G.getNode(203, 303);
   ASSERT_EQ(G.pathDist(v, u), 782);
 }
+
+TEST(Graph, huge_field)
+{
+  Grid G("ost000a.map");
+  Node* v = G.getNode(273, 721);
+  Node* u = G.getNode(84, 461);
+  ASSERT_EQ(G.pathDist(v, u), 863);
+}

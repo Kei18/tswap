@@ -1,6 +1,7 @@
 #include "../include/graph.hpp"
 
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <regex>
 
@@ -90,27 +91,53 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     if (a->g != b->g) return a->g < b->g;
     return false;
   };
+  std::function<AstarNode*(Node*, int, int, AstarNode*)> createNewNode;
+  std::function<bool(Node*)> isClosed;
+  std::function<void(Node*)> setClosed;
 
-  // avoid "new" operation
-  const int MEMORY_SIZE = V.size();
-  AstarNode GC[MEMORY_SIZE];
+  // change data structure by graph size
+  bool is_small_graph = (V.size() <= 300000);
+
+  // for allocating memory, for small field
+  const int MEMORY_SIZE = is_small_graph ? V.size() : 1;
+  AstarNode GC_S[MEMORY_SIZE];
   int node_total_cnt = 0;
 
-  auto createNewNode = [&](Node* v, int g, int f, AstarNode* p) {
-    if (node_total_cnt >= MEMORY_SIZE)
-      halt("memory over, increase MEMORY_SIZE...");
-    auto q = &(GC[node_total_cnt++]);
-    q->v = v;
-    q->g = g;
-    q->f = f;
-    q->p = p;
-    return q;
-  };
+  // garbage collection, for large field
+  AstarNodes GC_L;
 
-  // OPEN and CLOSE
+  // closed list
+  bool CLOSE_S[MEMORY_SIZE];  // for small field
+  std::memset(CLOSE_S, false, sizeof(CLOSE_S));
+  std::unordered_map<int, bool> CLOSE_L;  // for large field
+
+  if (is_small_graph) {
+    createNewNode = [&](Node* v, int g, int f, AstarNode* p) {
+      if (node_total_cnt >= MEMORY_SIZE)
+        halt("memory over, increase MEMORY_SIZE...");
+      auto q = &(GC_S[node_total_cnt++]);
+      q->v = v;
+      q->g = g;
+      q->f = f;
+      q->p = p;
+      return q;
+    };
+    isClosed = [&](Node* v) { return CLOSE_S[v->id]; };
+    setClosed = [&](Node* v) { CLOSE_S[v->id] = true; };
+
+  } else {
+    createNewNode = [&] (Node* v, int g, int f, AstarNode* p) {
+      AstarNode* new_node = new AstarNode{ v, g, f, p };
+      GC_L.push_back(new_node);
+      return new_node;
+    };
+    isClosed = [&](Node* v) { return CLOSE_L.find(v->id) != CLOSE_L.end(); };
+    setClosed = [&](Node* v) { CLOSE_L[v->id] = true; };
+  }
+
+
+  // OPEN
   std::priority_queue<AstarNode*, AstarNodes, decltype(compare)> OPEN(compare);
-  bool CLOSE[MEMORY_SIZE];
-  std::memset(CLOSE, false, sizeof(CLOSE));
 
   // initial node
   AstarNode* n = createNewNode(s, 0, dist(s, g), nullptr);
@@ -124,10 +151,10 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     OPEN.pop();
 
     // check CLOSE list
-    if (CLOSE[n->v->id]) continue;
+    if (isClosed(n->v)) continue;
 
     // update CLOSE list
-    CLOSE[n->v->id] = true;
+    setClosed(n->v);
 
     // check goal condition
     if (n->v == g) {
@@ -152,7 +179,7 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     C.push_back(n->v);
     for (auto u : C) {
       // already searched?
-      if (CLOSE[u->id]) continue;
+      if (isClosed(u)) continue;
       int g_value = n->g + 1;
       int h_value = g_value + dist(u, g);
       // use real cost whenever available
@@ -176,8 +203,13 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
   }
   std::reverse(path.begin(), path.end());
 
+  // free
+  for (auto p : GC_L) delete p;
+
   return path;
 }
+
+
 
 std::string Graph::getPathTableKey(Node* const s, Node* const g)
 {

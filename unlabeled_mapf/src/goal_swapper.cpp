@@ -21,7 +21,10 @@ void GoalSwapper::run()
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
-  info(" ", "elapsed:", getSolverElapsedTime(), ", finish goal assignment");
+  info(" ", "elapsed:", getSolverElapsedTime(),
+       ", finish goal assignment",
+       ", soc: >=", allocator.getCost(),
+       ", makespan: >=", allocator.getMakespan());
 
   // compare priority of agents
   auto compare = [](Agent* a, const Agent* b) {
@@ -76,8 +79,6 @@ void GoalSwapper::run()
   // main loop
   int timestep = 0;
   while (true) {
-    info(" ", "elapsed:", getSolverElapsedTime(), ", timestep:", timestep);
-
     // planning
     while (!undecided.empty()) {
       // pickup one agent
@@ -164,6 +165,8 @@ void GoalSwapper::run()
       break;
     }
   }
+
+  info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
 
   solution = plan;
 }
