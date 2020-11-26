@@ -350,10 +350,11 @@ void LibTEN::ResidualNetwork::FordFulkerson()
     // depth first search
     std::unordered_map<TEN_Node*, bool> CLOSED;
     auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
-      ++dfs_cnt;
+      if (CLOSED[p]) return nullptr;
 
       // update closed list
       CLOSED[p] = true;
+      ++dfs_cnt;
 
       // reach goal
       if (p == sink) return p;

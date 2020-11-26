@@ -1,4 +1,5 @@
 #include "../include/network_flow.hpp"
+#include <fstream>
 
 const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
 
@@ -20,105 +21,39 @@ NetworkFlow::~NetworkFlow() {}
 void NetworkFlow::run()
 {
   // setup minimum step
-  setupMinimumStep();
-  info(" ", "elapsed: ", getSolverElapsedTime(),
-       ", minimum_step:", minimum_step);
-
-  // binary search
-  if (use_binary_search) {
-    binaryRun();
-    return;
-  }
-
-  std::shared_ptr<TEN> network_flow;
-  if (use_incremental) {
-    network_flow = std::make_shared<TEN_INCREMENTAL>(
-        P, minimum_step, use_filter, use_ilp_solver);
-  }
-
-  for (int t = minimum_step; t <= max_timestep; ++t) {
-    // check time limit
-    if (overCompTime()) break;
-
-    // build time expanded network
-    if (!use_incremental) {
-      network_flow = std::make_shared<TEN>(P, t, use_filter, use_ilp_solver);
-    } else if (!use_past_flow) {
-      network_flow->resetFlow();
-    }
-
-    // set time limit
-    network_flow->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
-
-    // update network
-    network_flow->update();
-
-    // verbose
-    printAdditionalInfo(t, network_flow);
-
-    // solved
-    if (network_flow->isValid()) {
-      solved = true;
-      solution = network_flow->getPlan();
-      break;
-    }
-  }
-}
-
-void NetworkFlow::setupMinimumStep()
-{
-  // determine lower bouned with manhattanDist
   if (use_minimum_step) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g =
-          *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
-            return s->manhattanDist(v) < s->manhattanDist(u);
-          });
+        *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
+          return s->manhattanDist(v) < s->manhattanDist(u);
+        });
       int d = s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
     }
   }
-}
 
-void NetworkFlow::printAdditionalInfo(int t, std::shared_ptr<TEN> network_flow)
-{
-  if (use_ilp_solver) {
-#ifdef _GUROBI_
-    info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
-         ", valid:", network_flow->isValid(),
-         ", variants:", network_flow->getVariantsCnt(),
-         ", constraints:", network_flow->getConstraintsCnt());
-#endif
-  } else {
-    float visited_rate =
-        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
-    info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t,
-         ", valid:", network_flow->isValid(),
-         ", visited_ndoes:", network_flow->getDfsCnt(), "/",
-         network_flow->getNodesNum(), "=", visited_rate);
-  }
-}
+  info(" ", "elapsed: ", getSolverElapsedTime(),
+       ", minimum_step:", minimum_step);
 
-void NetworkFlow::binaryRun()
-{
   std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
-    network_flow = std::make_shared<TEN_INCREMENTAL>(
-        P, minimum_step, use_filter, use_ilp_solver);
+    network_flow = std::make_shared<TEN_INCREMENTAL>
+      (P, minimum_step, use_filter, use_ilp_solver,
+       max_comp_time - (int)getSolverElapsedTime());
   }
 
-  // binary search
+  // for binary search
   int lower_bound = 0;
   int upper_bound = -1;
-  int t = 1;
-  while (!overCompTime()) {
-    int t_real = t + minimum_step - 1;
+  int t_binary = 1;
+
+  int t_real = minimum_step;
+  while (t_real <= max_timestep && !overCompTime()) {
 
     // build time expanded network
     if (!use_incremental) {
-      network_flow =
-          std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+      network_flow = std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
     } else if (!use_past_flow) {
       network_flow->resetFlow();
     }
@@ -129,21 +64,57 @@ void NetworkFlow::binaryRun()
     // update network
     network_flow->update(t_real);
 
-    // verbose
-    printAdditionalInfo(t_real, network_flow);
+    // updte log
+    if (use_ilp_solver) {
+#ifdef _GUROBI_
+      HISTS.push_back({
+          (int)getSolverElapsedTime(),
+          t_real,
+          network_flow->isValid(),
+          0, 0,
+          network_flow->getVariantsCnt(),
+          network_flow->getConstraintsCnt()});
+      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
+           ", valid:", network_flow->isValid(),
+           ", variants:", network_flow->getVariantsCnt(),
+           ", constraints:", network_flow->getConstraintsCnt());
+#endif
+    } else {
+      HISTS.push_back({
+          (int)getSolverElapsedTime(),
+          t_real,
+          network_flow->isValid(),
+          network_flow->getDfsCnt(),
+          network_flow->getNodesNum(),
+          0, 0});
+      float visited_rate =
+        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
+      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
+           ", valid:", network_flow->isValid(),
+           ", visited_ndoes:", network_flow->getDfsCnt(), "/",
+           network_flow->getNodesNum(), "=", visited_rate);
+    }
 
+    // check solution
     if (network_flow->isValid()) {
       solved = true;
       solution = network_flow->getPlan();
-      upper_bound = t;
-
-    } else if (!network_flow->isValid()) {
-      lower_bound = t;
+      if (!use_binary_search) break;
+      upper_bound = t_binary;
+    } else {
+      lower_bound = t_binary;
     }
 
-    t = (upper_bound == -1) ? t * 2
-                            : (upper_bound - lower_bound) / 2 + lower_bound;
-    if (t == lower_bound) break;
+    // update timestep
+    if (!use_binary_search) {
+      ++t_real;
+    } else {
+      t_binary = (upper_bound == -1)
+        ? t_binary * 2
+        : (upper_bound - lower_bound) / 2 + lower_bound;
+      if (t_binary == lower_bound) break;
+      t_real = t_binary + minimum_step - 1;  // for binary search
+    }
   }
 }
 
@@ -213,15 +184,15 @@ void NetworkFlow::printHelp()
             << "implement without filter\n"
 
             << "  -m --use-minimum-step"
-            << "          "
+            << "         "
             << "implement with minimum-step (Manhattan distance)\n"
 
             << "  -b --use-binary-search"
-            << "       "
+            << "        "
             << "implement with binary search (and without cache)\n"
 
-            << "  -t --start-timestep"
-            << "           "
+            << "  -t --start-timestep [INT]"
+            << "     "
             << "start timestep";
 
 #ifdef _GUROBI_
@@ -231,4 +202,39 @@ void NetworkFlow::printHelp()
 #endif
 
   std::cout << std::endl;
+}
+
+void NetworkFlow::makeLog(const std::string& logfile)
+{
+  std::ofstream log;
+  log.open(logfile, std::ios::out);
+  makeLogBasicInfo(log);
+
+  log << "params="
+      << "\nuse_incremental:" << use_incremental
+      << "\nuse_filter:" << use_filter
+      << "\nuse_minimum_step:" << use_minimum_step
+      << "\nuse_ilp_solver:" << use_ilp_solver
+      << "\nuse_binary_search:" << use_binary_search
+      << "\nuse_past_flow:" << use_past_flow
+      << "\nminimum_step:" << minimum_step
+      << "\n";
+  log << "history=\n";
+  for (auto hist : HISTS) {
+    log << "elapsed:" << hist.elapsed
+        << ",makespan:" << hist.makespan
+        << ",valid:" << hist.valid
+        << ",network_size:" << hist.network_size
+        << ",visited:" << hist.visited_nodes;
+#ifdef _GUROBI_
+    if (use_ilp_solver) {
+      log << ",variants:" << hist.variants_cnt
+          << ",constraints:" << hist.constraints_cnt;
+    }
+#endif
+    log << "\n";
+  }
+
+  makeLogSolution(log);
+  log.close();
 }

@@ -118,11 +118,11 @@ void PIBT_COMPLETE::printHelp()
 {
   std::cout << PIBT_COMPLETE::SOLVER_NAME << "\n"
             << "  -c --complement-solver"
-            << "           "
+            << "        "
             << "choose complement solver { ECBS, ICBS }\n"
 
             << "  -w --ecbs-suboptimality"
-            << "           "
+            << "       "
             << "set sub-optimality for ECBS, default 1.1"
 
             << std::endl;

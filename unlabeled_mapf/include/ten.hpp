@@ -12,6 +12,8 @@ protected:
   LibTEN::ResidualNetwork network;
   bool valid_network;
   Plan solution;
+  int time_limit;
+  Time::time_point t_start;
 
 private:
   const int max_timestep;  // max timestep
@@ -21,6 +23,8 @@ protected:
   virtual void updateGraph();
   void createPlan(const int T);
   virtual void createPlan();
+
+  bool overCompTime() const;
 
 public:
   TEN(Problem* const _P, const int _T, const bool _apply_filter = false,
@@ -35,7 +39,7 @@ public:
 
   void resetFlow() { network.clearAllCapacity(); }
 
-  void setTimeLimit(int _time_limit) { network.setTimeLimit(_time_limit); }
+  void setTimeLimit(int _time_limit);
 
   int getNodesNum();
   int getEdgesNum();

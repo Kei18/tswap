@@ -9,9 +9,11 @@ TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter,
 }
 
 TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t,
-                                 const bool _filter, const bool _ilp)
+                                 const bool _filter, const bool _ilp,
+                                 const int _time_limit)
     : TEN(_P, _t - 1, _filter, _ilp), current_timestep(_t - 1)
 {
+  setTimeLimit(_time_limit);
   if (_t > 1) TEN::updateGraph();
 }
 
@@ -75,8 +77,12 @@ void TEN_INCREMENTAL::update(const int t)
     while (current_timestep < t) {
       ++current_timestep;
       updateGraph();
+      if (overCompTime()) return;
     }
   }
+
+  // check time limit
+  if (overCompTime()) return;
 
   network.solve();
   valid_network = (network.getFlowSum() == P->getNum());
@@ -86,6 +92,8 @@ void TEN_INCREMENTAL::update(const int t)
 void TEN_INCREMENTAL::updateGraph()
 {
   extendGraphOneTimestep(current_timestep);
+
+  if (overCompTime()) return;
 
   // add source
   if (current_timestep == 1) {
@@ -100,6 +108,8 @@ void TEN_INCREMENTAL::updateGraph()
                       network.getNode(NodeType::V_OUT, v, current_timestep));
     network.sink->t = current_timestep;
   }
+
+  if (overCompTime()) return;
 
   // inherit flow of previous iteration
   if (current_timestep > 1) {

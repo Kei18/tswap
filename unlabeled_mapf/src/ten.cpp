@@ -8,6 +8,7 @@ TEN::TEN(Problem* const _P, const int _T, const bool _filter,
       V(P->getG()->getV()),
       network(LibTEN::ResidualNetwork(_filter, _use_ilp_solver, P)),
       valid_network(false),
+      time_limit(-1),
       max_timestep(_T)
 {
 }
@@ -17,6 +18,7 @@ TEN::~TEN() {}
 void TEN::update()
 {
   updateGraph();
+  if (overCompTime()) return;  // check time limit
   network.solve();
   valid_network = (network.getFlowSum() == P->getNum());
   createPlan();
@@ -27,6 +29,9 @@ void TEN::update(const int t) { update(); }
 void TEN::extendGraphOneTimestep(const int t)
 {
   for (auto v : V) {
+    if (overCompTime()) break;
+
+
     // add vertex
     auto v_in = network.createNewNode(NodeType::V_IN, v, t);
     auto v_out = network.createNewNode(NodeType::V_OUT, v, t);
@@ -47,7 +52,10 @@ void TEN::extendGraphOneTimestep(const int t)
 
 void TEN::updateGraph()
 {
-  for (int t = 1; t <= max_timestep; ++t) extendGraphOneTimestep(t);
+  for (int t = 1; t <= max_timestep; ++t) {
+    extendGraphOneTimestep(t);
+    if (overCompTime()) return;
+  }
 
   // add source
   for (auto v : P->getConfigStart()) {
@@ -106,7 +114,19 @@ int TEN::getNodesNum() { return network.getNodesNum(); }
 
 int TEN::getEdgesNum() { return network.getEdgesNum(); }
 
-int TEN::getDfsCnt() { return network.dfs_cnt; };
+int TEN::getDfsCnt() { return network.dfs_cnt; }
+
+void TEN::setTimeLimit(int _time_limit) {
+  time_limit = _time_limit;
+  t_start = Time::now();
+  network.setTimeLimit(_time_limit);
+}
+
+bool TEN::overCompTime() const
+{
+  if (time_limit == -1) return false;
+  return getElapsedTime(t_start) >= time_limit;
+}
 
 #ifdef _GUROBI_
 int TEN::getVariantsCnt() { return network.variants_cnt; };
