@@ -1,4 +1,5 @@
 #include <graph.hpp>
+#include <problem.hpp>
 
 #include "gtest/gtest.h"
 
@@ -38,7 +39,7 @@ TEST(Graph, distance)
   Node* u = G.getNode(455);
   ASSERT_EQ(v->manhattanDist(u), 35);
   ASSERT_TRUE(25 < v->euclideanDist(u) && v->euclideanDist(u) < 26);
-  ASSERT_EQ(G.pathDist(G.getNode(0), G.getNode(455)), 39);
+  ASSERT_EQ(G.pathDist(v, u), 39);
 }
 
 TEST(Graph, large_field)
@@ -54,5 +55,36 @@ TEST(Graph, huge_field)
   Grid G("ost000a.map");
   Node* v = G.getNode(273, 721);
   Node* u = G.getNode(84, 461);
+  ASSERT_EQ(G.pathDist(v, u), 863);
+}
+
+TEST(Graph, bfs)
+{
+  Grid G("lak105d.map");
+  Node* s = G.getNode(0);
+  Node* g = G.getNode(455);
+  G.BFS(s);
+  ASSERT_TRUE(G.isPathComputed(s, g));
+  ASSERT_EQ(G.pathDist(s, g), 39);
+
+  Node* v = G.getNode(44);
+  Node* u1 = G.getNode(75);
+  Node* u2 = G.getNode(168);
+  Node* u3 = G.getNode(722);
+  Nodes goals = { u1, u2 };
+  G.BFS(v, goals);
+  ASSERT_TRUE(G.isPathComputed(v, u1));
+  ASSERT_TRUE(G.isPathComputed(v, u2));
+  ASSERT_FALSE(G.isPathComputed(v, u3));
+}
+
+TEST(Graph, bfs_huge)
+{
+  Grid G("ost000a.map");
+  Node* v = G.getNode(273, 721);
+  Node* u = G.getNode(84, 461);
+  Nodes goals = { u };
+  G.BFS(v, goals);
+  ASSERT_TRUE(G.isPathComputed(v, u));
   ASSERT_EQ(G.pathDist(v, u), 863);
 }

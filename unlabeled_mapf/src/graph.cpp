@@ -28,8 +28,18 @@ Path Graph::getPath(Node* const s, Node* const g)
   auto itr = PATH_TABLE.find(key);
   if (itr != PATH_TABLE.end()) return itr->second;
 
-  // failed -> use A* search
-  Path path = AstarSearchWithCache(s, g);
+  Path path;
+
+  // check reversed path
+  key = getPathTableKey(g, s);
+  itr = PATH_TABLE.find(key);
+  if (itr != PATH_TABLE.end()) {
+    path = itr->second;
+    std::reverse(path.begin(), path.end());
+  } else {
+    // failed -> use A* search
+    path = AstarSearchWithCache(s, g);
+  }
 
   // register new path to the cache
   registerPath(path);
@@ -207,6 +217,116 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
   for (auto p : GC_L) delete p;
 
   return path;
+}
+
+void Graph::BFS(Node* const s, const Nodes& goals)
+{
+  struct BFSNode {
+    Node* v;
+    BFSNode* p;  // parent
+  };
+
+  std::function<BFSNode*(Node*, BFSNode*)> createNewNode;
+  std::function<bool(Node*)> isClosed;
+  std::function<void(Node*)> setClosed;
+
+  // change data structure by graph size
+  bool is_small_graph = (V.size() <= 300000/4);
+
+  // for allocating memory
+  const int MEMORY_SIZE = is_small_graph ? V.size() * 4 : 1;
+  BFSNode GC_S[MEMORY_SIZE];
+  int node_total_cnt = 0;
+
+  // close
+  bool CLOSE_S[MEMORY_SIZE];
+  std::memset(CLOSE_S, false, sizeof(CLOSE_S));
+  std::unordered_map<int, bool> CLOSE_L;  // for large field
+
+  // garbage collection, for large field
+  std::vector<BFSNode*> GC_L;
+
+  if (is_small_graph) {
+    createNewNode = [&](Node* v, BFSNode* p) {
+      if (node_total_cnt >= MEMORY_SIZE)
+        halt("memory over, increase MEMORY_SIZE...");
+      auto q = &(GC_S[node_total_cnt++]);
+      q->v = v;
+      q->p = p;
+      return q;
+    };
+    isClosed = [&](Node* v) { return CLOSE_S[v->id]; };
+    setClosed = [&](Node* v) { CLOSE_S[v->id] = true; };
+
+  } else {
+    createNewNode = [&] (Node* v, BFSNode* p) {
+      BFSNode* new_node = new BFSNode{ v, p };
+      GC_L.push_back(new_node);
+      return new_node;
+    };
+    isClosed = [&](Node* v) { return CLOSE_L.find(v->id) != CLOSE_L.end(); };
+    setClosed = [&](Node* v) { CLOSE_L[v->id] = true; };
+  }
+
+  // OPEN
+  std::queue<BFSNode*> OPEN;
+
+  // initial node
+  auto n = createNewNode(s, nullptr);
+  OPEN.push(n);
+
+  int goal_index = 0;
+
+  while (!OPEN.empty()) {
+    // pop a node
+    n = OPEN.front();
+    OPEN.pop();
+
+    // check CLOSE list
+    if (isClosed(n->v)) continue;
+
+    // update CLOSE list
+    setClosed(n->v);
+
+    // register path
+    if (n->p != nullptr) {
+      auto itr = PATH_TABLE.find(getPathTableKey(s, n->p->v));
+      Path path;
+      if (itr != PATH_TABLE.end()) {
+        path = itr->second;
+        path.push_back(n->v);
+      } else {
+        path = { s, n->v };
+      }
+      PATH_TABLE[getPathTableKey(s, n->v)] = path;
+    }
+
+    // check goal condition
+    if (inArray(n->v, goals)) {
+      while (goal_index < goals.size() && isPathComputed(s, goals[goal_index])) {
+        ++goal_index;
+      }
+      // visit all goals
+      if (goal_index == goals.size()) break;
+    }
+
+    // expand
+    Nodes C = n->v->neighbor;
+    C.push_back(n->v);
+    for (auto u : C) {
+      // already searched?
+      if (isClosed(u)) continue;
+      OPEN.push(createNewNode(u, n));
+    }
+  }
+
+  // free
+  for (auto p : GC_L) delete p;
+}
+
+bool Graph::isPathComputed(Node* const s, Node* const g) const
+{
+  return PATH_TABLE.find(getPathTableKey(s, g)) != PATH_TABLE.end();
 }
 
 

@@ -183,6 +183,12 @@ public:
 
   // get all nodes
   Nodes getV();
+
+  // use BFS to compute path
+  void BFS(Node* const s, const Nodes& goals={});
+
+  // is path computed
+  bool isPathComputed(Node* const s, Node* const g) const;
 };
 
 class Grid : public Graph

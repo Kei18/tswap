@@ -24,13 +24,15 @@ void GoalAllocator::assign()
     if (a.start_index != b.start_index) return a.start_index < b.start_index;
     return a.g->id < b.g->id;
   };
-  std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
-                      decltype(compare)>
-      OPEN(compare);
+  std::priority_queue<LibGA::FieldEdge,
+                      std::vector<LibGA::FieldEdge>,
+                      decltype(compare)> OPEN(compare);
 
-  // setup open list
+  auto G = P->getG();
+  auto goals = P->getConfigGoal();
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);
+    G->BFS(s, goals);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
       OPEN.emplace(i, j, s, g, s->manhattanDist(g));
