@@ -14,6 +14,17 @@ LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d)
 {
 }
 
+LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1, int _d2)
+  : start_index(sindex),
+    goal_index(gindex),
+    s(_s),
+    g(_g),
+    evaled(true),
+    inst_d(_d1),
+    d(_d2)
+{
+}
+
 void LibGA::FieldEdge::setRealDist(int _d)
 {
   if (!evaled) {

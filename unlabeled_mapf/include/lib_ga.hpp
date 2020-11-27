@@ -21,6 +21,7 @@ namespace LibGA
     int d;        // real distance
 
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);
+    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1, int _d2);
 
     void setRealDist(int _d);
   };
