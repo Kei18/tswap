@@ -13,11 +13,14 @@ private:
     Node* g;
   };
 
+  bool use_bfs_allocate;
+
   void run();
 
 public:
   NaiveGoalSwapper(Problem* _P);
   ~NaiveGoalSwapper();
 
+  void setParams(int argc, char* argv[]);
   static void printHelp();
 };

@@ -4,7 +4,9 @@
 
 const std::string GoalSwapper::SOLVER_NAME = "GoalSwapper";
 
-GoalSwapper::GoalSwapper(Problem* _P) : Solver(_P)
+GoalSwapper::GoalSwapper(Problem* _P)
+  : Solver(_P),
+    use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -17,7 +19,7 @@ void GoalSwapper::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P);
+  GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -200,8 +202,32 @@ Node* GoalSwapper::planOneStep(Agent* a,
   });
 }
 
+void GoalSwapper::setParams(int argc, char* argv[])
+{
+  struct option longopts[] = {
+    {"use-bfs-allocate", no_argument, 0, 'b'},
+    {0, 0, 0, 0},
+  };
+  optind = 1;  // reset
+  int opt, longindex;
+  while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
+    switch (opt) {
+    case 'b':
+      use_bfs_allocate = true;
+      break;
+    default:
+      break;
+    }
+  }
+}
+
 void GoalSwapper::printHelp()
 {
   std::cout << GoalSwapper::SOLVER_NAME << "\n"
-            << "  (no option)" << std::endl;
+
+            << "  -b --use-bfs-allocate"
+            << "         "
+            << "use BFS in goal allocation"
+
+            << std::endl;
 }

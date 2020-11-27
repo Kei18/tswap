@@ -15,6 +15,8 @@ private:
     int called;
   };
 
+  bool use_bfs_allocate;
+
   Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
                     std::unordered_map<Node*, Agent*>& occupied_next);
 
@@ -24,5 +26,6 @@ public:
   GoalSwapper(Problem* _P);
   ~GoalSwapper();
 
+  void setParams(int argc, char* argv[]);
   static void printHelp();
 };

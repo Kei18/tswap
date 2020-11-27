@@ -4,7 +4,9 @@
 
 const std::string NaiveGoalSwapper::SOLVER_NAME = "NaiveGoalSwapper";
 
-NaiveGoalSwapper::NaiveGoalSwapper(Problem* _P) : Solver(_P)
+NaiveGoalSwapper::NaiveGoalSwapper(Problem* _P)
+  : Solver(_P),
+    use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -17,7 +19,7 @@ void NaiveGoalSwapper::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P);
+  GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
   info(" ", "elapsed:", getSolverElapsedTime(),
@@ -99,8 +101,32 @@ void NaiveGoalSwapper::run()
   solution = plan;
 }
 
+void NaiveGoalSwapper::setParams(int argc, char* argv[])
+{
+  struct option longopts[] = {
+    {"use-bfs-allocate", no_argument, 0, 'b'},
+    {0, 0, 0, 0},
+  };
+  optind = 1;  // reset
+  int opt, longindex;
+  while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
+    switch (opt) {
+    case 'b':
+      use_bfs_allocate = true;
+      break;
+    default:
+      break;
+    }
+  }
+}
+
 void NaiveGoalSwapper::printHelp()
 {
   std::cout << NaiveGoalSwapper::SOLVER_NAME << "\n"
-            << "  (no option)" << std::endl;
+
+            << "  -b --use-bfs-allocate"
+            << "         "
+            << "use BFS in goal allocation"
+
+            << std::endl;
 }
