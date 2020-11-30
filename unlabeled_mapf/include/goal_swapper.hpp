@@ -17,6 +17,12 @@ private:
 
   bool use_bfs_allocate;
 
+  // for log
+  int elapsed_assignment;
+  int elapsed_pathplanning;
+  int estimated_makespan;
+  int estimated_soc;
+
   Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
                     std::unordered_map<Node*, Agent*>& occupied_next);
 
@@ -28,4 +34,6 @@ public:
 
   void setParams(int argc, char* argv[]);
   static void printHelp();
+
+  void makeLog(const std::string& logfile);
 };

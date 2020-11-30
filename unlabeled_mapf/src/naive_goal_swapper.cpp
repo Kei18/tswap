@@ -1,6 +1,7 @@
 #include "../include/naive_goal_swapper.hpp"
 
 #include "../include/goal_allocator.hpp"
+#include <fstream>
 
 const std::string NaiveGoalSwapper::SOLVER_NAME = "NaiveGoalSwapper";
 
@@ -22,10 +23,17 @@ void NaiveGoalSwapper::run()
   GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
-  info(" ", "elapsed:", getSolverElapsedTime(),
+
+  elapsed_assignment = getSolverElapsedTime();
+  estimated_soc = allocator.getCost();
+  estimated_makespan = allocator.getMakespan();
+
+  info(" ", "elapsed:", elapsed_assignment,
        ", finish goal assignment",
-       ", soc: >=", allocator.getCost(),
-       ", makespan: >=", allocator.getMakespan());
+       ", soc: >=", estimated_soc,
+       ", makespan: >=", estimated_makespan);
+
+  auto t_pathplanning = Time::now();
 
   // setup agent
   std::vector<Agent*> A;
@@ -95,6 +103,8 @@ void NaiveGoalSwapper::run()
 
   info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
 
+  elapsed_pathplanning = getElapsedTime(t_pathplanning);
+
   // free
   for (auto a : A) delete a;
 
@@ -129,4 +139,20 @@ void NaiveGoalSwapper::printHelp()
             << "use BFS in goal allocation"
 
             << std::endl;
+}
+
+void NaiveGoalSwapper::makeLog(const std::string& logfile)
+{
+  std::ofstream log;
+  log.open(logfile, std::ios::out);
+  makeLogBasicInfo(log);
+
+  log << "internal_info=\n"
+      << "elapsed_assignment:" << elapsed_assignment << "\n"
+      << "elapsed_path_planning:" << elapsed_pathplanning << "\n"
+      << "estimated_soc:" << estimated_soc << "\n"
+      << "estimated_makespan:" << estimated_makespan << "\n";
+
+  makeLogSolution(log);
+  log.close();
 }

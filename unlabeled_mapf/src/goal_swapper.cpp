@@ -1,6 +1,7 @@
 #include "../include/goal_swapper.hpp"
 
 #include "../include/goal_allocator.hpp"
+#include <fstream>
 
 const std::string GoalSwapper::SOLVER_NAME = "GoalSwapper";
 
@@ -23,10 +24,16 @@ void GoalSwapper::run()
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
-  info(" ", "elapsed:", getSolverElapsedTime(),
+  elapsed_assignment = getSolverElapsedTime();
+  estimated_soc = allocator.getCost();
+  estimated_makespan = allocator.getMakespan();
+
+  info(" ", "elapsed:", elapsed_assignment,
        ", finish goal assignment",
-       ", soc: >=", allocator.getCost(),
-       ", makespan: >=", allocator.getMakespan());
+       ", soc: >=", estimated_soc,
+       ", makespan: >=", estimated_makespan);
+
+  auto t_pathplanning = Time::now();
 
   // compare priority of agents
   auto compare = [](Agent* a, const Agent* b) {
@@ -168,6 +175,8 @@ void GoalSwapper::run()
     }
   }
 
+  elapsed_pathplanning = getElapsedTime(t_pathplanning);
+
   info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
 
   solution = plan;
@@ -230,4 +239,20 @@ void GoalSwapper::printHelp()
             << "use BFS in goal allocation"
 
             << std::endl;
+}
+
+void GoalSwapper::makeLog(const std::string& logfile)
+{
+  std::ofstream log;
+  log.open(logfile, std::ios::out);
+  makeLogBasicInfo(log);
+
+  log << "internal_info=\n"
+      << "elapsed_assignment:" << elapsed_assignment << "\n"
+      << "elapsed_path_planning:" << elapsed_pathplanning << "\n"
+      << "estimated_soc:" << estimated_soc << "\n"
+      << "estimated_makespan:" << estimated_makespan << "\n";
+
+  makeLogSolution(log);
+  log.close();
 }
