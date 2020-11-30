@@ -27,11 +27,7 @@ OUTPUT_DIR=$PROJECT_DIR/../data/$EXP_DATE/
 mkdir -p $OUTPUT_DIR
 
 ## build
-rm -rf $PROJECT_DIR/build
-mkdir $PROJECT_DIR/build
-cd $PROJECT_DIR/build
-cmake ..
-make
+(cd $PROJECT_DIR/build; make;)
 
 ## main
 for agent_num in ${agents_list[@]}
