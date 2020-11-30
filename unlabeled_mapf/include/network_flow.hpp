@@ -21,6 +21,7 @@ private:
 
   void run();
 
+  // for log
   struct HIST {
     int elapsed;
     int makespan;
@@ -31,6 +32,7 @@ private:
     int constraints_cnt;
   };
   std::vector<HIST> HISTS;
+  bool is_optimal;
 
 public:
   NetworkFlow(Problem* _P);

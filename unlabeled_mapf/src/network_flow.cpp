@@ -11,7 +11,8 @@ NetworkFlow::NetworkFlow(Problem* _P)
       use_ilp_solver(false),
       use_binary_search(false),
       use_past_flow(true),
-      minimum_step(1)
+      minimum_step(1),
+      is_optimal(false)
 {
   solver_name = NetworkFlow::SOLVER_NAME;
 }
@@ -99,7 +100,10 @@ void NetworkFlow::run()
     if (network_flow->isValid()) {
       solved = true;
       solution = network_flow->getPlan();
-      if (!use_binary_search) break;
+      if (!use_binary_search) {
+        is_optimal = true;
+        break;
+      }
       upper_bound = t_binary;
     } else {
       lower_bound = t_binary;
@@ -112,7 +116,10 @@ void NetworkFlow::run()
       t_binary = (upper_bound == -1)
         ? t_binary * 2
         : (upper_bound - lower_bound) / 2 + lower_bound;
-      if (t_binary == lower_bound) break;
+      if (t_binary == lower_bound) {
+        is_optimal = true;
+        break;
+      }
       t_real = t_binary + minimum_step - 1;  // for binary search
     }
   }
@@ -219,6 +226,7 @@ void NetworkFlow::makeLog(const std::string& logfile)
       << "\nuse_past_flow:" << use_past_flow
       << "\nminimum_step:" << minimum_step
       << "\n";
+  log << "optimal=" << is_optimal << "\n";
   log << "history=\n";
   for (auto hist : HISTS) {
     log << "elapsed:" << hist.elapsed

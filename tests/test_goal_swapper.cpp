@@ -4,7 +4,7 @@
 
 TEST(GoalSwapper, solve)
 {
-  Problem P = Problem("../instances/arena_500agents_1.txt");
+  Problem P = Problem("../tests/instances/09.txt");
   std::unique_ptr<Solver> solver = std::make_unique<GoalSwapper>(&P);
   solver->solve();
 

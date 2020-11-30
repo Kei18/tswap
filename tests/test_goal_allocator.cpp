@@ -29,7 +29,7 @@ TEST(GoalAllocator, small_case)
 
 TEST(GoalAllocator, large_field)
 {
-  Problem P = Problem("../instances/den520d_500agents_1.txt");
+  Problem P = Problem("../tests/instances/08.txt");
   GoalAllocator allocator = GoalAllocator(&P);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
@@ -41,7 +41,7 @@ TEST(GoalAllocator, large_field)
 
 TEST(GoalAllocator, large_field_without_optimization)
 {
-  Problem P = Problem("../instances/den520d_500agents_1.txt");
+  Problem P = Problem("../tests/instances/08.txt");
   GoalAllocator allocator = GoalAllocator(&P, false, false);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
