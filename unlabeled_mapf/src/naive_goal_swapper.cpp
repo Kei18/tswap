@@ -66,7 +66,7 @@ void NaiveGoalSwapper::run()
       }
 
       Agent* b = *itr;
-      if (b->v == b->g) {  // swap goal
+      if (b->v == b->g || getPath(b->v, b->g)[1] == a->v) {  // swap goal
         auto tmp = a->g;
         a->g = b->g;
         b->g = tmp;

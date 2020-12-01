@@ -117,6 +117,12 @@ void GoalSwapper::run()
       auto itr_now = occupied_now.find(u);
       if (itr_now != occupied_now.end()) {
         Agent* a_j = itr_now->second;
+        // check deadlock
+        if (a_j->v_now != a_j->g && getPath(a_j->v_now, a_j->g)[1] == a_i->v_now) {
+          swapGoal(a_i, a_j);
+          undecided.push(a_i);
+          continue;
+        }
         if (a_j->v_now == a_j->g) swapGoal(a_i, a_j);
         if (a_j->v_next == nullptr) {
           // skip
