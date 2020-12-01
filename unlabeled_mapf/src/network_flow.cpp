@@ -92,7 +92,7 @@ void NetworkFlow::run()
         (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
       info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
            ", valid:", network_flow->isValid(),
-           ", visited_ndoes:", network_flow->getDfsCnt(), "/",
+           ", visited_nodes:", network_flow->getDfsCnt(), "/",
            network_flow->getNodesNum(), "=", visited_rate);
     }
 

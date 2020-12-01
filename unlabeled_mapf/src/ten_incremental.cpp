@@ -33,9 +33,8 @@ void TEN_INCREMENTAL::update(const int t)
 
     // update sink
     network.sink->t = t;
-    for (auto q : network.sink->parents) {
-      network.removeParent(network.sink, q);
-    }
+    auto parents = network.sink->parents;
+    for (auto q : parents) network.removeParent(network.sink, q);
 
     // delete edge t -> t+1, add sink edge
     for (auto v : V) {
