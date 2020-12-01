@@ -54,6 +54,10 @@ void TEN_INCREMENTAL::update(const int t)
       auto q = network.getNode(NodeType::V_IN, v, current_timestep + 1);
       network.addParent(q, p);
 
+      // remove redundant edge
+      auto r = network.getNode(NodeType::V_IN, v, t + 1);
+      if (r != nullptr) network.removeParent(r, network.getNode( NodeType::V_OUT, v, t));
+
       // update flow
       if (inArray(network.sink, p->children)) {
         // connect to sink
