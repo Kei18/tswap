@@ -53,8 +53,12 @@ void TEN_INCREMENTAL::update(const int t)
       auto p = network.getNode(NodeType::V_OUT, v, current_timestep);
       auto q = network.getNode(NodeType::V_IN, v, current_timestep + 1);
       network.addParent(q, p);
+
       // update flow
       if (inArray(network.sink, p->children)) {
+        // connect to sink
+        network.addParent(network.sink, network.getNode(NodeType::V_OUT, v, t));
+        // check flow
         if (network.getCapacity(p, network.sink) == 0) {
           for (int _t = current_timestep + 1; _t <= t; ++_t) {
             auto a = network.getNode(NodeType::V_OUT, v, _t - 1);
@@ -62,16 +66,17 @@ void TEN_INCREMENTAL::update(const int t)
             auto c = network.getNode(NodeType::V_OUT, v, _t);
             network.setFlow(a, b);
             network.setFlow(b, c);
-            if (_t == t) {  // connected to sink
-              network.addParent(network.sink, c);
-              network.setFlow(c, network.sink);
-            }
+            if (_t == t) network.setFlow(c, network.sink);
           }
         }
         network.removeParent(network.sink, p);
         network.deleteEdge(p, network.sink);
       }
     }
+
+    network.sink->t = t;
+    current_timestep = t;
+
   } else {
     while (current_timestep < t) {
       ++current_timestep;
