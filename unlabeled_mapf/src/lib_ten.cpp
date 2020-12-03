@@ -239,110 +239,122 @@ void LibTEN::ResidualNetwork::solve()
 }
 
 /*
- * notice: DFS
+ * notice: implementation of DFS
  * Recursive call is much faster, however,
  * when problems become huge enough, I found several stack overflows.
- * Here I show the example of stack based implementation
+ * Therefore, the following implementation switches the modes
+ * according to the number of vertices
  */
-// void LibTEN::ResidualNetwork::FordFulkerson()
-// {
-//   dfs_cnt = 0;
 
-//   struct DFSNode {
-//     TEN_Node* v;
-//     DFSNode* p;
-//   };
+void LibTEN::ResidualNetwork::FordFulkerson()
+{
+  const int MEMORY_LIMIT = 2500000;
+  if (getNodesNum() > MEMORY_LIMIT) {
+    FordFulkersonWithStuck();
+  } else {
+    FordFulkersonWithRecursiveCall();
+  }
+}
 
-//   while (true) {
-//     // depth first search
-//     std::stack<DFSNode*> OPEN;
-//     std::unordered_map<TEN_Node*, bool> CLOSE;
+void LibTEN::ResidualNetwork::FordFulkersonWithStuck()
+{
+  dfs_cnt = 0;
 
-//     std::vector<DFSNode*> GC;
-//     auto createNewNode = [&] (TEN_Node* v, DFSNode* p) {
-//       auto q = new DFSNode { v, p };
-//       GC.push_back(q);
-//       return q;
-//     };
+  struct DFSNode {
+    TEN_Node* v;
+    DFSNode* p;
+  };
 
-//     // setup initial node
-//     OPEN.push(createNewNode(source, nullptr));
+  while (true) {
+    // depth first search
+    std::stack<DFSNode*> OPEN;
+    std::unordered_map<TEN_Node*, bool> CLOSE;
 
-//     // goal dfs node
-//     DFSNode* bottom = nullptr;
+    std::vector<DFSNode*> GC;
+    auto createNewNode = [&] (TEN_Node* v, DFSNode* p) {
+      auto q = new DFSNode { v, p };
+      GC.push_back(q);
+      return q;
+    };
 
-//     // main loop
-//     while (!OPEN.empty()) {
-//       ++dfs_cnt;
+    // setup initial node
+    OPEN.push(createNewNode(source, nullptr));
 
-//       auto top = OPEN.top();
-//       auto p = top->v;
-//       OPEN.pop();
+    // goal dfs node
+    DFSNode* bottom = nullptr;
 
-//       // check close list
-//       if (CLOSE.find(p) != CLOSE.end()) continue;
+    // main loop
+    while (!OPEN.empty()) {
+      ++dfs_cnt;
 
-//       // update CLOSE
-//       CLOSE[p] = true;
+      auto top = OPEN.top();
+      auto p = top->v;
+      OPEN.pop();
 
-//       // reach goal
-//       if (p == sink) {
-//         bottom = top;
-//         break;
-//       }
+      // check close list
+      if (CLOSE.find(p) != CLOSE.end()) continue;
 
-//       // set neighbors
-//       LibTEN::TEN_Nodes next;
-//       for (auto itr = std::rbegin(p->parents); itr != std::rend(p->parents);
-//       ++itr)
-//         next.push_back(*itr);
-//       for (auto itr = std::rbegin(p->children); itr !=
-//       std::rend(p->children); ++itr)
-//         next.push_back(*itr);
+      // update CLOSE
+      CLOSE[p] = true;
 
-//       // expand
-//       for (auto q : next) {
-//         // already searched
-//         if (CLOSE.find(q) != CLOSE.end()) continue;
+      // reach goal
+      if (p == sink) {
+        bottom = top;
+        break;
+      }
 
-//         // fulfill
-//         if (getCapacity(p, q) == 0) continue;
+      // set neighbors
+      LibTEN::TEN_Nodes next;
+      for (auto itr = std::rbegin(p->parents); itr != std::rend(p->parents);
+      ++itr)
+        next.push_back(*itr);
+      for (auto itr = std::rbegin(p->children); itr !=
+      std::rend(p->children); ++itr)
+        next.push_back(*itr);
 
-//         // filter
-//         if (apply_filter) {
-//           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
-//             if (reachable_filter[q->v] > sink->t) continue;
-//           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT)
-//           {
-//             if (reachable_filter[q->v] + q->t > sink->t) continue;
-//           }
-//         }
+      // expand
+      for (auto q : next) {
+        // already searched
+        if (CLOSE.find(q) != CLOSE.end()) continue;
 
-//         OPEN.push(createNewNode(q, top));
-//       }
-//     }
+        // fulfill
+        if (getCapacity(p, q) == 0) continue;
 
-//     // success
-//     if (bottom != nullptr) {
-//       auto q = bottom;
-//       while (q->p != nullptr) {
-//         setFlow(q->p->v, q->v);
-//         q = q->p;
-//       }
-//     }
+        // filter
+        if (apply_filter) {
+          if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
+            if (reachable_filter[q->v] > sink->t) continue;
+          } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT)
+          {
+            if (reachable_filter[q->v] + q->t > sink->t) continue;
+          }
+        }
 
-//     // free
-//     for (auto p : GC) delete p;
+        OPEN.push(createNewNode(q, top));
+      }
+    }
 
-//     // end
-//     if (bottom == nullptr) break;
-//   }
-// }
+    // success
+    if (bottom != nullptr) {
+      auto q = bottom;
+      while (q->p != nullptr) {
+        setFlow(q->p->v, q->v);
+        q = q->p;
+      }
+    }
+
+    // free
+    for (auto p : GC) delete p;
+
+    // end
+    if (bottom == nullptr) break;
+  }
+}
 
 /*
  * This is recursive version
  */
-void LibTEN::ResidualNetwork::FordFulkerson()
+void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
 {
   dfs_cnt = 0;
 

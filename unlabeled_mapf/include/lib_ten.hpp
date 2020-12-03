@@ -90,6 +90,8 @@ namespace LibTEN
 
     void solve();
     void FordFulkerson();
+    void FordFulkersonWithStuck();
+    void FordFulkersonWithRecursiveCall();
     void createFilter();
 
     int getFlowSum();
