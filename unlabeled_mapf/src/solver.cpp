@@ -120,6 +120,7 @@ void Solver::end()
 {
   comp_time = getSolverElapsedTime();
   info("  finish, elapsed=", comp_time);
+  if (solved && comp_time > max_comp_time) solved = false;
   if (!solved && solution.empty()) solution.add(P->getConfigStart());
 }
 
