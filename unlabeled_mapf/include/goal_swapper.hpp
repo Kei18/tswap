@@ -25,7 +25,8 @@ private:
 
   Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
                     std::unordered_map<Node*, Agent*>& occupied_next);
-
+  bool deadlockDetectResolve(Agent* a,
+                             std::unordered_map<Node*, Agent*>& occupied_now);
   void run();
 
 public:

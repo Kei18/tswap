@@ -12,6 +12,16 @@ TEST(NaiveGoalSwapper, solve)
   ASSERT_TRUE(solver->getSolution().validate(&P));
 }
 
+TEST(NaiveGoalSwapper, deadlock)
+{
+  Problem P = Problem("../tests/instances/10.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<NaiveGoalSwapper>(&P);
+  solver->solve();
+
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(solver->getSolution().validate(&P));
+}
+
 TEST(NaiveGoalSwapper, use_bfs)
 {
   Problem P = Problem("../tests/instances/02.txt");

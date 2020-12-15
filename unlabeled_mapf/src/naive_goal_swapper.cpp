@@ -66,10 +66,27 @@ void NaiveGoalSwapper::run()
       }
 
       Agent* b = *itr;
-      if (b->v == b->g || getPath(b->v, b->g)[1] == a->v) {  // swap goal
+      if (b->v == b->g) {  // swap goal
         auto tmp = a->g;
         a->g = b->g;
         b->g = tmp;
+      } else { // deadlock detection
+        std::vector<Agent*> A_p = { a };  // A'
+        while (true) {
+          if (b->v == b->g) break;  // not deadlock
+          Node* w = getPath(b->v, b->g)[1];
+          auto itr_w = std::find_if(A.begin(), A.end(), [w](Agent* c) { return c->v == w; });
+          if (itr_w == A.end()) break;  // not deadlock
+          A_p.push_back(b);
+          b = *itr_w;
+          if (b == a) break;  // deadlock
+        }
+        if (b == a) {
+          // rotate targets
+          Node* g = (*(A_p.end()-1))->g;
+          for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
+          (*A_p.begin())->g = g;
+        }
       }
     }
 

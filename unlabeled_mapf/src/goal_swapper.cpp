@@ -117,13 +117,12 @@ void GoalSwapper::run()
       auto itr_now = occupied_now.find(u);
       if (itr_now != occupied_now.end()) {
         Agent* a_j = itr_now->second;
-        // check deadlock
-        if (a_j->v_now != a_j->g && getPath(a_j->v_now, a_j->g)[1] == a_i->v_now) {
+        if (a_j->v_now == a_j->g) {
           swapGoal(a_i, a_j);
+        } else if (deadlockDetectResolve(a_i, occupied_now)) {
           undecided.push(a_i);
           continue;
         }
-        if (a_j->v_now == a_j->g) swapGoal(a_i, a_j);
         if (a_j->v_next == nullptr) {
           // skip
           undecided.push(a_i);
@@ -186,6 +185,31 @@ void GoalSwapper::run()
   info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
 
   solution = plan;
+}
+
+bool GoalSwapper::deadlockDetectResolve
+(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now)
+{
+  // deadlock detection
+  std::vector<Agent*> A_p;
+  Agent* b = a;
+  while (true) {
+    if (b->v_now == b->g || b->v_next != nullptr) break;  // not deadlock
+    auto itr = occupied_now.find(getPath(b->v_now, b->g)[1]);
+    if (itr == occupied_now.end()) break;  // not deadlock
+    A_p.push_back(b);
+    b = itr->second;
+    if (A_p.size() > 1 && b == a) break;  // deadlock
+  }
+  if (b == a) {  // detect deadlock
+    // rotate targets
+    Node* g = (*(A_p.end()-1))->g;
+    for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
+    (*A_p.begin())->g = g;
+    return true;
+  }
+
+  return false;
 }
 
 Node* GoalSwapper::planOneStep(Agent* a,
