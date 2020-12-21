@@ -1,16 +1,9 @@
 #include <getopt.h>
-
-#include <cbs.hpp>
 #include <default_params.hpp>
-#include <ecbs.hpp>
-#include <goal_swapper.hpp>
-#include <icbs.hpp>
+#include <tswap.hpp>
 #include <iostream>
-#include <ir.hpp>
-#include <naive_goal_swapper.hpp>
+#include <naive_tswap.hpp>
 #include <network_flow.hpp>
-#include <pibt.hpp>
-#include <pibt_complete.hpp>
 #include <problem.hpp>
 #include <random>
 #include <util.hpp>
@@ -107,27 +100,15 @@ std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem *P,
                                   bool verbose, int argc, char *argv[])
 {
   std::unique_ptr<Solver> solver;
-  if (solver_name == "PIBT") {
-    solver = std::make_unique<PIBT>(P);
-  } else if (solver_name == "CBS") {
-    solver = std::make_unique<CBS>(P);
-  } else if (solver_name == "ICBS") {
-    solver = std::make_unique<ICBS>(P);
-  } else if (solver_name == "PIBT_COMPLETE") {
-    solver = std::make_unique<PIBT_COMPLETE>(P);
-  } else if (solver_name == "ECBS") {
-    solver = std::make_unique<ECBS>(P);
-  } else if (solver_name == "IR") {
-    solver = std::make_unique<IR>(P);
-  } else if (solver_name == "NetworkFlow") {
+  if (solver_name == "NetworkFlow") {
     solver = std::make_unique<NetworkFlow>(P);
-  } else if (solver_name == "NaiveGoalSwapper") {
-    solver = std::make_unique<NaiveGoalSwapper>(P);
-  } else if (solver_name == "GoalSwapper") {
-    solver = std::make_unique<GoalSwapper>(P);
+  } else if (solver_name == "NaiveTSWAP") {
+    solver = std::make_unique<NaiveTSWAP>(P);
+  } else if (solver_name == "TSWAP") {
+    solver = std::make_unique<TSWAP>(P);
   } else {
     warn("unknown solver name, " + solver_name + ", continue by PIBT");
-    solver = std::make_unique<PIBT>(P);
+    solver = std::make_unique<TSWAP>(P);
   }
   solver->setParams(argc, argv);
   solver->setVerbose(verbose);
@@ -147,13 +128,7 @@ void printHelp()
                "random starts/goals"
             << "\n\nSolver Options:" << std::endl;
   // each solver
-  PIBT::printHelp();
-  CBS::printHelp();
-  ECBS::printHelp();
-  ICBS::printHelp();
-  PIBT_COMPLETE::printHelp();
-  IR::printHelp();
   NetworkFlow::printHelp();
-  NaiveGoalSwapper::printHelp();
-  GoalSwapper::printHelp();
+  NaiveTSWAP::printHelp();
+  TSWAP::printHelp();
 }

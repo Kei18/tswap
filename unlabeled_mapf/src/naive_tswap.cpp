@@ -1,20 +1,20 @@
-#include "../include/naive_goal_swapper.hpp"
+#include "../include/naive_tswap.hpp"
 
 #include "../include/goal_allocator.hpp"
 #include <fstream>
 
-const std::string NaiveGoalSwapper::SOLVER_NAME = "NaiveGoalSwapper";
+const std::string NaiveTSWAP::SOLVER_NAME = "NaiveTSWAP";
 
-NaiveGoalSwapper::NaiveGoalSwapper(Problem* _P)
+NaiveTSWAP::NaiveTSWAP(Problem* _P)
   : Solver(_P),
     use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
 
-NaiveGoalSwapper::~NaiveGoalSwapper() {}
+NaiveTSWAP::~NaiveTSWAP() {}
 
-void NaiveGoalSwapper::run()
+void NaiveTSWAP::run()
 {
   Plan plan;  // will be solution
 
@@ -128,7 +128,7 @@ void NaiveGoalSwapper::run()
   solution = plan;
 }
 
-void NaiveGoalSwapper::setParams(int argc, char* argv[])
+void NaiveTSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
     {"use-bfs-allocate", no_argument, 0, 'b'},
@@ -147,9 +147,9 @@ void NaiveGoalSwapper::setParams(int argc, char* argv[])
   }
 }
 
-void NaiveGoalSwapper::printHelp()
+void NaiveTSWAP::printHelp()
 {
-  std::cout << NaiveGoalSwapper::SOLVER_NAME << "\n"
+  std::cout << NaiveTSWAP::SOLVER_NAME << "\n"
 
             << "  -b --use-bfs-allocate"
             << "         "
@@ -158,7 +158,7 @@ void NaiveGoalSwapper::printHelp()
             << std::endl;
 }
 
-void NaiveGoalSwapper::makeLog(const std::string& logfile)
+void NaiveTSWAP::makeLog(const std::string& logfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);

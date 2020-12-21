@@ -1,20 +1,20 @@
-#include "../include/goal_swapper.hpp"
+#include "../include/tswap.hpp"
 
 #include "../include/goal_allocator.hpp"
 #include <fstream>
 
-const std::string GoalSwapper::SOLVER_NAME = "GoalSwapper";
+const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-GoalSwapper::GoalSwapper(Problem* _P)
+TSWAP::TSWAP(Problem* _P)
   : Solver(_P),
     use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
 
-GoalSwapper::~GoalSwapper() {}
+TSWAP::~TSWAP() {}
 
-void GoalSwapper::run()
+void TSWAP::run()
 {
   Plan plan;  // will be solution
 
@@ -187,7 +187,7 @@ void GoalSwapper::run()
   solution = plan;
 }
 
-bool GoalSwapper::deadlockDetectResolve
+bool TSWAP::deadlockDetectResolve
 (Agent* a, std::unordered_map<Node*, Agent*>& occupied_now)
 {
   // deadlock detection
@@ -212,7 +212,7 @@ bool GoalSwapper::deadlockDetectResolve
   return false;
 }
 
-Node* GoalSwapper::planOneStep(Agent* a,
+Node* TSWAP::planOneStep(Agent* a,
                                std::unordered_map<Node*, Agent*>& occupied_now,
                                std::unordered_map<Node*, Agent*>& occupied_next)
 {
@@ -241,7 +241,7 @@ Node* GoalSwapper::planOneStep(Agent* a,
   });
 }
 
-void GoalSwapper::setParams(int argc, char* argv[])
+void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
     {"use-bfs-allocate", no_argument, 0, 'b'},
@@ -260,9 +260,9 @@ void GoalSwapper::setParams(int argc, char* argv[])
   }
 }
 
-void GoalSwapper::printHelp()
+void TSWAP::printHelp()
 {
-  std::cout << GoalSwapper::SOLVER_NAME << "\n"
+  std::cout << TSWAP::SOLVER_NAME << "\n"
 
             << "  -b --use-bfs-allocate"
             << "         "
@@ -271,7 +271,7 @@ void GoalSwapper::printHelp()
             << std::endl;
 }
 
-void GoalSwapper::makeLog(const std::string& logfile)
+void TSWAP::makeLog(const std::string& logfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);

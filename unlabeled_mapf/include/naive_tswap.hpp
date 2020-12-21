@@ -1,7 +1,7 @@
 #pragma once
 #include "solver.hpp"
 
-class NaiveGoalSwapper : public Solver
+class NaiveTSWAP : public Solver
 {
 public:
   static const std::string SOLVER_NAME;
@@ -24,8 +24,8 @@ private:
   void run();
 
 public:
-  NaiveGoalSwapper(Problem* _P);
-  ~NaiveGoalSwapper();
+  NaiveTSWAP(Problem* _P);
+  ~NaiveTSWAP();
 
   void setParams(int argc, char* argv[]);
   static void printHelp();
