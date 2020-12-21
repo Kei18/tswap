@@ -5,7 +5,7 @@
 #include "../include/ten_incremental.hpp"
 #include "solver.hpp"
 
-class NetworkFlow : public Solver
+class FlowNetwork : public Solver
 {
 public:
   static const std::string SOLVER_NAME;
@@ -36,8 +36,8 @@ private:
   bool is_optimal;
 
 public:
-  NetworkFlow(Problem* _P);
-  ~NetworkFlow();
+  FlowNetwork(Problem* _P);
+  ~FlowNetwork();
 
   void setParams(int argc, char* argv[]);
   static void printHelp();

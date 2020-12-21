@@ -1,9 +1,9 @@
-#include "../include/network_flow.hpp"
+#include "../include/flow_network.hpp"
 #include <fstream>
 
-const std::string NetworkFlow::SOLVER_NAME = "NetworkFlow";
+const std::string FlowNetwork::SOLVER_NAME = "FlowNetwork";
 
-NetworkFlow::NetworkFlow(Problem* _P)
+FlowNetwork::FlowNetwork(Problem* _P)
     : Solver(_P),
       use_incremental(true),
       use_filter(true),
@@ -15,12 +15,12 @@ NetworkFlow::NetworkFlow(Problem* _P)
       minimum_step(1),
       is_optimal(false)
 {
-  solver_name = NetworkFlow::SOLVER_NAME;
+  solver_name = FlowNetwork::SOLVER_NAME;
 }
 
-NetworkFlow::~NetworkFlow() {}
+FlowNetwork::~FlowNetwork() {}
 
-void NetworkFlow::run()
+void FlowNetwork::run()
 {
   // setup minimum step
   if (use_minimum_step) {
@@ -130,7 +130,7 @@ void NetworkFlow::run()
   }
 }
 
-void NetworkFlow::setParams(int argc, char* argv[])
+void FlowNetwork::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
       {"no-cache", no_argument, 0, 'n'},
@@ -184,9 +184,9 @@ void NetworkFlow::setParams(int argc, char* argv[])
   }
 }
 
-void NetworkFlow::printHelp()
+void FlowNetwork::printHelp()
 {
-  std::cout << NetworkFlow::SOLVER_NAME << "\n"
+  std::cout << FlowNetwork::SOLVER_NAME << "\n"
             << "  -n --no-cache"
             << "                 "
             << "implement without cache\n"
@@ -224,7 +224,7 @@ void NetworkFlow::printHelp()
   std::cout << std::endl;
 }
 
-void NetworkFlow::makeLog(const std::string& logfile)
+void FlowNetwork::makeLog(const std::string& logfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);

@@ -3,7 +3,7 @@
 #include <tswap.hpp>
 #include <iostream>
 #include <naive_tswap.hpp>
-#include <network_flow.hpp>
+#include <flow_network.hpp>
 #include <problem.hpp>
 #include <random>
 #include <util.hpp>
@@ -100,8 +100,8 @@ std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem *P,
                                   bool verbose, int argc, char *argv[])
 {
   std::unique_ptr<Solver> solver;
-  if (solver_name == "NetworkFlow") {
-    solver = std::make_unique<NetworkFlow>(P);
+  if (solver_name == "FlowNetwork") {
+    solver = std::make_unique<FlowNetwork>(P);
   } else if (solver_name == "NaiveTSWAP") {
     solver = std::make_unique<NaiveTSWAP>(P);
   } else if (solver_name == "TSWAP") {
@@ -128,7 +128,7 @@ void printHelp()
                "random starts/goals"
             << "\n\nSolver Options:" << std::endl;
   // each solver
-  NetworkFlow::printHelp();
+  FlowNetwork::printHelp();
   NaiveTSWAP::printHelp();
   TSWAP::printHelp();
 }

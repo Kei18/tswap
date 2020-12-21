@@ -1,11 +1,11 @@
-#include <network_flow.hpp>
+#include <flow_network.hpp>
 
 #include "gtest/gtest.h"
 
-TEST(NetworkFlow, TEN_INCREMENTAL)
+TEST(FlowNetwork, TEN_INCREMENTAL)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
   solver->solve();
 
   auto plan = solver->getSolution();
@@ -14,10 +14,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
+TEST(FlowNetwork, TEN_INCREMENTAL_USE_MINIMUM_STEP)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-m";
@@ -31,10 +31,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_MINIMUM_STEP)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_USE_INSTRUCTED_TIMESTEP)
+TEST(FlowNetwork, TEN_INCREMENTAL_USE_INSTRUCTED_TIMESTEP)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-t";
@@ -49,10 +49,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_INSTRUCTED_TIMESTEP)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_USE_BINARY_SEARCH)
+TEST(FlowNetwork, TEN_INCREMENTAL_USE_BINARY_SEARCH)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-b";
@@ -66,10 +66,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_BINARY_SEARCH)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_USE_BINARY_SEARCH_WITHOUT_CACHE)
+TEST(FlowNetwork, TEN_INCREMENTAL_USE_BINARY_SEARCH_WITHOUT_CACHE)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-b";
@@ -84,10 +84,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_USE_BINARY_SEARCH_WITHOUT_CACHE)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
+TEST(FlowNetwork, TEN_INCREMENTAL_NO_FILTER)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-f";
@@ -101,10 +101,10 @@ TEST(NetworkFlow, TEN_INCREMENTAL_NO_FILTER)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN)
+TEST(FlowNetwork, TEN)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-n";
@@ -120,10 +120,10 @@ TEST(NetworkFlow, TEN)
 }
 
 #ifdef _GUROBI_
-TEST(NetworkFlow, TEN_ILP)
+TEST(FlowNetwork, TEN_ILP)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-n";
@@ -139,10 +139,10 @@ TEST(NetworkFlow, TEN_ILP)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(NetworkFlow, TEN_INCREMENTAL_ILP)
+TEST(FlowNetwork, TEN_INCREMENTAL_ILP)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  std::unique_ptr<Solver> solver = std::make_unique<NetworkFlow>(&P);
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
   char argv1[] = "-g";
