@@ -5,6 +5,7 @@
 namespace Color {
   static const ofColor bg = ofColor(0, 0, 0);
   static const ofColor node = ofColor(255, 255, 255);
+  static const ofColor goal = ofColor(20, 20, 20);
   static const ofColor font = ofColor(100, 100, 100);
   static const ofColor font_info = ofColor(255, 255, 255);
   static const ofColor edge = ofColor(200, 200, 200);

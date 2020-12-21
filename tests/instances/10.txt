@@ -1,0 +1,9 @@
+map_file=test_deadlock.map
+agents=3
+seed=0
+random_problem=0
+max_timestep=10
+max_comp_time=1000
+1,0,5,1
+2,4,0,1
+0,1,4,2

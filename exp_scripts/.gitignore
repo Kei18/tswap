@@ -1,0 +1,3 @@
+*.sh
+!benchmark_generator.sh
+!run.sh

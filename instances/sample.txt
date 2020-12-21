@@ -19,6 +19,9 @@ max_timestep=1000
 ## computation time limit, ms
 max_comp_time=5000
 
+## groups, default 0
+flocking_blocks=10
+
 ## custom starts/goals
 ## invalid when random_problem=1 or scen_file exists
 ## (x_s, y_s, x_g, y_g)

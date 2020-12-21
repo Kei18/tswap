@@ -1,23 +1,16 @@
-Multi-Agent Path Finding
+Unlabeled Multi-Agent Path Finding
 ===
-[![Build Status](https://travis-ci.com/Kei18/mapf-IR.svg?token=NJ5EpN7k73FqKbLee887&branch=master)](https://travis-ci.com/Kei18/mapf-IR)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+![test](https://github.com/Kei18/unlabeled-MAPF/workflows/test/badge.svg?branch=dev)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE.txt)
 
-A simulator and visualizer of Multi-Agent Path Finding (MAPF), used in a paper "Iterative Refinement for Realtime MAPF".
+A simulator and visualizer of Unlabeled/Anonymous Multi-Agent Path Finding (MAPF).
 It is written in C++(17) with [CMake](https://cmake.org/) build and tested on OSX 10.15.
+The repository uses [Google Test](https://github.com/google/googletest).
 The visualizer uses [openFrameworks](https://openframeworks.cc).
 
-The implementations include: HCA\* and WHCA\* [1], PIBT [2], CBS [3], ICBS [4], ECBS [5], PIBT-Complete, and IR.
+GUROBI9.1
 
 ## Demo
-![100 agents in arena](/material/arena_100agents.gif)
-
-100 agents in arena, planned by PIBT in 67ms.
-
-![1000 agents in brc202d](/material/brc202d_1000agents.gif)
-
-1000 agents in brc202d, planned by PIBT-Complete in 84sec.
-The gif shows a part of an MAPF plan.
 
 ## Building
 
@@ -106,18 +99,3 @@ This software is released under the MIT License, see [LICENSE.txt](LICENCE.txt).
 [Keisuke Okumura](https://kei18.github.io) is a Ph.D. candidate at Tokyo Institute of Technology, working on multiple moving agents.
 
 ## Reference
-1. Silver, D. (2005).
-   Cooperative pathfinding.
-   In AIIDE’05 Proceedings of the First AAAI Conference on Artificial Intelligence and Interactive Digital Entertainment (pp. 117–122).
-1. Okumura, K., Machida, M., Défago, X., & Tamura, Y. (2019).
-   Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding.
-   In Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence (pp. 535–542).
-1. Sharon, G., Stern, R., Felner, A., & Sturtevant, N. R. (2015).
-   Conflict-based search for optimal multi-agent pathfinding.
-   Artificial Intelligence, 219, 40–66.
-1. Boyarski, E., Felner, A., Stern, R., Sharon, G., Tolpin, D., Betzalel, O., & Shimony, E. (2015, June).
-   ICBS: improved conflict-based search algorithm for multi-agent pathfinding.
-   In Twenty-Fourth International Joint Conference on Artificial Intelligence.
-1. Barer, M., Sharon, G., Stern, R., & Felner, A. (2014).
-   Suboptimal Variants of the Conflict-Based Search Algorithm for the Multi-Agent Pathfinding Problem.
-   In Seventh Annual Symposium on Combinatorial Search.
