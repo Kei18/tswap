@@ -136,15 +136,14 @@ Path Graph::AstarSearchWithCache(Node* const s, Node* const g)
     setClosed = [&](Node* v) { CLOSE_S[v->id] = true; };
 
   } else {
-    createNewNode = [&] (Node* v, int g, int f, AstarNode* p) {
-      AstarNode* new_node = new AstarNode{ v, g, f, p };
+    createNewNode = [&](Node* v, int g, int f, AstarNode* p) {
+      AstarNode* new_node = new AstarNode{v, g, f, p};
       GC_L.push_back(new_node);
       return new_node;
     };
     isClosed = [&](Node* v) { return CLOSE_L.find(v->id) != CLOSE_L.end(); };
     setClosed = [&](Node* v) { CLOSE_L[v->id] = true; };
   }
-
 
   // OPEN
   std::priority_queue<AstarNode*, AstarNodes, decltype(compare)> OPEN(compare);
@@ -231,7 +230,7 @@ void Graph::BFS(Node* const s, const Nodes& goals)
   std::function<void(Node*)> setClosed;
 
   // change data structure by graph size
-  bool is_small_graph = (V.size() <= 300000/4);
+  bool is_small_graph = (V.size() <= 300000 / 4);
 
   // for allocating memory
   const int MEMORY_SIZE = is_small_graph ? V.size() * 4 : 1;
@@ -259,8 +258,8 @@ void Graph::BFS(Node* const s, const Nodes& goals)
     setClosed = [&](Node* v) { CLOSE_S[v->id] = true; };
 
   } else {
-    createNewNode = [&] (Node* v, BFSNode* p) {
-      BFSNode* new_node = new BFSNode{ v, p };
+    createNewNode = [&](Node* v, BFSNode* p) {
+      BFSNode* new_node = new BFSNode{v, p};
       GC_L.push_back(new_node);
       return new_node;
     };
@@ -296,14 +295,15 @@ void Graph::BFS(Node* const s, const Nodes& goals)
         path = itr->second;
         path.push_back(n->v);
       } else {
-        path = { s, n->v };
+        path = {s, n->v};
       }
       PATH_TABLE[getPathTableKey(s, n->v)] = path;
     }
 
     // check goal condition
     if (inArray(n->v, goals)) {
-      while (goal_index < goals.size() && isPathComputed(s, goals[goal_index])) {
+      while (goal_index < goals.size() &&
+             isPathComputed(s, goals[goal_index])) {
         ++goal_index;
       }
       // visit all goals
@@ -328,8 +328,6 @@ bool Graph::isPathComputed(Node* const s, Node* const g) const
 {
   return PATH_TABLE.find(getPathTableKey(s, g)) != PATH_TABLE.end();
 }
-
-
 
 std::string Graph::getPathTableKey(Node* const s, Node* const g)
 {

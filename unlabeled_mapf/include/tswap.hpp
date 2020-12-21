@@ -24,12 +24,13 @@ private:
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
   int elapsed_pathplanning;  // elapsed time for path planing
-  int estimated_makespan;    // estimated makespan according to the target assignment
-  int estimated_soc;         // estimated sum-of-costs according to the target assignment
+  int estimated_makespan;    // estimated makespan according to the target
+                             // assignment
+  int estimated_soc;         // estimated sum-of-costs according to the target
+                             // assignment
 
   // return a candidate of next location
-  Node* planOneStep(Agent* a,
-                    std::unordered_map<Node*, Agent*>& occupied_now,
+  Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
                     std::unordered_map<Node*, Agent*>& occupied_next);
 
   // detect and resolve deadlocks

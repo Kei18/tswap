@@ -1,13 +1,12 @@
 #include "../include/tswap.hpp"
 
-#include "../include/goal_allocator.hpp"
 #include <fstream>
+
+#include "../include/goal_allocator.hpp"
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-TSWAP::TSWAP(Problem* _P)
-  : Solver(_P),
-    use_bfs_allocate(false)
+TSWAP::TSWAP(Problem* _P) : Solver(_P), use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -28,10 +27,8 @@ void TSWAP::run()
   estimated_soc = allocator.getCost();
   estimated_makespan = allocator.getMakespan();
 
-  info(" ", "elapsed:", elapsed_assignment,
-       ", finish goal assignment",
-       ", soc: >=", estimated_soc,
-       ", makespan: >=", estimated_makespan);
+  info(" ", "elapsed:", elapsed_assignment, ", finish goal assignment",
+       ", soc: >=", estimated_soc, ", makespan: >=", estimated_makespan);
 
   auto t_pathplanning = Time::now();
 
@@ -75,7 +72,7 @@ void TSWAP::run()
     a->v_now = P->getStart(i);  // current node
     a->v_next = nullptr;        // next node
     a->g = goals[i];            // goal
-    a->called = 0;              // how many times an agent is called in the queue
+    a->called = 0;  // how many times an agent is called in the queue
     occupied_now[a->v_now] = a;
 
     // insert OPEN set
@@ -119,7 +116,8 @@ void TSWAP::run()
         Agent* a_j = itr_now->second;
         if (a_j->v_now == a_j->g) {
           swapGoal(a_i, a_j);
-        } else if (deadlockDetectResolve(a_i, occupied_now)) {  // deadlock detection
+        } else if (deadlockDetectResolve(a_i,
+                                         occupied_now)) {  // deadlock detection
           // skip
           undecided.push(a_i);
           continue;
@@ -189,8 +187,8 @@ void TSWAP::run()
   solution = plan;
 }
 
-bool TSWAP::deadlockDetectResolve
-(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now)
+bool TSWAP::deadlockDetectResolve(
+    Agent* a, std::unordered_map<Node*, Agent*>& occupied_now)
 {
   // deadlock detection
   std::vector<Agent*> A_p;
@@ -205,8 +203,9 @@ bool TSWAP::deadlockDetectResolve
   }
   if (A_p.size() > 1 && b == a) {  // detect deadlock
     // rotate targets
-    Node* g = (*(A_p.end()-1))->g;
-    for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
+    Node* g = (*(A_p.end() - 1))->g;
+    for (auto itr = A_p.begin() + 1; itr != A_p.end(); ++itr)
+      (*itr)->g = (*(itr - 1))->g;
     (*A_p.begin())->g = g;
     return true;
   }
@@ -246,18 +245,18 @@ Node* TSWAP::planOneStep(Agent* a,
 void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"use-bfs-allocate", no_argument, 0, 'b'},
-    {0, 0, 0, 0},
+      {"use-bfs-allocate", no_argument, 0, 'b'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
   while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
     switch (opt) {
-    case 'b':
-      use_bfs_allocate = true;
-      break;
-    default:
-      break;
+      case 'b':
+        use_bfs_allocate = true;
+        break;
+      default:
+        break;
     }
   }
 }

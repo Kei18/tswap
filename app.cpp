@@ -1,11 +1,12 @@
 #include <getopt.h>
+
 #include <default_params.hpp>
-#include <tswap.hpp>
+#include <flow_network.hpp>
 #include <iostream>
 #include <naive_tswap.hpp>
-#include <flow_network.hpp>
 #include <problem.hpp>
 #include <random>
+#include <tswap.hpp>
 #include <util.hpp>
 #include <vector>
 

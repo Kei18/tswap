@@ -1,13 +1,12 @@
 #include "../include/naive_tswap.hpp"
 
-#include "../include/goal_allocator.hpp"
 #include <fstream>
+
+#include "../include/goal_allocator.hpp"
 
 const std::string NaiveTSWAP::SOLVER_NAME = "NaiveTSWAP";
 
-NaiveTSWAP::NaiveTSWAP(Problem* _P)
-  : Solver(_P),
-    use_bfs_allocate(false)
+NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P), use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -28,10 +27,8 @@ void NaiveTSWAP::run()
   estimated_soc = allocator.getCost();
   estimated_makespan = allocator.getMakespan();
 
-  info(" ", "elapsed:", elapsed_assignment,
-       ", finish goal assignment",
-       ", soc: >=", estimated_soc,
-       ", makespan: >=", estimated_makespan);
+  info(" ", "elapsed:", elapsed_assignment, ", finish goal assignment",
+       ", soc: >=", estimated_soc, ", makespan: >=", estimated_makespan);
 
   auto t_pathplanning = Time::now();
 
@@ -70,12 +67,13 @@ void NaiveTSWAP::run()
         auto tmp = a->g;
         a->g = b->g;
         b->g = tmp;
-      } else { // deadlock detection
-        std::vector<Agent*> A_p = { a };  // A'
+      } else {                          // deadlock detection
+        std::vector<Agent*> A_p = {a};  // A'
         while (true) {
           if (b->v == b->g) break;  // not deadlock
           Node* w = getPath(b->v, b->g)[1];
-          auto itr_w = std::find_if(A.begin(), A.end(), [w](Agent* c) { return c->v == w; });
+          auto itr_w = std::find_if(A.begin(), A.end(),
+                                    [w](Agent* c) { return c->v == w; });
           if (itr_w == A.end()) break;  // not deadlock
           A_p.push_back(b);
           b = *itr_w;
@@ -83,8 +81,9 @@ void NaiveTSWAP::run()
         }
         if (A_p.size() > 1 && b == a) {  // deadlock
           // rotate targets
-          Node* g = (*(A_p.end()-1))->g;
-          for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
+          Node* g = (*(A_p.end() - 1))->g;
+          for (auto itr = A_p.begin() + 1; itr != A_p.end(); ++itr)
+            (*itr)->g = (*(itr - 1))->g;
           (*A_p.begin())->g = g;
         }
       }
@@ -131,18 +130,18 @@ void NaiveTSWAP::run()
 void NaiveTSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"use-bfs-allocate", no_argument, 0, 'b'},
-    {0, 0, 0, 0},
+      {"use-bfs-allocate", no_argument, 0, 'b'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
   while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
     switch (opt) {
-    case 'b':
-      use_bfs_allocate = true;
-      break;
-    default:
-      break;
+      case 'b':
+        use_bfs_allocate = true;
+        break;
+      default:
+        break;
     }
   }
 }

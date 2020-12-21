@@ -18,11 +18,9 @@ public:
   TEN_INCREMENTAL(Problem* const _P,
                   const bool _filter = false,  // pruning
                   const bool _ilp = false);
-  TEN_INCREMENTAL(Problem* const _P,
-                  const int _t,
+  TEN_INCREMENTAL(Problem* const _P, const int _t,
                   const bool _filter = false,  // pruning
-                  const bool _ilp = false,
-                  int _time_limit = -1);
+                  const bool _ilp = false, int _time_limit = -1);
   ~TEN_INCREMENTAL();
 
   void update();

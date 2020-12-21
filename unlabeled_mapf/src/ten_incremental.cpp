@@ -2,21 +2,16 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P,
-                                 const bool _filter,
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter,
                                  const bool _ilp)
-  : TEN(_P, 0, _filter, _ilp),
-    current_timestep(0)
+    : TEN(_P, 0, _filter, _ilp), current_timestep(0)
 {
 }
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P,
-                                 const int _t,
-                                 const bool _filter,
-                                 const bool _ilp,
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t,
+                                 const bool _filter, const bool _ilp,
                                  const int _time_limit)
-  : TEN(_P, _t - 1, _filter, _ilp),
-    current_timestep(_t - 1)
+    : TEN(_P, _t - 1, _filter, _ilp), current_timestep(_t - 1)
 {
   setTimeLimit(_time_limit);
   if (_t > 1) TEN::updateGraph();
@@ -45,7 +40,7 @@ void TEN_INCREMENTAL::update(const int t)
     // delete edge t -> t+1, add sink edge
     for (auto v : V) {
       auto p = network.getNode(NodeType::V_OUT, v, t);
-      auto q = network.getNode(NodeType::V_IN, v, t+1);
+      auto q = network.getNode(NodeType::V_IN, v, t + 1);
       network.removeParent(q, p);
       if (inArray(v, P->getConfigGoal())) network.addParent(network.sink, p);
     }
@@ -64,7 +59,8 @@ void TEN_INCREMENTAL::update(const int t)
 
       // remove redundant edge
       auto r = network.getNode(NodeType::V_IN, v, t + 1);
-      if (r != nullptr) network.removeParent(r, network.getNode( NodeType::V_OUT, v, t));
+      if (r != nullptr)
+        network.removeParent(r, network.getNode(NodeType::V_OUT, v, t));
 
       // update flow
       if (inArray(network.sink, p->children)) {

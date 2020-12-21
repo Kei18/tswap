@@ -117,7 +117,8 @@ int TEN::getEdgesNum() { return network.getEdgesNum(); }
 
 int TEN::getDfsCnt() { return network.dfs_cnt; }
 
-void TEN::setTimeLimit(int _time_limit) {
+void TEN::setTimeLimit(int _time_limit)
+{
   time_limit = _time_limit;
   t_start = Time::now();
   network.setTimeLimit(_time_limit);

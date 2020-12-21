@@ -33,8 +33,9 @@ void GoalAllocator::assign()
     }
 
     // sort
-    std::sort(OPEN.begin(), OPEN.end(),
-              [&](LibGA::FieldEdge a, LibGA::FieldEdge b) { return a.d < b.d; });
+    std::sort(
+        OPEN.begin(), OPEN.end(),
+        [&](LibGA::FieldEdge a, LibGA::FieldEdge b) { return a.d < b.d; });
 
     for (auto itr = OPEN.begin(); itr != OPEN.end(); ++itr) {
       auto p = *itr;
@@ -44,8 +45,8 @@ void GoalAllocator::assign()
       if (matching.matched_num == P->getNum()) {
         matching_makespan = p.d;
         // add equal cost edges
-        while (itr+1 != OPEN.end() && (itr+1)->d == p.d) {
-          matching.addEdge(&(*(itr+1)));
+        while (itr + 1 != OPEN.end() && (itr + 1)->d == p.d) {
+          matching.addEdge(&(*(itr + 1)));
           ++itr;
         }
         break;
@@ -72,9 +73,9 @@ void GoalAllocator::assign()
     };
 
     // setup open list
-    std::priority_queue<LibGA::FieldEdge,
-                        std::vector<LibGA::FieldEdge>,
-                        decltype(compare)> OPEN(compare);
+    std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
+                        decltype(compare)>
+        OPEN(compare);
 
     for (int i = 0; i < P->getNum(); ++i) {
       auto s = P->getStart(i);
@@ -95,7 +96,7 @@ void GoalAllocator::assign()
         continue;
       }
 
-      if (matching_makespan > 0) { // add equal cost edges
+      if (matching_makespan > 0) {  // add equal cost edges
         if (p.d <= matching_makespan) {
           matching.addEdge(&p);
           continue;
@@ -112,7 +113,6 @@ void GoalAllocator::assign()
       if (matching.matched_num == P->getNum()) matching_makespan = p.d;
     }
   }
-
 
   // use min cost maximum matching
   if (use_min_cost) matching.solveBySuccessiveShortestPath();

@@ -22,8 +22,10 @@ private:
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
   int elapsed_pathplanning;  // elapsed time for path planing
-  int estimated_makespan;    // estimated makespan according to the target assignment
-  int estimated_soc;         // estimated sum-of-costs according to the target assignment
+  int estimated_makespan;    // estimated makespan according to the target
+                             // assignment
+  int estimated_soc;         // estimated sum-of-costs according to the target
+                             // assignment
 
   void run();
 

@@ -30,10 +30,10 @@ namespace LibGA
   struct Matching {
     const Nodes starts;
     const Nodes goals;
-    const int N;   // number of starts
-    const int NIL;  // mean empty
-    std::vector<std::vector<int>> adj;  // edges
-    std::vector<int> mate;  // pair
+    const int N;                         // number of starts
+    const int NIL;                       // mean empty
+    std::vector<std::vector<int>> adj;   // edges
+    std::vector<int> mate;               // pair
     std::vector<std::vector<int>> cost;  // start -> goal
     int matched_num;
     Nodes assigned_goals;  // results

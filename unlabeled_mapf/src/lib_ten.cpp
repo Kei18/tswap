@@ -161,10 +161,7 @@ int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
   return capacity[key];
 }
 
-void LibTEN::ResidualNetwork::clearAllCapacity()
-{
-  capacity.clear();
-}
+void LibTEN::ResidualNetwork::clearAllCapacity() { capacity.clear(); }
 
 void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
 {
@@ -270,8 +267,8 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
     std::unordered_map<TEN_Node*, bool> CLOSE;
 
     std::vector<DFSNode*> GC;  // garbage collection
-    auto createNewNode = [&] (TEN_Node* v, DFSNode* p) {
-      auto q = new DFSNode { v, p };
+    auto createNewNode = [&](TEN_Node* v, DFSNode* p) {
+      auto q = new DFSNode{v, p};
       GC.push_back(q);
       return q;
     };
@@ -305,10 +302,10 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
       // set neighbors
       LibTEN::TEN_Nodes next;
       for (auto itr = std::rbegin(p->parents); itr != std::rend(p->parents);
-      ++itr)
+           ++itr)
         next.push_back(*itr);
-      for (auto itr = std::rbegin(p->children); itr !=
-      std::rend(p->children); ++itr)
+      for (auto itr = std::rbegin(p->children); itr != std::rend(p->children);
+           ++itr)
         next.push_back(*itr);
 
       // expand
@@ -323,8 +320,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
             if (reachable_filter[q->v] > sink->t) continue;
-          } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT)
-          {
+          } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
             if (reachable_filter[q->v] + q->t > sink->t) continue;
           }
         }

@@ -1,4 +1,5 @@
 #include "../include/flow_network.hpp"
+
 #include <fstream>
 
 const std::string FlowNetwork::SOLVER_NAME = "FlowNetwork";
@@ -27,16 +28,14 @@ void FlowNetwork::run()
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g =
-        *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
-          if (use_real_distance) {
-            return pathDist(s, v) < pathDist(s, u);
-          } else {
-            return s->manhattanDist(v) < s->manhattanDist(u);
-          }
-        });
-      int d = (use_real_distance)
-        ? pathDist(s, g)
-        : s->manhattanDist(g);
+          *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
+            if (use_real_distance) {
+              return pathDist(s, v) < pathDist(s, u);
+            } else {
+              return s->manhattanDist(v) < s->manhattanDist(u);
+            }
+          });
+      int d = (use_real_distance) ? pathDist(s, g) : s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
     }
   }
@@ -46,9 +45,9 @@ void FlowNetwork::run()
 
   std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
-    network_flow = std::make_shared<TEN_INCREMENTAL>
-      (P, minimum_step, use_pruning, use_ilp_solver,
-       max_comp_time - (int)getSolverElapsedTime());
+    network_flow = std::make_shared<TEN_INCREMENTAL>(
+        P, minimum_step, use_pruning, use_ilp_solver,
+        max_comp_time - (int)getSolverElapsedTime());
   }
 
   // for binary search
@@ -58,10 +57,10 @@ void FlowNetwork::run()
 
   int t_real = minimum_step;
   while (t_real <= max_timestep && !overCompTime()) {
-
     // build time expanded network
     if (!use_incremental) {
-      network_flow = std::make_shared<TEN>(P, t_real, use_pruning, use_ilp_solver);
+      network_flow =
+          std::make_shared<TEN>(P, t_real, use_pruning, use_ilp_solver);
     } else if (!use_past_flow) {
       network_flow->resetFlow();
     }
@@ -76,28 +75,20 @@ void FlowNetwork::run()
     if (use_ilp_solver) {
       // for ILP solver
 #ifdef _GUROBI_
-      HISTS.push_back({
-          (int)getSolverElapsedTime(),
-          t_real,
-          network_flow->isValid(),
-          0, 0,
-          network_flow->getVariantsCnt(),
-          network_flow->getConstraintsCnt()});
+      HISTS.push_back(
+          {(int)getSolverElapsedTime(), t_real, network_flow->isValid(), 0, 0,
+           network_flow->getVariantsCnt(), network_flow->getConstraintsCnt()});
       info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
            ", valid:", network_flow->isValid(),
            ", variants:", network_flow->getVariantsCnt(),
            ", constraints:", network_flow->getConstraintsCnt());
 #endif
     } else {
-      HISTS.push_back({
-          (int)getSolverElapsedTime(),
-          t_real,
-          network_flow->isValid(),
-          network_flow->getDfsCnt(),
-          network_flow->getNodesNum(),
-          0, 0});
+      HISTS.push_back({(int)getSolverElapsedTime(), t_real,
+                       network_flow->isValid(), network_flow->getDfsCnt(),
+                       network_flow->getNodesNum(), 0, 0});
       float visited_rate =
-        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
+          (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
       info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
            ", valid:", network_flow->isValid(),
            ", visited_nodes:", network_flow->getDfsCnt(), "/",
@@ -122,8 +113,8 @@ void FlowNetwork::run()
       ++t_real;
     } else {
       t_binary = (upper_bound == -1)
-        ? t_binary * 2
-        : (upper_bound - lower_bound) / 2 + lower_bound;
+                     ? t_binary * 2
+                     : (upper_bound - lower_bound) / 2 + lower_bound;
       if (t_binary == lower_bound) {
         is_optimal = true;
         break;
@@ -136,52 +127,52 @@ void FlowNetwork::run()
 void FlowNetwork::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"no-cache", no_argument, 0, 'n'},
-    {"use-lower-bound", no_argument, 0, 'l'},
-    {"use-binary-search", no_argument, 0, 'b'},
-    {"no-pruning", no_argument, 0, 'p'},
-    {"no-past-flow", no_argument, 0, 'r'},  // [r]euse
-    {"use-real-distance", no_argument, 0, 'd'},
-    {"use-ilp-solver", no_argument, 0, 'g'},
-    {"start-timestep", no_argument, 0, 't'},
-    {0, 0, 0, 0},
+      {"no-cache", no_argument, 0, 'n'},
+      {"use-lower-bound", no_argument, 0, 'l'},
+      {"use-binary-search", no_argument, 0, 'b'},
+      {"no-pruning", no_argument, 0, 'p'},
+      {"no-past-flow", no_argument, 0, 'r'},  // [r]euse
+      {"use-real-distance", no_argument, 0, 'd'},
+      {"use-ilp-solver", no_argument, 0, 'g'},
+      {"start-timestep", no_argument, 0, 't'},
+      {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
   while ((opt = getopt_long(argc, argv, "nlbprdgt:", longopts, &longindex)) !=
          -1) {
     switch (opt) {
-    case 'n':
-      use_incremental = false;
-      break;
-    case 'l':
-      use_lower_bound = true;
-      break;
-    case 'b':
-      use_binary_search = true;
-      break;
-    case 'p':
-      use_pruning = false;
-      break;
-    case 'r':
-      use_past_flow = false;
-      break;
-    case 'd':
-      use_real_distance = true;
-      break;
-    case 't':
-      minimum_step = std::atoi(optarg);
-      if (minimum_step <= 0) {
-        minimum_step = 1;
-        warn("start timestep should be greater than 0");
-      }
-      break;
+      case 'n':
+        use_incremental = false;
+        break;
+      case 'l':
+        use_lower_bound = true;
+        break;
+      case 'b':
+        use_binary_search = true;
+        break;
+      case 'p':
+        use_pruning = false;
+        break;
+      case 'r':
+        use_past_flow = false;
+        break;
+      case 'd':
+        use_real_distance = true;
+        break;
+      case 't':
+        minimum_step = std::atoi(optarg);
+        if (minimum_step <= 0) {
+          minimum_step = 1;
+          warn("start timestep should be greater than 0");
+        }
+        break;
 #ifdef _GUROBI_
-    case 'g':
-      use_ilp_solver = true;
-      break;
+      case 'g':
+        use_ilp_solver = true;
+        break;
 #endif
-    default:
+      default:
         break;
     }
   }
@@ -241,15 +232,12 @@ void FlowNetwork::makeLog(const std::string& logfile)
       << "\nuse_real_distance:" << use_real_distance
       << "\nuse_past_flow:" << use_past_flow
       << "\nuse_ilp_solver:" << use_ilp_solver
-      << "\nminimum_step:" << minimum_step
-      << "\n";
+      << "\nminimum_step:" << minimum_step << "\n";
   log << "optimal=" << is_optimal << "\n";
   log << "history=\n";
   for (auto hist : HISTS) {
-    log << "elapsed:" << hist.elapsed
-        << ",makespan:" << hist.makespan
-        << ",valid:" << hist.valid
-        << ",network_size:" << hist.network_size
+    log << "elapsed:" << hist.elapsed << ",makespan:" << hist.makespan
+        << ",valid:" << hist.valid << ",network_size:" << hist.network_size
         << ",visited:" << hist.visited_nodes;
 #ifdef _GUROBI_
     if (use_ilp_solver) {
