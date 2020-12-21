@@ -1,3 +1,1 @@
-*.sh
-!benchmark_generator.sh
-!run.sh
+tmp.sh
