@@ -48,10 +48,10 @@ void TSWAP::run()
       compare);
 
   // work as reservation table
-  std::unordered_map<Node*, Agent*> occupied_now;
-  std::unordered_map<Node*, Agent*> occupied_next;
+  std::unordered_map<Node*, Agent*> occupied_now;   // current location
+  std::unordered_map<Node*, Agent*> occupied_next;  // next location
 
-  // move action
+  // actions
   auto moveTo = [&](Agent* a, Node* v) {
     a->v_next = v;
     occupied_next[v] = a;
@@ -75,7 +75,7 @@ void TSWAP::run()
     a->v_now = P->getStart(i);  // current node
     a->v_next = nullptr;        // next node
     a->g = goals[i];            // goal
-    a->called = 0;              // how many times an agent is called
+    a->called = 0;              // how many times an agent is called in the queue
     occupied_now[a->v_now] = a;
 
     // insert OPEN set
@@ -113,16 +113,18 @@ void TSWAP::run()
         continue;
       }
 
-      // rule 3. if u is occupied in current timestep
+      // rule 3. if u is occupied in the current timestep
       auto itr_now = occupied_now.find(u);
       if (itr_now != occupied_now.end()) {
         Agent* a_j = itr_now->second;
         if (a_j->v_now == a_j->g) {
           swapGoal(a_i, a_j);
-        } else if (deadlockDetectResolve(a_i, occupied_now)) {
+        } else if (deadlockDetectResolve(a_i, occupied_now)) {  // deadlock detection
+          // skip
           undecided.push(a_i);
           continue;
         }
+
         if (a_j->v_next == nullptr) {
           // skip
           undecided.push(a_i);
@@ -229,11 +231,11 @@ Node* TSWAP::planOneStep(Agent* a,
     int c_v = pathDist(v, a->g);
     int c_u = pathDist(u, a->g);
     if (c_v != c_u) return c_v < c_u;
-    // occupancy for next timestep
+    // tiebreak1. occupancy for next timestep
     int o_v_next = (int)(occupied_next.find(v) != occupied_next.end());
     int o_u_next = (int)(occupied_next.find(u) != occupied_next.end());
     if (o_v_next != o_u_next) return o_v_next < o_u_next;
-    // occupancy for current timestep
+    // tiebreak2. occupancy for current timestep
     int o_v_now = (int)(occupied_now.find(v) != occupied_now.end());
     int o_u_now = (int)(occupied_now.find(u) != occupied_now.end());
     if (o_v_now != o_u_now) return o_v_now < o_u_now;

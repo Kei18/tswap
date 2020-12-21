@@ -1,3 +1,7 @@
+/*
+ * TSWAP without modifications from the pseudo-code in the paper.
+ */
+
 #pragma once
 #include "solver.hpp"
 
@@ -9,17 +13,17 @@ public:
 private:
   struct Agent {
     int id;
-    Node* v;
-    Node* g;
+    Node* v;  // current location
+    Node* g;  // current target
   };
 
-  bool use_bfs_allocate;
+  bool use_bfs_allocate;  // use BFS in the target assignment, default: false
 
   // for log
-  int elapsed_assignment;
-  int elapsed_pathplanning;
-  int estimated_makespan;
-  int estimated_soc;
+  int elapsed_assignment;    // elapsed time for target assignment
+  int elapsed_pathplanning;  // elapsed time for path planing
+  int estimated_makespan;    // estimated makespan according to the target assignment
+  int estimated_soc;         // estimated sum-of-costs according to the target assignment
 
   void run();
 

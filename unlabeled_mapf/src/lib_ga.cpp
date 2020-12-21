@@ -89,6 +89,7 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
   // close list
   std::vector<bool> CLOSE(N * 2, false);
 
+  // DFS
   std::function<bool(int)> dfs = [&](int v) {  // start/goal
     if (CLOSE[v]) return false;
     CLOSE[v] = true;
@@ -110,11 +111,11 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
 
   const int s = e->start_index;
   const int g = N + e->goal_index;
-  if (mate[s] == NIL) {
+  if (mate[s] == NIL) {  // new path must include s
     dfs(s);
-  } else if (mate[g] == NIL) {
+  } else if (mate[g] == NIL) {  // new path must include g
     dfs(g);
-  } else {
+  } else {  // search all
     for (int v = 0; v < N; ++v) {
       if (mate[v] == NIL && dfs(v)) break;
     }
@@ -123,6 +124,7 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
 
 void LibGA::Matching::solveBySuccessiveShortestPath()
 {
+  // clear the previous results
   resetCurrentMate();
 
   // setup sink node

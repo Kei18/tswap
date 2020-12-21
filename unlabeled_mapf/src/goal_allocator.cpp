@@ -121,50 +121,6 @@ void GoalAllocator::assign()
   matching_cost = matching.getCost();
 }
 
-// void GoalAllocator::assignByBFS()
-// {
-//   // setup open list
-//   std::vector<LibGA::FieldEdge> OPEN;
-
-//   auto G = P->getG();
-//   auto goals = P->getConfigGoal();
-//   for (int i = 0; i < P->getNum(); ++i) {
-//     auto s = P->getStart(i);
-//     G->BFS(s, goals);
-//     for (int j = 0; j < P->getNum(); ++j) {
-//       auto g = P->getGoal(j);
-//       OPEN.emplace_back(i, j, s, g, s->manhattanDist(g), G->pathDist(s, g));
-//     }
-//   }
-
-//   // sort
-//   std::sort(OPEN.begin(), OPEN.end(),
-//             [&](LibGA::FieldEdge a, LibGA::FieldEdge b) { return a.d < b.d; });
-
-//   auto matching = LibGA::Matching(P);
-//   for (auto itr = OPEN.begin(); itr != OPEN.end(); ++itr) {
-//     auto p = *itr;
-//     matching.updateByIncrementalFordFulkerson(&p);
-
-//     // perfect matching
-//     if (matching.matched_num == P->getNum()) {
-//       matching_makespan = p.d;
-//       // add equal cost edges
-//       while (itr+1 != OPEN.end() && (itr+1)->d == p.d) {
-//         matching.addEdge(&(*(itr+1)));
-//         ++itr;
-//       }
-//       break;
-//     }
-//   }
-
-//   // min-cost matching
-//   if (use_min_cost) matching.solveBySuccessiveShortestPath();
-
-//   assigned_goals = matching.assigned_goals;
-//   matching_cost = matching.getCost();
-// }
-
 Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }
 
 int GoalAllocator::getCost() const { return matching_cost; }

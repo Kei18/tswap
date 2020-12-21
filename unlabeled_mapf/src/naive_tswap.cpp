@@ -57,7 +57,7 @@ void NaiveTSWAP::run()
       // desired node
       Node* u = getPath(a->v, a->g)[1];
 
-      // simple implementation with O(A), for faster version, see goal_swapper
+      // simple implementation with O(A), for faster version, see tswap.cpp
       auto itr =
           std::find_if(A.begin(), A.end(), [u](Agent* b) { return u == b->v; });
       if (itr == A.end()) {
@@ -81,7 +81,7 @@ void NaiveTSWAP::run()
           b = *itr_w;
           if (b == a) break;  // deadlock
         }
-        if (A_p.size() > 1 && b == a) {
+        if (A_p.size() > 1 && b == a) {  // deadlock
           // rotate targets
           Node* g = (*(A_p.end()-1))->g;
           for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
