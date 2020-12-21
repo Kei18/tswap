@@ -6,8 +6,8 @@ const std::string FlowNetwork::SOLVER_NAME = "FlowNetwork";
 FlowNetwork::FlowNetwork(Problem* _P)
     : Solver(_P),
       use_incremental(true),
-      use_filter(true),
-      use_minimum_step(false),
+      use_pruning(true),
+      use_lower_bound(false),
       use_real_distance(false),
       use_ilp_solver(false),
       use_binary_search(false),
@@ -23,7 +23,7 @@ FlowNetwork::~FlowNetwork() {}
 void FlowNetwork::run()
 {
   // setup minimum step
-  if (use_minimum_step) {
+  if (use_lower_bound) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
       Node* g =
@@ -45,7 +45,7 @@ void FlowNetwork::run()
   std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
     network_flow = std::make_shared<TEN_INCREMENTAL>
-      (P, minimum_step, use_filter, use_ilp_solver,
+      (P, minimum_step, use_pruning, use_ilp_solver,
        max_comp_time - (int)getSolverElapsedTime());
   }
 
@@ -59,7 +59,7 @@ void FlowNetwork::run()
 
     // build time expanded network
     if (!use_incremental) {
-      network_flow = std::make_shared<TEN>(P, t_real, use_filter, use_ilp_solver);
+      network_flow = std::make_shared<TEN>(P, t_real, use_pruning, use_ilp_solver);
     } else if (!use_past_flow) {
       network_flow->resetFlow();
     }
@@ -133,52 +133,52 @@ void FlowNetwork::run()
 void FlowNetwork::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-      {"no-cache", no_argument, 0, 'n'},
-      {"no-past-flow", no_argument, 0, 'p'},
-      {"no-filter", no_argument, 0, 'f'},
-      {"use-minimum-step", no_argument, 0, 'm'},
-      {"use-real-distance", no_argument, 0, 'r'},
-      {"use-ilp-solver", no_argument, 0, 'g'},
-      {"start-timestep", no_argument, 0, 't'},
-      {"use-binary-search", no_argument, 0, 'b'},
-      {0, 0, 0, 0},
+    {"no-cache", no_argument, 0, 'n'},
+    {"use-lower-bound", no_argument, 0, 'l'},
+    {"use-binary-search", no_argument, 0, 'b'},
+    {"no-pruning", no_argument, 0, 'p'},
+    {"no-past-flow", no_argument, 0, 'r'},  // [r]euse
+    {"use-real-distance", no_argument, 0, 'd'},
+    {"use-ilp-solver", no_argument, 0, 'g'},
+    {"start-timestep", no_argument, 0, 't'},
+    {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "nfmrgpt:b", longopts, &longindex)) !=
+  while ((opt = getopt_long(argc, argv, "nlbprdgt:", longopts, &longindex)) !=
          -1) {
     switch (opt) {
-      case 'n':
-        use_incremental = false;
-        break;
-      case 'p':
-        use_past_flow = false;
-        break;
-      case 'f':
-        use_filter = false;
-        break;
-      case 'm':
-        use_minimum_step = true;
-        break;
-      case 'r':
-        use_real_distance = true;
-        break;
-      case 'b':
-        use_binary_search = true;
-        break;
-      case 't':
-        minimum_step = std::atoi(optarg);
-        if (minimum_step <= 0) {
-          minimum_step = 1;
-          warn("start timestep should be greater than 0");
-        }
-        break;
+    case 'n':
+      use_incremental = false;
+      break;
+    case 'l':
+      use_lower_bound = true;
+      break;
+    case 'b':
+      use_binary_search = true;
+      break;
+    case 'p':
+      use_pruning = false;
+      break;
+    case 'r':
+      use_past_flow = false;
+      break;
+    case 'd':
+      use_real_distance = true;
+      break;
+    case 't':
+      minimum_step = std::atoi(optarg);
+      if (minimum_step <= 0) {
+        minimum_step = 1;
+        warn("start timestep should be greater than 0");
+      }
+      break;
 #ifdef _GUROBI_
-      case 'g':
-        use_ilp_solver = true;
-        break;
+    case 'g':
+      use_ilp_solver = true;
+      break;
 #endif
-      default:
+    default:
         break;
     }
   }
@@ -191,25 +191,25 @@ void FlowNetwork::printHelp()
             << "                 "
             << "implement without cache\n"
 
-            << "  -p --no-past-flow"
-            << "             "
-            << "implement without past flow\n"
-
-            << "  -f --no-filter"
-            << "                "
-            << "implement without filter\n"
-
-            << "  -m --use-minimum-step"
-            << "         "
-            << "implement with minimum-step (Manhattan distance)\n"
-
-            << "  -r --use-real-distance"
-            << "         "
-            << "calculate minimum-step by real distance\n"
+            << "  -l --use-lower-bound"
+            << "          "
+            << "LB, calculated by Manhattan distance\n"
 
             << "  -b --use-binary-search"
             << "        "
-            << "implement with binary search (and without cache)\n"
+            << "Binary, implement binary search for optimal makespan\n"
+
+            << "  -p --no-pruning"
+            << "               "
+            << "no Pruning\n"
+
+            << "  -r --no-past-flow"
+            << "             "
+            << "no Reuse, implement without past flow\n"
+
+            << "  -d --use-real-distance"
+            << "        "
+            << "calculate minimum-step by real distance\n"
 
             << "  -t --start-timestep [INT]"
             << "     "
@@ -232,12 +232,12 @@ void FlowNetwork::makeLog(const std::string& logfile)
 
   log << "params="
       << "\nuse_incremental:" << use_incremental
-      << "\nuse_filter:" << use_filter
-      << "\nuse_minimum_step:" << use_minimum_step
-      << "\nuse_real_distance:" << use_real_distance
-      << "\nuse_ilp_solver:" << use_ilp_solver
+      << "\nuse_lower_bound:" << use_lower_bound
       << "\nuse_binary_search:" << use_binary_search
+      << "\nuse_pruning:" << use_pruning
+      << "\nuse_real_distance:" << use_real_distance
       << "\nuse_past_flow:" << use_past_flow
+      << "\nuse_ilp_solver:" << use_ilp_solver
       << "\nminimum_step:" << minimum_step
       << "\n";
   log << "optimal=" << is_optimal << "\n";

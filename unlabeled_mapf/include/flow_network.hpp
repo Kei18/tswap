@@ -12,28 +12,29 @@ public:
 
 private:
   bool use_incremental;   // choose TEN_INCREMENTAL or TEN, default: true
-  bool use_filter;        // apply filter or not, default: true
-  bool use_minimum_step;  // use minimum step or not, default: false
+  bool use_pruning;       // pruning redundant vertices
+  bool use_lower_bound;   // use minimum step or not, default: false
   bool use_real_distance; // use real distance to compute minimum step, default: false
   bool use_ilp_solver;    // use ILP solver or not, default: false
   bool use_binary_search; // use binary search, default: false
   bool use_past_flow;     // use past flow, default: true
-  int minimum_step;
+
+  int minimum_step;       // start from this timestep
+  bool is_optimal;        // for binary search, optimal makespan or not
 
   void run();
 
   // for log
   struct HIST {
-    int elapsed;
-    int makespan;
-    bool valid;
-    int visited_nodes;
-    int network_size;
-    int variants_cnt;
-    int constraints_cnt;
+    int elapsed;          // elapsed time
+    int makespan;         // makespan limit
+    bool valid;           // valid unlabeled-MAPF result
+    int visited_nodes;    // the number of nodes visited in the Ford-Fulkerson algorithm
+    int network_size;     // network size
+    int variants_cnt;     // for ILP, the number of variables
+    int constraints_cnt;  // for ILP, the number of constraints
   };
   std::vector<HIST> HISTS;
-  bool is_optimal;
 
 public:
   FlowNetwork(Problem* _P);

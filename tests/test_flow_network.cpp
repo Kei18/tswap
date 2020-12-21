@@ -14,13 +14,13 @@ TEST(FlowNetwork, TEN_INCREMENTAL)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(FlowNetwork, TEN_INCREMENTAL_USE_MINIMUM_STEP)
+TEST(FlowNetwork, TEN_INCREMENTAL_USE_LOWER_BOUND)
 {
   Problem P = Problem("../tests/instances/02.txt");
   std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
-  char argv1[] = "-m";
+  char argv1[] = "-l";
   char* argv[] = {argv0, argv1};
   solver->setParams(2, argv);
   solver->solve();
@@ -84,13 +84,13 @@ TEST(FlowNetwork, TEN_INCREMENTAL_USE_BINARY_SEARCH_WITHOUT_CACHE)
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
 
-TEST(FlowNetwork, TEN_INCREMENTAL_NO_FILTER)
+TEST(FlowNetwork, TEN_INCREMENTAL_NO_PRUNING)
 {
   Problem P = Problem("../tests/instances/02.txt");
   std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
 
   char argv0[] = "dummy";
-  char argv1[] = "-f";
+  char argv1[] = "-p";
   char* argv[] = {argv0, argv1};
   solver->setParams(2, argv);
   solver->solve();
@@ -108,7 +108,7 @@ TEST(FlowNetwork, TEN)
 
   char argv0[] = "dummy";
   char argv1[] = "-n";
-  char argv2[] = "-f";
+  char argv2[] = "-p";
   char* argv[] = {argv0, argv1, argv2};
   solver->setParams(3, argv);
   solver->solve();
@@ -128,7 +128,7 @@ TEST(FlowNetwork, TEN_ILP)
   char argv0[] = "dummy";
   char argv1[] = "-n";
   char argv2[] = "-g";
-  char argv3[] = "-m";
+  char argv3[] = "-l";
   char* argv[] = {argv0, argv1, argv2, argv3};
   solver->setParams(4, argv);
   solver->solve();
@@ -146,7 +146,7 @@ TEST(FlowNetwork, TEN_INCREMENTAL_ILP)
 
   char argv0[] = "dummy";
   char argv1[] = "-g";
-  char argv2[] = "-m";
+  char argv2[] = "-l";
   char* argv[] = {argv0, argv1, argv2};
   solver->setParams(3, argv);
   solver->solve();
