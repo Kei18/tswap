@@ -81,7 +81,7 @@ void NaiveTSWAP::run()
           b = *itr_w;
           if (b == a) break;  // deadlock
         }
-        if (b == a) {
+        if (A_p.size() > 1 && b == a) {
           // rotate targets
           Node* g = (*(A_p.end()-1))->g;
           for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;

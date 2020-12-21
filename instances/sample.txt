@@ -9,8 +9,8 @@ agents=100
 ## seed of randomization
 seed=1
 
-## true  -> random starts/goals
-## false -> use custom starts/goals
+## 1 -> random starts/goals
+## 0 -> use custom starts/goals
 random_problem=1
 
 ## timestep limit

@@ -201,7 +201,7 @@ bool TSWAP::deadlockDetectResolve
     b = itr->second;
     if (A_p.size() > 1 && b == a) break;  // deadlock
   }
-  if (b == a) {  // detect deadlock
+  if (A_p.size() > 1 && b == a) {  // detect deadlock
     // rotate targets
     Node* g = (*(A_p.end()-1))->g;
     for (auto itr = A_p.begin()+1; itr != A_p.end(); ++itr) (*itr)->g = (*(itr-1))->g;
@@ -213,8 +213,8 @@ bool TSWAP::deadlockDetectResolve
 }
 
 Node* TSWAP::planOneStep(Agent* a,
-                               std::unordered_map<Node*, Agent*>& occupied_now,
-                               std::unordered_map<Node*, Agent*>& occupied_next)
+                         std::unordered_map<Node*, Agent*>& occupied_now,
+                         std::unordered_map<Node*, Agent*>& occupied_next)
 {
   Nodes C = a->v_now->neighbor;
 
