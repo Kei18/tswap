@@ -5,13 +5,13 @@ const std::string FlowNetwork::SOLVER_NAME = "FlowNetwork";
 
 FlowNetwork::FlowNetwork(Problem* _P)
     : Solver(_P),
-      use_incremental(true),
-      use_pruning(true),
       use_lower_bound(false),
-      use_real_distance(false),
-      use_ilp_solver(false),
       use_binary_search(false),
+      use_pruning(true),
       use_past_flow(true),
+      use_incremental(true),
+      use_ilp_solver(false),
+      use_real_distance(false),
       minimum_step(1),
       is_optimal(false)
 {
@@ -22,7 +22,7 @@ FlowNetwork::~FlowNetwork() {}
 
 void FlowNetwork::run()
 {
-  // setup minimum step
+  // setup minimum timestep
   if (use_lower_bound) {
     auto goals = P->getConfigGoal();
     for (auto s : P->getConfigStart()) {
@@ -34,7 +34,9 @@ void FlowNetwork::run()
             return s->manhattanDist(v) < s->manhattanDist(u);
           }
         });
-      int d = s->manhattanDist(g);
+      int d = (use_real_distance)
+        ? pathDist(s, g)
+        : s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
     }
   }
@@ -72,6 +74,7 @@ void FlowNetwork::run()
 
     // updte log
     if (use_ilp_solver) {
+      // for ILP solver
 #ifdef _GUROBI_
       HISTS.push_back({
           (int)getSolverElapsedTime(),

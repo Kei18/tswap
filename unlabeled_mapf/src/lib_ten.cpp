@@ -129,6 +129,7 @@ std::string LibTEN::ResidualNetwork::getEdgeName(LibTEN::TEN_Node* p,
   return p->name + "__" + q->name;
 }
 
+// TEN_Node 1.name__TEN_Node 2.name -> TEN_Node 2.name -- TEN_Node 1.name
 std::string LibTEN::ResidualNetwork::getReverseEdgeName(const std::string s)
 {
   for (int i = 0; i < s.size() - 1; ++i) {
@@ -190,14 +191,12 @@ void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 
 void LibTEN::ResidualNetwork::increment(TEN_Node* p, TEN_Node* q)
 {
-  int cap = getCapacity(p, q);
-  capacity[getEdgeName(p, q)] = cap + 1;
+  capacity[getEdgeName(p, q)] = 1;
 }
 
 void LibTEN::ResidualNetwork::decrement(TEN_Node* p, TEN_Node* q)
 {
-  int cap = getCapacity(p, q);
-  capacity[getEdgeName(p, q)] = cap - 1;
+  capacity[getEdgeName(p, q)] = 0;
 }
 
 void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)
@@ -239,30 +238,30 @@ void LibTEN::ResidualNetwork::solve()
 }
 
 /*
- * notice: implementation of DFS
+ * Notice about implementation of DFS.
  * Recursive call is much faster, however,
- * when problems become huge enough, I found several stack overflows.
+ * when problems become huge enough, I found stack overflows.
  * Therefore, the following implementation switches the modes
  * according to the number of vertices
  */
 
 void LibTEN::ResidualNetwork::FordFulkerson()
 {
-  const int MEMORY_LIMIT = 2500000;
+  const int MEMORY_LIMIT = 2500000;  // arbitrary value
   if (getNodesNum() > MEMORY_LIMIT) {
-    FordFulkersonWithStuck();
+    FordFulkersonWithStack();
   } else {
     FordFulkersonWithRecursiveCall();
   }
 }
 
-void LibTEN::ResidualNetwork::FordFulkersonWithStuck()
+void LibTEN::ResidualNetwork::FordFulkersonWithStack()
 {
   dfs_cnt = 0;
 
   struct DFSNode {
     TEN_Node* v;
-    DFSNode* p;
+    DFSNode* p;  // parent, for backtracking
   };
 
   while (true) {
@@ -270,7 +269,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStuck()
     std::stack<DFSNode*> OPEN;
     std::unordered_map<TEN_Node*, bool> CLOSE;
 
-    std::vector<DFSNode*> GC;
+    std::vector<DFSNode*> GC;  // garbage collection
     auto createNewNode = [&] (TEN_Node* v, DFSNode* p) {
       auto q = new DFSNode { v, p };
       GC.push_back(q);
@@ -317,10 +316,10 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStuck()
         // already searched
         if (CLOSE.find(q) != CLOSE.end()) continue;
 
-        // fulfill
+        // used
         if (getCapacity(p, q) == 0) continue;
 
-        // filter
+        // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
             if (reachable_filter[q->v] > sink->t) continue;
@@ -336,6 +335,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStuck()
 
     // success
     if (bottom != nullptr) {
+      // backtracking
       auto q = bottom;
       while (q->p != nullptr) {
         setFlow(q->p->v, q->v);
@@ -362,6 +362,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
     // depth first search
     std::unordered_map<TEN_Node*, bool> CLOSED;
     auto dfs = [&](auto&& self, TEN_Node* p) -> TEN_Node* {
+      // check closed list
       if (CLOSED[p]) return nullptr;
 
       // update closed list
@@ -379,10 +380,10 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
         // already searched
         if (CLOSED.find(q) != CLOSED.end()) continue;
 
-        // fulfill
+        // used
         if (getCapacity(p, q) == 0) continue;
 
-        // apply filter
+        // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
             if (reachable_filter[q->v] > sink->t) continue;
@@ -409,17 +410,18 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
   }
 }
 
+// for pruning
 void LibTEN::ResidualNetwork::createFilter()
 {
-  // bfs
   std::vector<Node*> OPEN, OPEN_NEXT;
 
   // initialize
-  int t = 0;
+  int t = 0;  // timestep
   for (auto v : P->getConfigGoal()) {
     OPEN.push_back(v);
     reachable_filter[v] = t;
   }
+  // bfs
   while (true) {
     ++t;
     for (auto v : OPEN) {

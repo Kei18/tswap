@@ -1,3 +1,12 @@
+/*
+ * Implementation of the makespan optimal algorithm
+ *
+ * - ref
+ * Yu, J., & LaValle, S. M. (2013).
+ * Multi-agent path planning and network flow.
+ * In Algorithmic foundations of robotics X (pp. 157-173). Springer, Berlin, Heidelberg.
+ */
+
 #pragma once
 #include <memory>
 
@@ -11,13 +20,14 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  bool use_incremental;   // choose TEN_INCREMENTAL or TEN, default: true
-  bool use_pruning;       // pruning redundant vertices
-  bool use_lower_bound;   // use minimum step or not, default: false
-  bool use_real_distance; // use real distance to compute minimum step, default: false
+  bool use_lower_bound;   // LB: use minimum step or not, default: false
+  bool use_binary_search; // Binary: use binary search, default: false
+  bool use_pruning;       // Prune: pruning redundant vertices
+  bool use_past_flow;     // Reuse: use past flow, default: true
+
+  bool use_incremental;   // choose TEN_INCREMENTAL or TEN (no cache), default: true
   bool use_ilp_solver;    // use ILP solver or not, default: false
-  bool use_binary_search; // use binary search, default: false
-  bool use_past_flow;     // use past flow, default: true
+  bool use_real_distance; // use real distance to compute LB, default: false
 
   int minimum_step;       // start from this timestep
   bool is_optimal;        // for binary search, optimal makespan or not

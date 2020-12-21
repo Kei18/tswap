@@ -1,3 +1,8 @@
+/*
+ * Time expanded network, use cache as much as possible
+ * See flow_network.cpp to find the difference from TEN.hpp
+ */
+
 #pragma once
 #include "ten.hpp"
 
@@ -10,10 +15,14 @@ private:
   void createPlan();
 
 public:
-  TEN_INCREMENTAL(Problem* const _P, const bool _filter = false,
+  TEN_INCREMENTAL(Problem* const _P,
+                  const bool _filter = false,  // pruning
                   const bool _ilp = false);
-  TEN_INCREMENTAL(Problem* const _P, const int _t, const bool _filter = false,
-                  const bool _ilp = false, int _time_limit = -1);
+  TEN_INCREMENTAL(Problem* const _P,
+                  const int _t,
+                  const bool _filter = false,  // pruning
+                  const bool _ilp = false,
+                  int _time_limit = -1);
   ~TEN_INCREMENTAL();
 
   void update();

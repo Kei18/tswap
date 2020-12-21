@@ -13,16 +13,19 @@ namespace LibTEN
 
   struct TEN_Node {
     enum NodeType { SOURCE, V_IN, V_OUT, SINK };
-
     NodeType type;
-    Node* v;  // original node
-    int t;    // timestep
-    std::string name;
 
+    Node* v;           // original node
+    int t;             // timestep
+    std::string name;  // be a key for a hash table
+
+    // structure
     TEN_Nodes parents;
     TEN_Nodes children;
 
     TEN_Node(NodeType _type, Node* _v, int _t);
+
+    // operations to change structure
     void addParent(TEN_Node* parent);
     void removeParent(TEN_Node* parent);
 
@@ -32,24 +35,24 @@ namespace LibTEN
   struct ResidualNetwork {
     TEN_Node* source;
     TEN_Node* sink;
-    std::unordered_map<std::string, TEN_Node*> body;
-    std::unordered_map<std::string, int> capacity;
+    std::unordered_map<std::string, TEN_Node*> body;  // main body
+    std::unordered_map<std::string, int> capacity;    // capacity
 
-    const bool apply_filter;
-    const bool use_ilp_solver;
+    const bool apply_filter;    // whether to prune redundant vertices
+    const bool use_ilp_solver;  // whether to use ILP solver
     Problem* P;
+
+    // for pruning, <Node, required timestep to reach the sink>
     std::unordered_map<Node*, int> reachable_filter;
 
     int time_limit;
 
-    // for FordFulkerson
+    // for FordFulkerson, count the number of visited nodes
     int dfs_cnt;
 
     // for ILP
     int variants_cnt;
     int constraints_cnt;
-
-    // for ILP
     std::unique_ptr<GRBEnv> grb_env;
     std::unique_ptr<GRBModel> grb_model;
     std::unordered_map<std::string, GRBVar> grb_table_vars;
@@ -73,6 +76,7 @@ namespace LibTEN
     static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
     static std::string getReverseEdgeName(const std::string s);
 
+    // return size of network
     int getNodesNum();
     int getEdgesNum();
 
@@ -80,20 +84,26 @@ namespace LibTEN
     void clearAllCapacity();
     void initEdge(TEN_Node* p, TEN_Node* q);
     void deleteEdge(TEN_Node* p, TEN_Node* q);
+
+    // update flow
     void increment(TEN_Node* p, TEN_Node* q);
     void decrement(TEN_Node* p, TEN_Node* q);
     void setFlow(TEN_Node* from, TEN_Node* to);
     void setFlow(const std::string edge_name);
     void setReverseFlow(const std::string edge_name);
+
+    // update network structure
     void addParent(TEN_Node* child, TEN_Node* parent);
     void removeParent(TEN_Node* child, TEN_Node* parent);
 
+    // solve the maximum flow problem
     void solve();
     void FordFulkerson();
-    void FordFulkersonWithStuck();
+    void FordFulkersonWithStack();
     void FordFulkersonWithRecursiveCall();
     void createFilter();
 
+    // return maximum flow size
     int getFlowSum();
 
 #ifdef _GUROBI_

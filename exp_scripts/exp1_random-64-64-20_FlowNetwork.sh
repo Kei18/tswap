@@ -7,50 +7,50 @@ scen_end=50
 
 set -e
 
-solver="NetworkFlow -l"
+solver="FlowNetwork -l"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -l -b"
+solver="FlowNetwork -l -b"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow"
+solver="FlowNetwork"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -b"
+solver="FlowNetwork -b"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -l"
+solver="FlowNetwork -p -l"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -l -b"
+solver="FlowNetwork -p -l -b"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p"
+solver="FlowNetwork -p"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -b"
+solver="FlowNetwork -p -b"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -l -r"
+solver="FlowNetwork -l -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -l -b -r"
+solver="FlowNetwork -l -b -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -r"
+solver="FlowNetwork -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -b -r"
+solver="FlowNetwork -b -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -l -r"
+solver="FlowNetwork -p -l -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -l -b -r"
+solver="FlowNetwork -p -l -b -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -r"
+solver="FlowNetwork -p -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks
 
-solver="NetworkFlow -p -b -r"
+solver="FlowNetwork -p -b -r"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks

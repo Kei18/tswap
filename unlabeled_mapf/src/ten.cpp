@@ -31,7 +31,6 @@ void TEN::extendGraphOneTimestep(const int t)
   for (auto v : V) {
     if (overCompTime()) break;
 
-
     // add vertex
     auto v_in = network.createNewNode(NodeType::V_IN, v, t);
     auto v_out = network.createNewNode(NodeType::V_OUT, v, t);
@@ -52,6 +51,7 @@ void TEN::extendGraphOneTimestep(const int t)
 
 void TEN::updateGraph()
 {
+  // construct body
   for (int t = 1; t <= max_timestep; ++t) {
     extendGraphOneTimestep(t);
     if (overCompTime()) return;
@@ -84,23 +84,24 @@ void TEN::createPlan(const int T)
   for (int t = 1; t <= T; ++t) {
     for (auto v : C) {
       Node* next_node = nullptr;
-      // move
+      // move action
       for (auto u : v->neighbor) {
         auto v_in = network.getNode(NodeType::V_IN, v, t);
         auto u_out = network.getNode(NodeType::V_OUT, u, t);
+        // check intersection
         if (network.getCapacity(v_in, u_out) == 0) {
           auto u_in = network.getNode(NodeType::V_IN, u, t);
           auto v_out = network.getNode(NodeType::V_OUT, v, t);
           if (network.getCapacity(u_in, v_out) == 0) {
             next_node = v;  // stay
           } else {
-            next_node = u;
+            next_node = u;  // move
           }
           break;
         }
       }
 
-      // stay
+      // stay action
       if (next_node == nullptr) next_node = v;
       C_next.push_back(next_node);
     }
