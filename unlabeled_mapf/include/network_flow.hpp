@@ -14,6 +14,7 @@ private:
   bool use_incremental;   // choose TEN_INCREMENTAL or TEN, default: true
   bool use_filter;        // apply filter or not, default: true
   bool use_minimum_step;  // use minimum step or not, default: false
+  bool use_real_distance; // use real distance to compute minimum step, default: false
   bool use_ilp_solver;    // use ILP solver or not, default: false
   bool use_binary_search; // use binary search, default: false
   bool use_past_flow;     // use past flow, default: true

@@ -8,6 +8,7 @@ NetworkFlow::NetworkFlow(Problem* _P)
       use_incremental(true),
       use_filter(true),
       use_minimum_step(false),
+      use_real_distance(false),
       use_ilp_solver(false),
       use_binary_search(false),
       use_past_flow(true),
@@ -27,7 +28,11 @@ void NetworkFlow::run()
     for (auto s : P->getConfigStart()) {
       Node* g =
         *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
-          return s->manhattanDist(v) < s->manhattanDist(u);
+          if (use_real_distance) {
+            return pathDist(s, v) < pathDist(s, u);
+          } else {
+            return s->manhattanDist(v) < s->manhattanDist(u);
+          }
         });
       int d = s->manhattanDist(g);
       if (d > minimum_step) minimum_step = d;
@@ -132,6 +137,7 @@ void NetworkFlow::setParams(int argc, char* argv[])
       {"no-past-flow", no_argument, 0, 'p'},
       {"no-filter", no_argument, 0, 'f'},
       {"use-minimum-step", no_argument, 0, 'm'},
+      {"use-real-distance", no_argument, 0, 'r'},
       {"use-ilp-solver", no_argument, 0, 'g'},
       {"start-timestep", no_argument, 0, 't'},
       {"use-binary-search", no_argument, 0, 'b'},
@@ -139,7 +145,7 @@ void NetworkFlow::setParams(int argc, char* argv[])
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "nfmgpt:b", longopts, &longindex)) !=
+  while ((opt = getopt_long(argc, argv, "nfmrgpt:b", longopts, &longindex)) !=
          -1) {
     switch (opt) {
       case 'n':
@@ -153,6 +159,9 @@ void NetworkFlow::setParams(int argc, char* argv[])
         break;
       case 'm':
         use_minimum_step = true;
+        break;
+      case 'r':
+        use_real_distance = true;
         break;
       case 'b':
         use_binary_search = true;
@@ -194,6 +203,10 @@ void NetworkFlow::printHelp()
             << "         "
             << "implement with minimum-step (Manhattan distance)\n"
 
+            << "  -r --use-real-distance"
+            << "         "
+            << "calculate minimum-step by real distance\n"
+
             << "  -b --use-binary-search"
             << "        "
             << "implement with binary search (and without cache)\n"
@@ -221,6 +234,7 @@ void NetworkFlow::makeLog(const std::string& logfile)
       << "\nuse_incremental:" << use_incremental
       << "\nuse_filter:" << use_filter
       << "\nuse_minimum_step:" << use_minimum_step
+      << "\nuse_real_distance:" << use_real_distance
       << "\nuse_ilp_solver:" << use_ilp_solver
       << "\nuse_binary_search:" << use_binary_search
       << "\nuse_past_flow:" << use_past_flow
