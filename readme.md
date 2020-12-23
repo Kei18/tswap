@@ -1,7 +1,7 @@
 Unlabeled MAPF
 ===
 ![test](https://github.com/Kei18/unlabeled-MAPF/workflows/test/badge.svg?branch=dev)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE.txt)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
 A simulator and visualizer of Unlabeled Multi-Agent Path Finding (MAPF), used in a paper "Simultaneous Target Assignment and Path Planning for Interchangeable Agents on Graphs".
 It is written in C++(17) with [CMake](https://cmake.org/) build and tested on OSX 10.15.
@@ -114,7 +114,7 @@ cd build
 You can manipulate it via your keyboard. See printed info.
 
 ## Licence
-This software is released under the MIT License, see [LICENSE.txt](LICENCE.txt).
+This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
 
 ## Notes
 - `NaiveTSWAP` is a solver using the pseudo-code in the paper without modifications.
