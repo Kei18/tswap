@@ -244,7 +244,7 @@ void LibTEN::ResidualNetwork::solve()
 
 void LibTEN::ResidualNetwork::FordFulkerson()
 {
-  const int MEMORY_LIMIT = 2500000;  // arbitrary value
+  constexpr unsigned int MEMORY_LIMIT = 2000000;  // arbitrary value
   if (getNodesNum() > MEMORY_LIMIT) {
     FordFulkersonWithStack();
   } else {
