@@ -4,7 +4,7 @@ Unlabeled MAPF
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
 A simulator and visualizer of Unlabeled Multi-Agent Path Finding (MAPF), used in a paper "Simultaneous Target Assignment and Path Planning for Interchangeable Agents on Graphs".
-It is written in C++(17) with [CMake](https://cmake.org/) build and tested on OSX 10.15.
+It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
 The repository uses [Google Test](https://github.com/google/googletest).
 The visualizer uses [openFrameworks](https://openframeworks.cc).
 It is possible to use [GUROBI9.1](https://www.gurobi.com/) as an ILP solver to solve the maximum flow problems.
@@ -124,6 +124,7 @@ This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
 - The font in `visualizer/bin/data` is from [Google Fonts](https://fonts.google.com/).
 - Scripts for the experiments are in `exp_scripts/`.
 - `tests/` include test scripts.
+- The implementation of ECBS-TA [2] can be obtained [Wolfgang's excellent repository](https://github.com/whoenig/libMultiRobotPlanning).
 
 ## Author
 [Keisuke Okumura](https://kei18.github.io) is a Ph.D. candidate at Tokyo Institute of Technology, working on multiple moving agents.
@@ -132,3 +133,6 @@ This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
 1. Yu, J., & LaValle, S. M. (2013).
    Multi-agent path planning and network flow.
    In Algorithmic foundations of robotics X (pp. 157-173). Springer, Berlin, Heidelberg.
+2. Hönig, W., Kiesel, S., Tinka, A., Durham, J., & Ayanian, N. (2018).
+   Conflict-based search with optimal task assignment.
+   In Proceedings of the International Joint Conference on Autonomous Agents and Multiagent Systems (AAMAS).
