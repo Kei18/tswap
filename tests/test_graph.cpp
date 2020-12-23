@@ -71,7 +71,7 @@ TEST(Graph, bfs)
   Node* u1 = G.getNode(75);
   Node* u2 = G.getNode(168);
   Node* u3 = G.getNode(722);
-  Nodes goals = { u1, u2 };
+  Nodes goals = {u1, u2};
   G.BFS(v, goals);
   ASSERT_TRUE(G.isPathComputed(v, u1));
   ASSERT_TRUE(G.isPathComputed(v, u2));
@@ -83,7 +83,7 @@ TEST(Graph, bfs_huge)
   Grid G("ost000a.map");
   Node* v = G.getNode(273, 721);
   Node* u = G.getNode(84, 461);
-  Nodes goals = { u };
+  Nodes goals = {u};
   G.BFS(v, goals);
   ASSERT_TRUE(G.isPathComputed(v, u));
   ASSERT_EQ(G.pathDist(v, u), 863);

@@ -106,7 +106,8 @@ Problem::Problem(const std::string& _instance)
   if (!config_s.empty() && num_agents > config_s.size()) {
     warn("given starts/goals are not sufficient\nrandomly create instances");
   }
-  if (num_agents > config_s.size() && scen_type == ScenarioType::USER_SPECIFIED) {
+  if (num_agents > config_s.size() &&
+      scen_type == ScenarioType::USER_SPECIFIED) {
     scen_type = ScenarioType::RANDOM;
   }
 
@@ -158,8 +159,8 @@ Node* Problem::getGoal(int i) const
 void Problem::setRandomStartsGoals(const int flocking_blocks)
 {
   const int group_num = (flocking_blocks <= 0 || flocking_blocks > num_agents)
-    ? num_agents
-    : flocking_blocks;
+                            ? num_agents
+                            : flocking_blocks;
 
   // initialize
   config_s.clear();

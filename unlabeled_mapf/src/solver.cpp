@@ -2,8 +2,6 @@
 
 #include <fstream>
 
-#include "../include/lib_cbs.hpp"
-
 Solver::Solver(Problem* _P)
     : P(_P),
       G(_P->getG()),
@@ -13,9 +11,6 @@ Solver::Solver(Problem* _P)
 {
   solved = false;
   verbose = false;
-
-  // for solvers using MDD
-  LibCBS::MDD::MT = MT;
 }
 
 void Solver::solve()

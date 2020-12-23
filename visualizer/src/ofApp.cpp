@@ -220,13 +220,10 @@ void ofApp::printKeys()
   std::cout << "- r : reset" << std::endl;
   std::cout << "- v : show virtual line to goals" << std::endl;
   std::cout << "- f : show agent & node id" << std::endl;
-  std::cout << "- g : show goals" << std::endl;
+  std::cout << "- g : show last locations" << std::endl;
   std::cout << "- right : progress" << std::endl;
   std::cout << "- left  : back" << std::endl;
   std::cout << "- up    : speed up" << std::endl;
   std::cout << "- down  : speed down" << std::endl;
-  std::cout << "- a : show single agent" << std::endl;
-  std::cout << "- + : increment single agent id" << std::endl;
-  std::cout << "- - : decrement single agent id" << std::endl;
   std::cout << "- esc : terminate" << std::endl;
 }

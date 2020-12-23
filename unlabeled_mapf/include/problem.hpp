@@ -21,7 +21,7 @@ private:
   enum ScenarioType { USER_SPECIFIED, RANDOM };
 
   // set starts and goals randomly
-  void setRandomStartsGoals(const int flocking_blocks=0);
+  void setRandomStartsGoals(const int flocking_blocks = 0);
 
 public:
   Problem(const std::string& _instance);

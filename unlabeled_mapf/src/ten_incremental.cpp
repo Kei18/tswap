@@ -27,6 +27,7 @@ void TEN_INCREMENTAL::update()
 
 void TEN_INCREMENTAL::update(const int t)
 {
+  // used in binary search, shrink the network
   if (current_timestep > t) {
     // clear capacity
     network.clearAllCapacity();
@@ -39,13 +40,15 @@ void TEN_INCREMENTAL::update(const int t)
     // delete edge t -> t+1, add sink edge
     for (auto v : V) {
       auto p = network.getNode(NodeType::V_OUT, v, t);
-      auto q = network.getNode(NodeType::V_IN, v, t+1);
+      auto q = network.getNode(NodeType::V_IN, v, t + 1);
       network.removeParent(q, p);
       if (inArray(v, P->getConfigGoal())) network.addParent(network.sink, p);
     }
 
     current_timestep = t;
 
+    // used in binary search
+    // extend network
   } else if (network.getNode(NodeType::V_OUT, V[0], t) != nullptr) {
     // already created -> reuse
     for (auto v : V) {
@@ -56,7 +59,8 @@ void TEN_INCREMENTAL::update(const int t)
 
       // remove redundant edge
       auto r = network.getNode(NodeType::V_IN, v, t + 1);
-      if (r != nullptr) network.removeParent(r, network.getNode( NodeType::V_OUT, v, t));
+      if (r != nullptr)
+        network.removeParent(r, network.getNode(NodeType::V_OUT, v, t));
 
       // update flow
       if (inArray(network.sink, p->children)) {
@@ -82,6 +86,7 @@ void TEN_INCREMENTAL::update(const int t)
     current_timestep = t;
 
   } else {
+    // used in both incremental and binary search, extend the network
     while (current_timestep < t) {
       ++current_timestep;
       updateGraph();
