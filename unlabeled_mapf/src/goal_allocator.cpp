@@ -41,9 +41,37 @@ void GoalAllocator::assign()
 
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);
-    for (int j = 0; j < P->getNum(); ++j) {
-      auto g = P->getGoal(j);
-      OPEN.emplace(i, j, s, g, s->manhattanDist(g));
+
+    // lazy evaluation
+    if (!use_bfs) {
+      for (int j = 0; j < P->getNum(); ++j) {
+        auto g = P->getGoal(j);
+        OPEN.emplace(i, j, s, g, s->manhattanDist(g));
+      }
+    } else {
+      // bfs
+      const auto nodes_num = P->getG()->getNodesSize();
+      std::vector<int> distance_table(nodes_num, nodes_num);
+      {
+        std::queue<Node*> OPEN_BFS;
+        OPEN_BFS.push(s);
+        distance_table[s->id] = 0;
+        while (!OPEN_BFS.empty()) {
+          auto n = OPEN_BFS.front();
+          OPEN_BFS.pop();
+          const int d_n = distance_table[n->id];
+          for (auto m : n->neighbor) {
+            const int d_m = distance_table[m->id];
+            if (d_n + 1 >= d_m) continue;
+            distance_table[m->id] = d_n + 1;
+            OPEN_BFS.push(m);
+          }
+        }
+      }
+      for (int j = 0; j < P->getNum(); ++j) {
+        auto g = P->getGoal(j);
+        OPEN.emplace(i, j, s, g, s->manhattanDist(g), distance_table[g->id]);
+      }
     }
   }
 
@@ -53,7 +81,7 @@ void GoalAllocator::assign()
 
     // lazy evaluation
     if (!p.evaled) {
-      p.setRealDist(P->getG()->pathDist(p.s, p.g));
+      p.setRealDist(P->getG()->pathDist(p.s, p.g, false));
       OPEN.push(p);
       continue;
     }
