@@ -217,29 +217,9 @@ Node* TSWAP::planOneStep(Agent* a,
                          std::unordered_map<Node*, Agent*>& occupied_now,
                          std::unordered_map<Node*, Agent*>& occupied_next)
 {
-  Nodes C = a->v_now->neighbor;
-
-  // goal exists -> return immediately
-  if (inArray(a->g, C)) return a->g;
-
-  // randomize
-  std::shuffle(C.begin(), C.end(), *MT);
-
-  return *std::min_element(C.begin(), C.end(), [&](Node* v, Node* u) {
-    // path distance
-    int c_v = pathDist(v, a->g);
-    int c_u = pathDist(u, a->g);
-    if (c_v != c_u) return c_v < c_u;
-    // tiebreak1. occupancy for next timestep
-    int o_v_next = (int)(occupied_next.find(v) != occupied_next.end());
-    int o_u_next = (int)(occupied_next.find(u) != occupied_next.end());
-    if (o_v_next != o_u_next) return o_v_next < o_u_next;
-    // tiebreak2. occupancy for current timestep
-    int o_v_now = (int)(occupied_now.find(v) != occupied_now.end());
-    int o_u_now = (int)(occupied_now.find(u) != occupied_now.end());
-    if (o_v_now != o_u_now) return o_v_now < o_u_now;
-    return getRandomBoolean(MT);
-  });
+  auto p = getPath(a->v_now, a->g);
+  if (p.empty()) return a->v_now;
+  return p[1];
 }
 
 void TSWAP::setParams(int argc, char* argv[])

@@ -1,12 +1,13 @@
 #include "../include/goal_allocator.hpp"
-#include <queue>
 
 GoalAllocator::GoalAllocator(Problem* _P, bool _use_bfs, bool _use_min_cost)
     : P(_P),
       use_bfs(_use_bfs),
       use_min_cost(_use_min_cost),
       matching_cost(0),
-      matching_makespan(0)
+      matching_makespan(0),
+      OPEN_LAZY(P->getNum()),
+      DIST_LAZY(P->getNum(), std::vector<int>(P->getG()->getNodesSize(), P->getG()->getNodesSize()))
 {
 }
 
@@ -49,28 +50,23 @@ void GoalAllocator::assign()
         OPEN.emplace(i, j, s, g, s->manhattanDist(g));
       }
     } else {
-      // bfs
-      const auto nodes_num = P->getG()->getNodesSize();
-      std::vector<int> distance_table(nodes_num, nodes_num);
-      {
-        std::queue<Node*> OPEN_BFS;
-        OPEN_BFS.push(s);
-        distance_table[s->id] = 0;
-        while (!OPEN_BFS.empty()) {
-          auto n = OPEN_BFS.front();
-          OPEN_BFS.pop();
-          const int d_n = distance_table[n->id];
-          for (auto m : n->neighbor) {
-            const int d_m = distance_table[m->id];
-            if (d_n + 1 >= d_m) continue;
-            distance_table[m->id] = d_n + 1;
-            OPEN_BFS.push(m);
-          }
+      // without lazy eval
+      OPEN_LAZY[i].push(s);
+      DIST_LAZY[i][s->id] = 0;
+      while (!OPEN_LAZY[i].empty()) {
+        auto n = OPEN_LAZY[i].front();
+        OPEN_LAZY[i].pop();
+        const int d_n = DIST_LAZY[i][n->id];
+        for (auto m : n->neighbor) {
+          const int d_m = DIST_LAZY[i][m->id];
+          if (d_n + 1 >= d_m) continue;
+          DIST_LAZY[i][m->id] = d_n + 1;
+          OPEN_LAZY[i].push(m);
         }
       }
       for (int j = 0; j < P->getNum(); ++j) {
         auto g = P->getGoal(j);
-        OPEN.emplace(i, j, s, g, s->manhattanDist(g), distance_table[g->id]);
+        OPEN.emplace(i, j, s, g, s->manhattanDist(g), DIST_LAZY[i][g->id]);
       }
     }
   }
@@ -81,7 +77,7 @@ void GoalAllocator::assign()
 
     // lazy evaluation
     if (!p.evaled) {
-      p.setRealDist(P->getG()->pathDist(p.s, p.g, false));
+      p.setRealDist(getLazyEval(p.start_index, p.g));
       OPEN.push(p);
       continue;
     }
@@ -108,6 +104,41 @@ void GoalAllocator::assign()
 
   assigned_goals = matching.assigned_goals;
   matching_cost = matching.getCost();
+}
+
+int GoalAllocator::getLazyEval(const int i, Node* const g)
+{
+  // already evaluated
+  if (DIST_LAZY[i][g->id] != P->getG()->getNodesSize())
+    return DIST_LAZY[i][g->id];
+
+  // initialize
+  auto s = P->getStart(i);
+  if (DIST_LAZY[i][s->id] != 0) {
+    DIST_LAZY[i][s->id] = 0;
+    OPEN_LAZY[i].push(s);
+  }
+
+  // BFS
+  while (!OPEN_LAZY[i].empty()) {
+    auto n = OPEN_LAZY[i].front();
+    const int d_n = DIST_LAZY[i][n->id];
+
+    // check goal condition
+    if (n == g) return d_n;
+
+    // pop
+    OPEN_LAZY[i].pop();
+
+    for (auto m : n->neighbor) {
+      const int d_m = DIST_LAZY[i][m->id];
+      if (d_n + 1 >= d_m) continue;
+      DIST_LAZY[i][m->id] = d_n + 1;
+      OPEN_LAZY[i].push(m);
+    }
+  }
+
+  return P->getG()->getNodesSize();
 }
 
 Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }
