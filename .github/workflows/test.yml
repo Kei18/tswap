@@ -6,6 +6,9 @@ on:
       - dev
     paths:
       - 'visualizer/**'
+      - 'unlabeled-mapf/**'
+      - 'tests/**'
+      - 'app.cpp'
       - '.github/workflows/test.yml'
 
 jobs:
