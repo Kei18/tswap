@@ -199,7 +199,15 @@ bool TSWAP::deadlockDetectResolve(
     if (itr == occupied_now.end()) break;  // not deadlock
     A_p.push_back(b);
     b = itr->second;
-    if (A_p.size() > 1 && b == a) break;  // deadlock
+    if (A_p.size() > 1) {
+      if (b == a) break;  // deadlock
+
+      // there is a deadlock, but a is not in the deadlock
+      if (inArray(b, A_p)) {
+        A_p.clear();
+        break;
+      }
+    }
   }
   if (A_p.size() > 1 && b == a) {  // detect deadlock
     // rotate targets
