@@ -11,7 +11,7 @@ private:
   Problem* P;
   Nodes assigned_goals;  // assignment
 
-  const bool use_bfs;  // use BFS and compute all distances, default: false
+  const bool evaluate_all;  // evaluate all distance, default: false
   const bool
       use_min_cost;   // whether to use min-cost maximum matching, default: true
   int matching_cost;  // estimation of sum of costs
@@ -23,7 +23,7 @@ private:
   int getLazyEval(const int i, Node* const g);
 
 public:
-  GoalAllocator(Problem* _P, bool _use_bfs = false, bool _use_min_cost = true);
+  GoalAllocator(Problem* _P, bool _evaluate_all = false, bool _use_min_cost = true);
   ~GoalAllocator();
 
   // solve the problem

@@ -1,8 +1,8 @@
 #include "../include/goal_allocator.hpp"
 
-GoalAllocator::GoalAllocator(Problem* _P, bool _use_bfs, bool _use_min_cost)
+GoalAllocator::GoalAllocator(Problem* _P, bool _evaluate_all, bool _use_min_cost)
     : P(_P),
-      use_bfs(_use_bfs),
+      evaluate_all(_evaluate_all),
       use_min_cost(_use_min_cost),
       matching_cost(0),
       matching_makespan(0),
@@ -43,8 +43,8 @@ void GoalAllocator::assign()
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);
 
-    // lazy evaluation
-    if (!use_bfs) {
+    if (!evaluate_all) {
+      // lazy evaluation
       for (int j = 0; j < P->getNum(); ++j) {
         auto g = P->getGoal(j);
         OPEN.emplace(i, j, s, g, s->manhattanDist(g));
@@ -64,6 +64,7 @@ void GoalAllocator::assign()
           OPEN_LAZY[i].push(m);
         }
       }
+      // set goal
       for (int j = 0; j < P->getNum(); ++j) {
         auto g = P->getGoal(j);
         OPEN.emplace(i, j, s, g, s->manhattanDist(g), DIST_LAZY[i][g->id]);
