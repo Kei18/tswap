@@ -28,7 +28,6 @@ private:
 
   bool use_incremental;    // choose TEN_INCREMENTAL or TEN (no cache), default:
                            // true
-  bool use_ilp_solver;     // use ILP solver or not, default: false
   bool use_real_distance;  // use real distance to compute LB, default: false
 
   int minimum_step;  // start from this timestep

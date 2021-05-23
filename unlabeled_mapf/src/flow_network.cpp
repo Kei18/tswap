@@ -11,7 +11,6 @@ FlowNetwork::FlowNetwork(Problem* _P)
       use_pruning(true),
       use_past_flow(true),
       use_incremental(true),
-      use_ilp_solver(false),
       use_real_distance(false),
       minimum_step(1),
       is_optimal(false)
@@ -46,7 +45,7 @@ void FlowNetwork::run()
   std::shared_ptr<TEN> network_flow;
   if (use_incremental) {
     network_flow = std::make_shared<TEN_INCREMENTAL>(
-        P, minimum_step, use_pruning, use_ilp_solver,
+        P, minimum_step, use_pruning,
         max_comp_time - (int)getSolverElapsedTime());
   }
 
@@ -60,7 +59,7 @@ void FlowNetwork::run()
     // build time expanded network
     if (!use_incremental) {
       network_flow =
-          std::make_shared<TEN>(P, t_real, use_pruning, use_ilp_solver);
+          std::make_shared<TEN>(P, t_real, use_pruning);
     } else if (!use_past_flow) {
       network_flow->resetFlow();
     }
@@ -72,28 +71,15 @@ void FlowNetwork::run()
     network_flow->update(t_real);
 
     // updte log
-    if (use_ilp_solver) {
-      // for ILP solver
-#ifdef _GUROBI_
-      HISTS.push_back(
-          {(int)getSolverElapsedTime(), t_real, network_flow->isValid(), 0, 0,
-           network_flow->getVariantsCnt(), network_flow->getConstraintsCnt()});
-      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
-           ", valid:", network_flow->isValid(),
-           ", variants:", network_flow->getVariantsCnt(),
-           ", constraints:", network_flow->getConstraintsCnt());
-#endif
-    } else {
-      HISTS.push_back({(int)getSolverElapsedTime(), t_real,
-                       network_flow->isValid(), network_flow->getDfsCnt(),
-                       network_flow->getNodesNum(), 0, 0});
-      float visited_rate =
-          (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
-      info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
-           ", valid:", network_flow->isValid(),
-           ", visited_nodes:", network_flow->getDfsCnt(), "/",
-           network_flow->getNodesNum(), "=", visited_rate);
-    }
+    HISTS.push_back({(int)getSolverElapsedTime(), t_real,
+        network_flow->isValid(), network_flow->getDfsCnt(),
+        network_flow->getNodesNum(), 0, 0});
+    float visited_rate =
+      (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
+    info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
+         ", valid:", network_flow->isValid(),
+         ", visited_nodes:", network_flow->getDfsCnt(), "/",
+         network_flow->getNodesNum(), "=", visited_rate);
 
     // check solution
     if (network_flow->isValid()) {
@@ -167,11 +153,6 @@ void FlowNetwork::setParams(int argc, char* argv[])
           warn("start timestep should be greater than 0");
         }
         break;
-#ifdef _GUROBI_
-      case 'g':
-        use_ilp_solver = true;
-        break;
-#endif
       default:
         break;
     }
@@ -231,7 +212,6 @@ void FlowNetwork::makeLog(const std::string& logfile)
       << "\nuse_pruning:" << use_pruning
       << "\nuse_real_distance:" << use_real_distance
       << "\nuse_past_flow:" << use_past_flow
-      << "\nuse_ilp_solver:" << use_ilp_solver
       << "\nminimum_step:" << minimum_step << "\n";
   log << "optimal=" << is_optimal << "\n";
   log << "history=\n";

@@ -2,16 +2,15 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter,
-                                 const bool _ilp)
-    : TEN(_P, 0, _filter, _ilp), current_timestep(0)
+TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter)
+    : TEN(_P, 0, _filter), current_timestep(0)
 {
 }
 
 TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t,
-                                 const bool _filter, const bool _ilp,
+                                 const bool _filter,
                                  const int _time_limit)
-    : TEN(_P, _t - 1, _filter, _ilp), current_timestep(_t - 1)
+    : TEN(_P, _t - 1, _filter), current_timestep(_t - 1)
 {
   setTimeLimit(_time_limit);
   if (_t > 1) TEN::updateGraph();
@@ -31,6 +30,7 @@ void TEN_INCREMENTAL::update(const int t)
   if (current_timestep > t) {
     // clear capacity
     network.clearAllCapacity();
+
 
     // update sink
     network.sink->t = t;
@@ -129,8 +129,7 @@ void TEN_INCREMENTAL::updateGraph()
     for (auto v : P->getConfigGoal()) {
       auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
       // agent has already reached goal in previous iteration
-      if (!network.use_ilp_solver &&
-          network.getCapacity(p, network.sink) == 0) {
+      if (network.getCapacity(p, network.sink) == 0) {
         auto p = network.getNode(NodeType::V_OUT, v, current_timestep - 1);
         auto q = network.getNode(NodeType::V_IN, v, current_timestep);
         auto r = network.getNode(NodeType::V_OUT, v, current_timestep);

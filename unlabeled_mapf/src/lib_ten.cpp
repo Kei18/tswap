@@ -45,32 +45,30 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
 
 LibTEN::ResidualNetwork::ResidualNetwork()
     : apply_filter(false),
-      use_ilp_solver(false),
       time_limit(-1),
-      dfs_cnt(0),
-      variants_cnt(0),
-      constraints_cnt(0)
+      dfs_cnt(0)
 {
   init();
 }
 
-LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, bool _ilp, Problem* _P)
+LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
     : apply_filter(_filter),
-      use_ilp_solver(_ilp),
       P(_P),
       time_limit(-1),
-      dfs_cnt(0),
-      variants_cnt(0),
-      constraints_cnt(0)
+      dfs_cnt(0)
 {
   init();
-  if (apply_filter && !use_ilp_solver) createFilter();
+  if (apply_filter) createFilter();
 }
 
 LibTEN::ResidualNetwork::~ResidualNetwork()
 {
-  for (auto itr = body.begin(); itr != body.end(); ++itr) delete itr->second;
-  body.clear();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (auto node : body_V_IN[t])  delete node;
+    for (auto node : body_V_OUT[t]) delete node;
+  }
+  delete source;
+  delete sink;
   capacity.clear();
 }
 
@@ -78,24 +76,29 @@ void LibTEN::ResidualNetwork::init()
 {
   source = createNewNode(LibTEN::TEN_Node::SOURCE);
   sink = createNewNode(LibTEN::TEN_Node::SINK);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    grb_env = std::make_unique<GRBEnv>(true);
-    grb_env->set("OutputFlag", "0");
-    grb_env->start();
-    grb_model = std::make_unique<GRBModel>(*grb_env);
-  }
-#endif
 }
 
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
     TEN_Node::NodeType _type, Node* _v, int _t)
 {
   LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _t);
-  auto itr = body.find(new_node->name);
-  if (itr != body.end()) delete itr->second;
-  body[new_node->name] = new_node;
+
+  // extend
+  if (_type == TEN_Node::NodeType::V_IN || _type == TEN_Node::NodeType::V_OUT) {
+    if ((int)body_V_IN.size() < _t) {
+      auto nodes_num = P->getG()->getNodesSize();
+      body_V_IN.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
+      body_V_OUT.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
+    }
+  }
+
+  // register
+  if (_type == TEN_Node::NodeType::V_IN) {
+    body_V_IN[_t-1][_v->id] = new_node;
+  } else if (_type == TEN_Node::NodeType::V_OUT) {
+    body_V_OUT[_t-1][_v->id] = new_node;
+  }
+
   return new_node;
 }
 
@@ -113,8 +116,18 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
                                                    Node* _u, int _t)
 {
-  auto itr = body.find(TEN_Node::getName(_type, _v, _t));
-  return (itr != body.end()) ? itr->second : nullptr;
+  switch (_type) {
+  case TEN_Node::NodeType::SOURCE:
+    return source;
+  case TEN_Node::NodeType::SINK:
+    return sink;
+  case TEN_Node::NodeType::V_IN:
+    return ((int)body_V_IN.size() >= _t) ? body_V_IN[_t-1][_v->id] : nullptr;
+  case TEN_Node::NodeType::V_OUT:
+    return ((int)body_V_OUT.size() >= _t) ? body_V_OUT[_t-1][_v->id] : nullptr;
+  default:
+    return nullptr;
+  }
 }
 
 LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
@@ -140,14 +153,30 @@ std::string LibTEN::ResidualNetwork::getReverseEdgeName(const std::string s)
   return "";
 }
 
-int LibTEN::ResidualNetwork::getNodesNum() { return body.size(); }
+int LibTEN::ResidualNetwork::getNodesNum()
+{
+  int acc = 2;
+  auto nodes_num = P->getG()->getNodesSize();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (int i = 0; i < nodes_num; ++i) {
+      if (body_V_IN[t][i] != nullptr) ++acc;
+      if (body_V_OUT[t][i] != nullptr) ++acc;
+    }
+  }
+  return acc;
+}
 
 int LibTEN::ResidualNetwork::getEdgesNum()
 {
-  return std::accumulate(body.begin(), body.end(), 0,
-                         [](int acc, decltype(body)::value_type& itr) {
-                           return acc + itr.second->children.size();
-                         });
+  auto acc = source->children.size();
+  auto nodes_num = P->getG()->getNodesSize();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (int i = 0; i < nodes_num; ++i) {
+      acc += body_V_IN[t][i]->children.size();
+      acc += body_V_OUT[t][i]->children.size();
+    }
+  }
+  return acc;
 }
 
 int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
@@ -223,15 +252,7 @@ int LibTEN::ResidualNetwork::getFlowSum()
 
 void LibTEN::ResidualNetwork::solve()
 {
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    solveByGUROBI();
-  } else {
-    FordFulkerson();
-  }
-#else
   FordFulkerson();
-#endif
 }
 
 /*
@@ -438,92 +459,9 @@ void LibTEN::ResidualNetwork::createFilter()
 void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
 {
   child->addParent(parent);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    // add variable
-    auto name = getEdgeName(parent, child);
-    auto var = grb_model->addVar(0.0, 1.0, 0, GRB_BINARY, name);
-    grb_table_vars[name] = var;
-
-    // set objective
-    if (parent == source && source->children.size() == P->getNum()) {
-      GRBLinExpr grb_obj = 0;
-      for (auto p : source->children) {
-        grb_obj += grb_table_vars[getEdgeName(source, p)];
-      }
-      grb_model->setObjective(grb_obj, GRB_MAXIMIZE);
-    }
-
-    // add constraints
-    auto updateConstr = [&](TEN_Node* p) {
-      if (p == source || p == sink) return;
-
-      // check update condition
-      if ((p->type == NodeType::V_OUT &&
-           p->parents.size() == p->v->neighbor.size() + 1) ||
-          (p->type == NodeType::V_IN &&
-           p->children.size() == p->v->neighbor.size() + 1)) {
-        // update
-        auto itr = grb_table_constr.find(p->name);
-        if (itr != grb_table_constr.end()) grb_model->remove(itr->second);
-        GRBLinExpr lhs = 0;
-        for (auto q : p->children) lhs += grb_table_vars[getEdgeName(p, q)];
-        for (auto q : p->parents) lhs -= grb_table_vars[getEdgeName(q, p)];
-        grb_table_constr[p->name] = grb_model->addConstr(lhs == 0, p->name);
-      }
-    };
-
-    updateConstr(parent);
-    updateConstr(child);
-
-    variants_cnt = grb_table_vars.size();
-    constraints_cnt = grb_table_constr.size();
-  }
-#endif
 }
 
 void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
 {
   child->removeParent(parent);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    // remove variable
-    auto itr = grb_table_vars.find(getEdgeName(parent, child));
-    if (itr != grb_table_vars.end()) {
-      grb_model->remove(itr->second);
-      grb_table_vars.erase(itr);
-    }
-
-    variants_cnt = grb_table_vars.size();
-    constraints_cnt = grb_table_constr.size();
-  }
-#endif
 }
-
-#ifdef _GUROBI_
-void LibTEN::ResidualNetwork::solveByGUROBI()
-{
-  // set time limit
-  if (time_limit != -1) {
-    grb_model->set("TimeLimit", std::to_string((double)time_limit / 1000));
-  }
-
-  // optimize model
-  grb_model->optimize();
-
-  // feasible solution
-  if (grb_model->get(GRB_DoubleAttr_ObjVal) == P->getNum()) {
-    // apply flow
-    for (auto itr = grb_table_vars.begin(); itr != grb_table_vars.end();
-         ++itr) {
-      if (itr->second.get(GRB_DoubleAttr_X) == 1.0) {
-        setFlow(itr->first);
-      } else {
-        setReverseFlow(itr->first);
-      }
-    }
-  }
-}
-#endif

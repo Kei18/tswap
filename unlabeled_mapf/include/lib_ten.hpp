@@ -3,7 +3,6 @@
  */
 
 #pragma once
-#include "gurobi.hpp"
 #include "problem.hpp"
 
 namespace LibTEN
@@ -35,11 +34,12 @@ namespace LibTEN
   struct ResidualNetwork {
     TEN_Node* source;
     TEN_Node* sink;
-    std::unordered_map<std::string, TEN_Node*> body;  // main body
     std::unordered_map<std::string, int> capacity;    // capacity
 
+    std::vector<std::vector<TEN_Node*>> body_V_IN;   // store vertices (V_IN)
+    std::vector<std::vector<TEN_Node*>> body_V_OUT;  // store vertices (V_OUT)
+
     const bool apply_filter;    // whether to prune redundant vertices
-    const bool use_ilp_solver;  // whether to use ILP solver
     Problem* P;
 
     // for pruning, <Node, required timestep to reach the sink>
@@ -50,16 +50,8 @@ namespace LibTEN
     // for FordFulkerson, count the number of visited nodes
     int dfs_cnt;
 
-    // for ILP
-    int variants_cnt;
-    int constraints_cnt;
-    std::unique_ptr<GRBEnv> grb_env;
-    std::unique_ptr<GRBModel> grb_model;
-    std::unordered_map<std::string, GRBVar> grb_table_vars;
-    std::unordered_map<std::string, GRBConstr> grb_table_constr;
-
     ResidualNetwork();
-    ResidualNetwork(bool _filter, bool _ilp, Problem* _P);
+    ResidualNetwork(bool _filter, Problem* _P);
     ~ResidualNetwork();
     void init();
 
@@ -105,10 +97,5 @@ namespace LibTEN
 
     // return maximum flow size
     int getFlowSum();
-
-#ifdef _GUROBI_
-    void solveByGUROBI();
-#endif
   };
-
 };  // namespace LibTEN

@@ -37,8 +37,7 @@ protected:
   bool overCompTime() const;
 
 public:
-  TEN(Problem* const _P, const int _T, const bool _apply_filter = false,
-      const bool _use_ilp_solver = false);
+  TEN(Problem* const _P, const int _T, const bool _apply_filter = false);
   virtual ~TEN();
 
   // update time expanded network
