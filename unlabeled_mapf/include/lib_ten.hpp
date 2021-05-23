@@ -16,11 +16,13 @@ namespace LibTEN
 
     Node* v;           // original node
     int t;             // timestep
-    std::string name;  // be a key for a hash table
 
     // structure
     TEN_Nodes parents;
     TEN_Nodes children;
+
+    // capacity, key: child
+    std::unordered_map<TEN_Node*, bool> capacity;
 
     TEN_Node(NodeType _type, Node* _v, int _t);
 
@@ -34,7 +36,6 @@ namespace LibTEN
   struct ResidualNetwork {
     TEN_Node* source;
     TEN_Node* sink;
-    std::unordered_map<std::string, bool> capacity;    // capacity
 
     std::vector<std::vector<TEN_Node*>> body_V_IN;   // store vertices (V_IN)
     std::vector<std::vector<TEN_Node*>> body_V_OUT;  // store vertices (V_OUT)
@@ -65,16 +66,12 @@ namespace LibTEN
     TEN_Node* getNode(NodeType _type, Node* _v, Node* _u, int _t);
     TEN_Node* getNode(NodeType _type, Node* _v, int _t);
 
-    static std::string getEdgeName(TEN_Node* p, TEN_Node* q);
-    static std::string getReverseEdgeName(const std::string s);
-
     // return size of network
     int getNodesNum();
     int getEdgesNum();
 
     int getCapacity(TEN_Node* p, TEN_Node* q);
     void clearAllCapacity();
-    void initEdge(TEN_Node* p, TEN_Node* q);
     void deleteEdge(TEN_Node* p, TEN_Node* q);
 
     // judge used or not

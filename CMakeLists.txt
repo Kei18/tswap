@@ -16,11 +16,6 @@ add_custom_target(clang-format
   ../tests/*.cpp
   ../app.cpp)
 
-# for ILP
-if(DEFINED ENV{GUROBI_HOME})
-  add_definitions(-D_GUROBI_=1)
-endif()
-
 # test
 set(TEST_MAIN_FUNC ./third_party/googletest/googletest/src/gtest_main.cc)
 set(TEST_ALL_SRC ${TEST_MAIN_FUNC})

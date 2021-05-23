@@ -190,12 +190,6 @@ void FlowNetwork::printHelp()
             << "     "
             << "start timestep";
 
-#ifdef _GUROBI_
-  std::cout << "\n  -g --use-ilp-solver"
-            << "           "
-            << "implement with ILP solver (GUROBI)";
-#endif
-
   std::cout << std::endl;
 }
 
@@ -219,12 +213,6 @@ void FlowNetwork::makeLog(const std::string& logfile)
     log << "elapsed:" << hist.elapsed << ",makespan:" << hist.makespan
         << ",valid:" << hist.valid << ",network_size:" << hist.network_size
         << ",visited:" << hist.visited_nodes;
-#ifdef _GUROBI_
-    if (use_ilp_solver) {
-      log << ",variants:" << hist.variants_cnt
-          << ",constraints:" << hist.constraints_cnt;
-    }
-#endif
     log << "\n";
   }
 
