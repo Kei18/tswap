@@ -1,9 +1,10 @@
 // target assignment with lazy evaluation
 
 #pragma once
+#include <queue>
+
 #include "lib_ga.hpp"
 #include "problem.hpp"
-#include <queue>
 
 class GoalAllocator
 {
@@ -23,7 +24,8 @@ private:
   int getLazyEval(const int i, Node* const g);
 
 public:
-  GoalAllocator(Problem* _P, bool _evaluate_all = false, bool _use_min_cost = true);
+  GoalAllocator(Problem* _P, bool _evaluate_all = false,
+                bool _use_min_cost = true);
   ~GoalAllocator();
 
   // solve the problem

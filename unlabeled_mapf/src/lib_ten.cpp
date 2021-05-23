@@ -43,18 +43,13 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
 }
 
 LibTEN::ResidualNetwork::ResidualNetwork()
-    : apply_filter(false),
-      time_limit(-1),
-      dfs_cnt(0)
+    : apply_filter(false), time_limit(-1), dfs_cnt(0)
 {
   init();
 }
 
 LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
-    : apply_filter(_filter),
-      P(_P),
-      time_limit(-1),
-      dfs_cnt(0)
+    : apply_filter(_filter), P(_P), time_limit(-1), dfs_cnt(0)
 {
   init();
   if (apply_filter) createFilter();
@@ -63,7 +58,7 @@ LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
 LibTEN::ResidualNetwork::~ResidualNetwork()
 {
   for (int t = 0; t < (int)body_V_IN.size(); ++t) {
-    for (auto node : body_V_IN[t])  delete node;
+    for (auto node : body_V_IN[t]) delete node;
     for (auto node : body_V_OUT[t]) delete node;
   }
   delete source;
@@ -92,9 +87,9 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
 
   // register
   if (_type == TEN_Node::NodeType::V_IN) {
-    body_V_IN[_t-1][_v->id] = new_node;
+    body_V_IN[_t - 1][_v->id] = new_node;
   } else if (_type == TEN_Node::NodeType::V_OUT) {
-    body_V_OUT[_t-1][_v->id] = new_node;
+    body_V_OUT[_t - 1][_v->id] = new_node;
   }
 
   return new_node;
@@ -115,16 +110,18 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
                                                    Node* _u, int _t)
 {
   switch (_type) {
-  case TEN_Node::NodeType::SOURCE:
-    return source;
-  case TEN_Node::NodeType::SINK:
-    return sink;
-  case TEN_Node::NodeType::V_IN:
-    return ((int)body_V_IN.size() >= _t) ? body_V_IN[_t-1][_v->id] : nullptr;
-  case TEN_Node::NodeType::V_OUT:
-    return ((int)body_V_OUT.size() >= _t) ? body_V_OUT[_t-1][_v->id] : nullptr;
-  default:
-    return nullptr;
+    case TEN_Node::NodeType::SOURCE:
+      return source;
+    case TEN_Node::NodeType::SINK:
+      return sink;
+    case TEN_Node::NodeType::V_IN:
+      return ((int)body_V_IN.size() >= _t) ? body_V_IN[_t - 1][_v->id]
+                                           : nullptr;
+    case TEN_Node::NodeType::V_OUT:
+      return ((int)body_V_OUT.size() >= _t) ? body_V_OUT[_t - 1][_v->id]
+                                            : nullptr;
+    default:
+      return nullptr;
   }
 }
 
@@ -188,7 +185,8 @@ bool LibTEN::ResidualNetwork::used(TEN_Node* p, TEN_Node* q)
   }
 }
 
-void LibTEN::ResidualNetwork::clearAllCapacity() {
+void LibTEN::ResidualNetwork::clearAllCapacity()
+{
   source->capacity.clear();
   auto nodes_num = P->getG()->getNodesSize();
   for (int t = 0; t < (int)body_V_IN.size(); ++t) {
@@ -224,10 +222,7 @@ int LibTEN::ResidualNetwork::getFlowSum()
       [&](int acc, TEN_Node* p) { return acc + (1 - getCapacity(source, p)); });
 }
 
-void LibTEN::ResidualNetwork::solve()
-{
-  FordFulkerson();
-}
+void LibTEN::ResidualNetwork::solve() { FordFulkerson(); }
 
 /*
  * Notice about implementation of DFS.

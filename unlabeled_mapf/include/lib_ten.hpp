@@ -14,8 +14,8 @@ namespace LibTEN
     enum NodeType { SOURCE, V_IN, V_OUT, SINK };
     NodeType type;
 
-    Node* v;           // original node
-    int t;             // timestep
+    Node* v;  // original node
+    int t;    // timestep
 
     // structure
     TEN_Nodes parents;
@@ -40,7 +40,7 @@ namespace LibTEN
     std::vector<std::vector<TEN_Node*>> body_V_IN;   // store vertices (V_IN)
     std::vector<std::vector<TEN_Node*>> body_V_OUT;  // store vertices (V_OUT)
 
-    const bool apply_filter;    // whether to prune redundant vertices
+    const bool apply_filter;  // whether to prune redundant vertices
     Problem* P;
 
     // for pruning, <Node, required timestep to reach the sink>

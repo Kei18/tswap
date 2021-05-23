@@ -1,6 +1,7 @@
 #include "../include/flow_network.hpp"
 
 #include <fstream>
+
 #include "../include/goal_allocator.hpp"
 
 const std::string FlowNetwork::SOLVER_NAME = "FlowNetwork";
@@ -60,8 +61,7 @@ void FlowNetwork::run()
   while (t_real <= max_timestep && !overCompTime()) {
     // build time expanded network
     if (!use_incremental) {
-      network_flow =
-          std::make_shared<TEN>(P, t_real, use_pruning);
+      network_flow = std::make_shared<TEN>(P, t_real, use_pruning);
     } else if (!use_past_flow) {
       network_flow->resetFlow();
     }
@@ -74,10 +74,10 @@ void FlowNetwork::run()
 
     // updte log
     HISTS.push_back({(int)getSolverElapsedTime(), t_real,
-        network_flow->isValid(), network_flow->getDfsCnt(),
-        network_flow->getNodesNum(), 0, 0});
+                     network_flow->isValid(), network_flow->getDfsCnt(),
+                     network_flow->getNodesNum(), 0, 0});
     float visited_rate =
-      (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
+        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
          ", valid:", network_flow->isValid(),
          ", visited_nodes:", network_flow->getDfsCnt(), "/",
@@ -206,8 +206,7 @@ void FlowNetwork::makeLog(const std::string& logfile)
       << "\nuse_aggressive_lower_bound:" << use_aggressive_lower_bound
       << "\nuse_passive_lower_bound:" << use_passive_lower_bound
       << "\nuse_binary_search:" << use_binary_search
-      << "\nuse_pruning:" << use_pruning
-      << "\nuse_past_flow:" << use_past_flow
+      << "\nuse_pruning:" << use_pruning << "\nuse_past_flow:" << use_past_flow
       << "\nminimum_step:" << minimum_step << "\n";
   log << "optimal=" << is_optimal << "\n";
   log << "history=\n";

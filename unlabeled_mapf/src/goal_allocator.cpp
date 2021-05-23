@@ -1,13 +1,15 @@
 #include "../include/goal_allocator.hpp"
 
-GoalAllocator::GoalAllocator(Problem* _P, bool _evaluate_all, bool _use_min_cost)
+GoalAllocator::GoalAllocator(Problem* _P, bool _evaluate_all,
+                             bool _use_min_cost)
     : P(_P),
       evaluate_all(_evaluate_all),
       use_min_cost(_use_min_cost),
       matching_cost(0),
       matching_makespan(0),
       OPEN_LAZY(P->getNum()),
-      DIST_LAZY(P->getNum(), std::vector<int>(P->getG()->getNodesSize(), P->getG()->getNodesSize()))
+      DIST_LAZY(P->getNum(), std::vector<int>(P->getG()->getNodesSize(),
+                                              P->getG()->getNodesSize()))
 {
 }
 
@@ -38,7 +40,7 @@ void GoalAllocator::assign()
   // setup open list
   std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
                       decltype(compare)>
-    OPEN(compare);
+      OPEN(compare);
 
   for (int i = 0; i < P->getNum(); ++i) {
     auto s = P->getStart(i);

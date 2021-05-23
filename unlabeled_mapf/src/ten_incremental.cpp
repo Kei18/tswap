@@ -8,8 +8,7 @@ TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const bool _filter)
 }
 
 TEN_INCREMENTAL::TEN_INCREMENTAL(Problem* const _P, const int _t,
-                                 const bool _filter,
-                                 const int _time_limit)
+                                 const bool _filter, const int _time_limit)
     : TEN(_P, _t - 1, _filter), current_timestep(_t - 1)
 {
   setTimeLimit(_time_limit);
@@ -30,7 +29,6 @@ void TEN_INCREMENTAL::update(const int t)
   if (current_timestep > t) {
     // clear capacity
     network.clearAllCapacity();
-
 
     // update sink
     network.sink->t = t;

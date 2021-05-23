@@ -1,11 +1,10 @@
 #pragma once
-#include <random>
 #include <graph.hpp>
+#include <random>
 #include <set>
 
 #include "default_params.hpp"
 #include "util.hpp"
-
 
 using Config = std::vector<Node*>;  // < loc_0[t], loc_1[t], ... >
 using Configs = std::vector<Config>;
