@@ -34,7 +34,7 @@ namespace LibTEN
   struct ResidualNetwork {
     TEN_Node* source;
     TEN_Node* sink;
-    std::unordered_map<std::string, int> capacity;    // capacity
+    std::unordered_map<std::string, bool> capacity;    // capacity
 
     std::vector<std::vector<TEN_Node*>> body_V_IN;   // store vertices (V_IN)
     std::vector<std::vector<TEN_Node*>> body_V_OUT;  // store vertices (V_OUT)
@@ -77,12 +77,11 @@ namespace LibTEN
     void initEdge(TEN_Node* p, TEN_Node* q);
     void deleteEdge(TEN_Node* p, TEN_Node* q);
 
+    // judge used or not
+    bool used(TEN_Node* p, TEN_Node* q);
+
     // update flow
-    void increment(TEN_Node* p, TEN_Node* q);
-    void decrement(TEN_Node* p, TEN_Node* q);
     void setFlow(TEN_Node* from, TEN_Node* to);
-    void setFlow(const std::string edge_name);
-    void setReverseFlow(const std::string edge_name);
 
     // update network structure
     void addParent(TEN_Node* child, TEN_Node* parent);

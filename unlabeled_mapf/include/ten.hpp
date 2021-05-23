@@ -59,11 +59,4 @@ public:
 
   // return the number of visited nodes by the Ford Furlkerson algorithm
   int getDfsCnt();
-
-  // for ILP
-#ifdef _GUROBI_
-  // return the number of variants or constraints
-  int getVariantsCnt();
-  int getConstraintsCnt();
-#endif
 };

@@ -128,8 +128,3 @@ bool TEN::overCompTime() const
   if (time_limit == -1) return false;
   return getElapsedTime(t_start) >= time_limit;
 }
-
-#ifdef _GUROBI_
-int TEN::getVariantsCnt() { return network.variants_cnt; };
-int TEN::getConstraintsCnt() { return network.constraints_cnt; };
-#endif

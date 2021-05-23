@@ -139,7 +139,12 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
 std::string LibTEN::ResidualNetwork::getEdgeName(LibTEN::TEN_Node* p,
                                                  LibTEN::TEN_Node* q)
 {
-  return p->name + "__" + q->name;
+  if (inArray(q, p->children)) {  // p-> q
+    return p->name + "__" + q->name;
+  } else if (inArray(q, p->parents)) {
+    return q->name + "__" + p->name;
+  }
+  return "";
 }
 
 // TEN_Node 1.name__TEN_Node 2.name -> TEN_Node 2.name -- TEN_Node 1.name
@@ -190,64 +195,42 @@ int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
   return capacity[key];
 }
 
+bool LibTEN::ResidualNetwork::used(TEN_Node* p, TEN_Node* q)
+{
+  if (inArray(q, p->children)) {  // usual
+    return !getCapacity(p, q);
+  } else {  // reversed
+    return getCapacity(p, q);
+  }
+}
+
 void LibTEN::ResidualNetwork::clearAllCapacity() { capacity.clear(); }
 
 void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
 {
-  std::string key1 = getEdgeName(p, q);
-  std::string key2 = getEdgeName(q, p);
-
-  // capacity \in { 0, 1 }
-  if (inArray(q, p->children)) {
-    capacity[key1] = 1;
-    capacity[key2] = 0;
-  } else if (inArray(q, p->parents)) {
-    capacity[key1] = 0;
-    capacity[key2] = 1;
-  } else {
-    halt("invalid residual capacity: " + p->name + " -> " + q->name);
-  }
+  capacity[getEdgeName(p, q)] = true;
 }
 
 void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 {
   capacity.erase(getEdgeName(p, q));
-  capacity.erase(getEdgeName(q, p));
-}
-
-void LibTEN::ResidualNetwork::increment(TEN_Node* p, TEN_Node* q)
-{
-  capacity[getEdgeName(p, q)] = 1;
-}
-
-void LibTEN::ResidualNetwork::decrement(TEN_Node* p, TEN_Node* q)
-{
-  capacity[getEdgeName(p, q)] = 0;
 }
 
 void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)
 {
-  decrement(from, to);
-  increment(to, from);
-}
-
-void LibTEN::ResidualNetwork::setFlow(const std::string edge_name)
-{
-  capacity[edge_name] = 0;
-  capacity[getReverseEdgeName(edge_name)] = 1;
-}
-
-void LibTEN::ResidualNetwork::setReverseFlow(const std::string edge_name)
-{
-  capacity[edge_name] = 1;
-  capacity[getReverseEdgeName(edge_name)] = 0;
+  auto key = getEdgeName(from, to);
+  if (inArray(to, from->children)) {  // usual
+    capacity[key] = false;
+  } else {  // reverse
+    capacity[key] = true;
+  }
 }
 
 int LibTEN::ResidualNetwork::getFlowSum()
 {
   return std::accumulate(
       source->children.begin(), source->children.end(), 0,
-      [&](int acc, TEN_Node* p) { return acc + getCapacity(p, source); });
+      [&](int acc, TEN_Node* p) { return acc + (1 - getCapacity(source, p)); });
 }
 
 void LibTEN::ResidualNetwork::solve()
@@ -335,7 +318,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
         if (CLOSE.find(q) != CLOSE.end()) continue;
 
         // used
-        if (getCapacity(p, q) == 0) continue;
+        if (used(p, q)) continue;
 
         // pruning
         if (apply_filter) {
@@ -398,7 +381,7 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
         if (CLOSED.find(q) != CLOSED.end()) continue;
 
         // used
-        if (getCapacity(p, q) == 0) continue;
+        if (used(p, q)) continue;
 
         // pruning
         if (apply_filter) {
