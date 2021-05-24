@@ -2,7 +2,6 @@
 
 #include <climits>
 #include <cstring>
-#include <queue>
 
 LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d)
     : start_index(sindex),
@@ -39,6 +38,7 @@ LibGA::Matching::Matching(Problem* P)
     : starts(P->getConfigStart()),
       goals(P->getConfigGoal()),
       N(P->getNum()),
+      NIL(-1),
       adj(N * 2, std::vector<int>()),
       mate(N * 2, NIL),
       cost(N, std::vector<int>(N, NIL)),
@@ -161,7 +161,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
     int node_total_cnt = 0;
     auto createNewNode = [&](int _v, int _d, DijkstraNode* _p) {
       if (node_total_cnt >= MEMORY_SIZE)
-        halt("lib_ga, memory over, increase MEMORY_SIZE...");
+        halt("memory over, increase MEMORY_SIZE...");
       auto q = &(GC[node_total_cnt++]);
       q->v = _v;
       q->d = _d;

@@ -4,22 +4,15 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'visualizer/**'
-      - 'unlabeled-mapf/**'
-      - 'tests/**'
-      - 'app.cpp'
-      - '.github/workflows/test.yml'
 
 jobs:
   dev_test:
-    runs-on: macos-10.15
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           submodules: true
-          token: ${{ secrets.PERSONAL_TOKEN }}
 
       - name: build
         run: |
@@ -35,6 +28,3 @@ jobs:
       - name: run-app
         working-directory: build
         run: ./app -i ../instances/sample.txt -s TSWAP -o result.txt -v
-
-      - name: build-visualizer
-        run: bash ./visualizer/scripts/build_macos.sh

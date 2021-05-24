@@ -6,7 +6,7 @@
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false)
+TSWAP::TSWAP(Problem* _P) : Solver(_P), use_bfs_allocate(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -19,7 +19,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, evaluate_all);
+  GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -99,7 +99,7 @@ void TSWAP::run()
       }
 
       // desired node
-      Node* u = getPath(a_i->v_now, a_i->g)[1];
+      Node* u = planOneStep(a_i, occupied_now, occupied_next);
 
       // rule 2. if u is occupied in next timestep -> stay
       auto itr_next = occupied_next.find(u);
@@ -199,17 +199,9 @@ bool TSWAP::deadlockDetectResolve(
     if (itr == occupied_now.end()) break;  // not deadlock
     A_p.push_back(b);
     b = itr->second;
-    if (A_p.size() > 1) {
-      if (b == a) break;  // deadlock
-
-      // there is a deadlock, but "a" is not in the deadlock
-      if (inArray(b, A_p)) {
-        A_p.clear();
-        break;
-      }
-    }
+    if (A_p.size() > 1 && b == a) break;  // deadlock
   }
-  if (A_p.size() > 1 && b == a) {  // when detecting deadlock
+  if (A_p.size() > 1 && b == a) {  // detect deadlock
     // rotate targets
     Node* g = (*(A_p.end() - 1))->g;
     for (auto itr = A_p.begin() + 1; itr != A_p.end(); ++itr)
@@ -221,18 +213,47 @@ bool TSWAP::deadlockDetectResolve(
   return false;
 }
 
+Node* TSWAP::planOneStep(Agent* a,
+                         std::unordered_map<Node*, Agent*>& occupied_now,
+                         std::unordered_map<Node*, Agent*>& occupied_next)
+{
+  Nodes C = a->v_now->neighbor;
+
+  // goal exists -> return immediately
+  if (inArray(a->g, C)) return a->g;
+
+  // randomize
+  std::shuffle(C.begin(), C.end(), *MT);
+
+  return *std::min_element(C.begin(), C.end(), [&](Node* v, Node* u) {
+    // path distance
+    int c_v = pathDist(v, a->g);
+    int c_u = pathDist(u, a->g);
+    if (c_v != c_u) return c_v < c_u;
+    // tiebreak1. occupancy for next timestep
+    int o_v_next = (int)(occupied_next.find(v) != occupied_next.end());
+    int o_u_next = (int)(occupied_next.find(u) != occupied_next.end());
+    if (o_v_next != o_u_next) return o_v_next < o_u_next;
+    // tiebreak2. occupancy for current timestep
+    int o_v_now = (int)(occupied_now.find(v) != occupied_now.end());
+    int o_u_now = (int)(occupied_now.find(u) != occupied_now.end());
+    if (o_v_now != o_u_now) return o_v_now < o_u_now;
+    return getRandomBoolean(MT);
+  });
+}
+
 void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-      {"evaluate-all", no_argument, 0, 'e'},
+      {"use-bfs-allocate", no_argument, 0, 'b'},
       {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "e", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
     switch (opt) {
-      case 'e':
-        evaluate_all = true;
+      case 'b':
+        use_bfs_allocate = true;
         break;
       default:
         break;
@@ -244,9 +265,9 @@ void TSWAP::printHelp()
 {
   std::cout << TSWAP::SOLVER_NAME << "\n"
 
-            << "  -e --evaluate-all"
-            << "     "
-            << "without lazy evaluation"
+            << "  -b --use-bfs-allocate"
+            << "         "
+            << "use BFS in goal allocation"
 
             << std::endl;
 }

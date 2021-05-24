@@ -2,10 +2,11 @@
 
 using NodeType = LibTEN::TEN_Node::NodeType;
 
-TEN::TEN(Problem* const _P, const int _T, const bool _filter)
+TEN::TEN(Problem* const _P, const int _T, const bool _filter,
+         const bool _use_ilp_solver)
     : P(_P),
       V(P->getG()->getV()),
-      network(LibTEN::ResidualNetwork(_filter, _P)),
+      network(LibTEN::ResidualNetwork(_filter, _use_ilp_solver, P)),
       valid_network(false),
       time_limit(-1),
       max_timestep(_T)
@@ -128,3 +129,8 @@ bool TEN::overCompTime() const
   if (time_limit == -1) return false;
   return getElapsedTime(t_start) >= time_limit;
 }
+
+#ifdef _GUROBI_
+int TEN::getVariantsCnt() { return network.variants_cnt; };
+int TEN::getConstraintsCnt() { return network.constraints_cnt; };
+#endif

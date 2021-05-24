@@ -118,3 +118,42 @@ TEST(FlowNetwork, TEN)
   ASSERT_TRUE(plan.validate(&P));
   ASSERT_TRUE(plan.getMakespan() == 16);
 }
+
+#ifdef _GUROBI_
+TEST(FlowNetwork, TEN_ILP)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-n";
+  char argv2[] = "-g";
+  char argv3[] = "-l";
+  char* argv[] = {argv0, argv1, argv2, argv3};
+  solver->setParams(4, argv);
+  solver->solve();
+
+  auto plan = solver->getSolution();
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
+}
+
+TEST(FlowNetwork, TEN_INCREMENTAL_ILP)
+{
+  Problem P = Problem("../tests/instances/02.txt");
+  std::unique_ptr<Solver> solver = std::make_unique<FlowNetwork>(&P);
+
+  char argv0[] = "dummy";
+  char argv1[] = "-g";
+  char argv2[] = "-l";
+  char* argv[] = {argv0, argv1, argv2};
+  solver->setParams(3, argv);
+  solver->solve();
+
+  auto plan = solver->getSolution();
+  ASSERT_TRUE(solver->succeed());
+  ASSERT_TRUE(plan.validate(&P));
+  ASSERT_TRUE(plan.getMakespan() == 16);
+}
+#endif

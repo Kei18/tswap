@@ -21,16 +21,15 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  bool use_aggressive_lower_bound;  // LB: use minimum step or not, default:
-                                    // false
-  bool use_passive_lower_bound;     // use real distance to compute LB, default:
-                                    // false
-  bool use_binary_search;           // Binary: use binary search, default: false
-  bool use_pruning;                 // Prune: pruning redundant vertices
-  bool use_past_flow;               // Reuse: use past flow, default: true
+  bool use_lower_bound;    // LB: use minimum step or not, default: false
+  bool use_binary_search;  // Binary: use binary search, default: false
+  bool use_pruning;        // Prune: pruning redundant vertices
+  bool use_past_flow;      // Reuse: use past flow, default: true
 
-  bool use_incremental;  // choose TEN_INCREMENTAL or TEN (no cache), default:
-                         // true
+  bool use_incremental;    // choose TEN_INCREMENTAL or TEN (no cache), default:
+                           // true
+  bool use_ilp_solver;     // use ILP solver or not, default: false
+  bool use_real_distance;  // use real distance to compute LB, default: false
 
   int minimum_step;  // start from this timestep
   bool is_optimal;   // for binary search, optimal makespan or not

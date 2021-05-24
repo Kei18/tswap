@@ -1,33 +1,8 @@
 #pragma once
-#include <graph.hpp>
 #include <random>
-#include <set>
 
 #include "default_params.hpp"
-#include "util.hpp"
-
-using Config = std::vector<Node*>;  // < loc_0[t], loc_1[t], ... >
-using Configs = std::vector<Config>;
-
-[[maybe_unused]] static bool sameConfig(const Config& config_i,
-                                        const Config& config_j)
-{
-  if (config_i.size() != config_j.size()) return false;
-  const int size_i = config_i.size();
-  for (int k = 0; k < size_i; ++k) {
-    if (config_i[k] != config_j[k]) return false;
-  }
-  return true;
-}
-
-[[maybe_unused]] static bool permutatedConfig(const Config& config_i,
-                                              const Config& config_j)
-{
-  std::set<Node*> set_config_i(config_i.begin(), config_i.end());
-  std::set<Node*> set_config_j(config_j.begin(), config_j.end());
-
-  return set_config_i == set_config_j;
-}
+#include "graph.hpp"
 
 class Problem
 {

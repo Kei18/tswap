@@ -78,12 +78,6 @@ void NaiveTSWAP::run()
           A_p.push_back(b);
           b = *itr_w;
           if (b == a) break;  // deadlock
-
-          // there is a deadlock, but "a" is not in the deadlock
-          if (inArray(b, A_p)) {
-            A_p.clear();
-            break;
-          }
         }
         if (A_p.size() > 1 && b == a) {  // deadlock
           // rotate targets

@@ -37,7 +37,8 @@ protected:
   bool overCompTime() const;
 
 public:
-  TEN(Problem* const _P, const int _T, const bool _apply_filter = false);
+  TEN(Problem* const _P, const int _T, const bool _apply_filter = false,
+      const bool _use_ilp_solver = false);
   virtual ~TEN();
 
   // update time expanded network
@@ -59,4 +60,11 @@ public:
 
   // return the number of visited nodes by the Ford Furlkerson algorithm
   int getDfsCnt();
+
+  // for ILP
+#ifdef _GUROBI_
+  // return the number of variants or constraints
+  int getVariantsCnt();
+  int getConstraintsCnt();
+#endif
 };
