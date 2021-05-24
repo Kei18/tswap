@@ -21,8 +21,8 @@ namespace LibGA
     int inst_d;   // instance distance
     int d;        // real distance
 
-    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);
-    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1, int _d2);
+    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);  // with lazy eval
+    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1, int _d2);  // without lazy eval
 
     void setRealDist(int _d);
   };
@@ -31,7 +31,7 @@ namespace LibGA
     const Nodes starts;
     const Nodes goals;
     const int N;                         // number of starts
-    const int NIL;                       // mean empty
+    static constexpr int NIL = -1;       // mean empty
     std::vector<std::vector<int>> adj;   // edges
     std::vector<int> mate;               // pair
     std::vector<std::vector<int>> cost;  // start -> goal

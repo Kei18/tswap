@@ -16,11 +16,6 @@ add_custom_target(clang-format
   ../tests/*.cpp
   ../app.cpp)
 
-# for ILP
-if(DEFINED ENV{GUROBI_HOME})
-  add_definitions(-D_GUROBI_=1)
-endif()
-
 # test
 set(TEST_MAIN_FUNC ./third_party/googletest/googletest/src/gtest_main.cc)
 set(TEST_ALL_SRC ${TEST_MAIN_FUNC})
@@ -30,7 +25,6 @@ macro(add_test name target)
   list(APPEND TEST_ALL_SRC ${target})
 endmacro(add_test)
 
-add_test(test_graph ./tests/test_graph.cpp)
 add_test(test_problem ./tests/test_problem.cpp)
 add_test(test_lib_ten ./tests/test_lib_ten.cpp)
 add_test(test_ten ./tests/test_ten.cpp)

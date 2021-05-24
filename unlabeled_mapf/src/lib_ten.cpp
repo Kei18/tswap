@@ -5,7 +5,6 @@
 LibTEN::TEN_Node::TEN_Node(NodeType _type, Node* _v, int _t)
     : type(_type), v(_v), t(_t)
 {
-  name = getName(type, _v, t);
 }
 
 void LibTEN::TEN_Node::addParent(LibTEN::TEN_Node* parent)
@@ -43,195 +42,154 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
   }
 }
 
-LibTEN::ResidualNetwork::ResidualNetwork()
-    : apply_filter(false),
-      use_ilp_solver(false),
-      time_limit(-1),
-      dfs_cnt(0),
-      variants_cnt(0),
-      constraints_cnt(0)
+LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
+    : apply_filter(_filter), P(_P), time_limit(-1), dfs_cnt(0)
 {
-  init();
-}
-
-LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, bool _ilp, Problem* _P)
-    : apply_filter(_filter),
-      use_ilp_solver(_ilp),
-      P(_P),
-      time_limit(-1),
-      dfs_cnt(0),
-      variants_cnt(0),
-      constraints_cnt(0)
-{
-  init();
-  if (apply_filter && !use_ilp_solver) createFilter();
+  source = createNewNode(LibTEN::TEN_Node::SOURCE, nullptr, 0);
+  sink = createNewNode(LibTEN::TEN_Node::SINK, nullptr, 0);
+  if (apply_filter) createFilter();
 }
 
 LibTEN::ResidualNetwork::~ResidualNetwork()
 {
-  for (auto itr = body.begin(); itr != body.end(); ++itr) delete itr->second;
-  body.clear();
-  capacity.clear();
-}
-
-void LibTEN::ResidualNetwork::init()
-{
-  source = createNewNode(LibTEN::TEN_Node::SOURCE);
-  sink = createNewNode(LibTEN::TEN_Node::SINK);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    grb_env = std::make_unique<GRBEnv>(true);
-    grb_env->set("OutputFlag", "0");
-    grb_env->start();
-    grb_model = std::make_unique<GRBModel>(*grb_env);
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (auto node : body_V_IN[t]) delete node;
+    for (auto node : body_V_OUT[t]) delete node;
   }
-#endif
+  delete source;
+  delete sink;
 }
 
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
-    TEN_Node::NodeType _type, Node* _v, int _t)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(NodeType _type, Node* _v, int _t)
 {
   LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _t);
-  auto itr = body.find(new_node->name);
-  if (itr != body.end()) delete itr->second;
-  body[new_node->name] = new_node;
+
+  // extend body
+  if (_type == NodeType::V_IN || _type == NodeType::V_OUT) {
+    while ((int)body_V_IN.size() < _t) {
+      auto nodes_num = P->getG()->getNodesSize();
+      body_V_IN.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
+      body_V_OUT.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
+    }
+  }
+
+  // register
+  if (_type == NodeType::V_IN) {
+    body_V_IN[_t - 1][_v->id] = new_node;
+  } else if (_type == NodeType::V_OUT) {
+    body_V_OUT[_t - 1][_v->id] = new_node;
+  }
+
   return new_node;
 }
 
-// used for sink or source
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
-    TEN_Node::NodeType _type)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v, int _t)
 {
-  if ((_type != TEN_Node::NodeType::SOURCE) &&
-      (_type != TEN_Node::NodeType::SINK)) {
-    halt("invalid type");
+  switch (_type) {
+    case NodeType::SOURCE:
+      return source;
+    case NodeType::SINK:
+      return sink;
+    case NodeType::V_IN:
+      return ((int)body_V_IN.size() >= _t) ? body_V_IN[_t - 1][_v->id]
+                                           : nullptr;
+    case NodeType::V_OUT:
+      return ((int)body_V_OUT.size() >= _t) ? body_V_OUT[_t - 1][_v->id]
+                                            : nullptr;
+    default:
+      return nullptr;
   }
-  return createNewNode(_type, nullptr, 0);
 }
 
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
-                                                   Node* _u, int _t)
+int LibTEN::ResidualNetwork::getNodesNum()
 {
-  auto itr = body.find(TEN_Node::getName(_type, _v, _t));
-  return (itr != body.end()) ? itr->second : nullptr;
-}
-
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
-                                                   int _t)
-{
-  return getNode(_type, _v, nullptr, _t);
-}
-
-std::string LibTEN::ResidualNetwork::getEdgeName(LibTEN::TEN_Node* p,
-                                                 LibTEN::TEN_Node* q)
-{
-  return p->name + "__" + q->name;
-}
-
-// TEN_Node 1.name__TEN_Node 2.name -> TEN_Node 2.name -- TEN_Node 1.name
-std::string LibTEN::ResidualNetwork::getReverseEdgeName(const std::string s)
-{
-  for (int i = 0; i < s.size() - 1; ++i) {
-    if (s[i] == '_' && s[i + 1] == '_') {
-      return s.substr(i + 2, s.size()) + "__" + s.substr(0, i);
+  int acc = 2;  // source and sink
+  auto nodes_num = P->getG()->getNodesSize();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (int i = 0; i < nodes_num; ++i) {
+      if (body_V_IN[t][i] != nullptr) ++acc;
+      if (body_V_OUT[t][i] != nullptr) ++acc;
     }
   }
-  return "";
+  return acc;
 }
-
-int LibTEN::ResidualNetwork::getNodesNum() { return body.size(); }
 
 int LibTEN::ResidualNetwork::getEdgesNum()
 {
-  return std::accumulate(body.begin(), body.end(), 0,
-                         [](int acc, decltype(body)::value_type& itr) {
-                           return acc + itr.second->children.size();
-                         });
+  auto acc = source->children.size();
+  auto nodes_num = P->getG()->getNodesSize();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (int i = 0; i < nodes_num; ++i) {
+      acc += body_V_IN[t][i]->children.size();
+      acc += body_V_OUT[t][i]->children.size();
+    }
+  }
+  return acc;
 }
 
 int LibTEN::ResidualNetwork::getCapacity(TEN_Node* p, TEN_Node* q)
 {
-  std::string key = getEdgeName(p, q);
-  auto itr = capacity.find(key);
-  if (itr != capacity.end()) return itr->second;
+  TEN_Node* parent;
+  TEN_Node* child;
+  if (inArray(q, p->children)) {  // usual
+    parent = p;
+    child = q;
+  } else {  // reversed
+    parent = q;
+    child = p;
+  }
+  auto itr = parent->capacity.find(child);
+  if (itr != parent->capacity.end()) return itr->second;
 
-  // require initialization
-  initEdge(p, q);
-  return capacity[key];
+  // initialization
+  parent->capacity[child] = true;
+  return true;
 }
 
-void LibTEN::ResidualNetwork::clearAllCapacity() { capacity.clear(); }
-
-void LibTEN::ResidualNetwork::initEdge(TEN_Node* p, TEN_Node* q)
+bool LibTEN::ResidualNetwork::used(TEN_Node* p, TEN_Node* q)
 {
-  std::string key1 = getEdgeName(p, q);
-  std::string key2 = getEdgeName(q, p);
+  if (inArray(q, p->children)) {  // usual
+    return !getCapacity(p, q);
+  } else {  // reverse
+    return getCapacity(p, q);
+  }
+}
 
-  // capacity \in { 0, 1 }
-  if (inArray(q, p->children)) {
-    capacity[key1] = 1;
-    capacity[key2] = 0;
-  } else if (inArray(q, p->parents)) {
-    capacity[key1] = 0;
-    capacity[key2] = 1;
-  } else {
-    halt("invalid residual capacity: " + p->name + " -> " + q->name);
+void LibTEN::ResidualNetwork::clearAllCapacity()
+{
+  source->capacity.clear();
+  auto nodes_num = P->getG()->getNodesSize();
+  for (int t = 0; t < (int)body_V_IN.size(); ++t) {
+    for (int i = 0; i < nodes_num; ++i) {
+      if (body_V_IN[t][i] != nullptr) body_V_IN[t][i]->capacity.clear();
+      if (body_V_OUT[t][i] != nullptr) body_V_OUT[t][i]->capacity.clear();
+    }
   }
 }
 
 void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 {
-  capacity.erase(getEdgeName(p, q));
-  capacity.erase(getEdgeName(q, p));
-}
-
-void LibTEN::ResidualNetwork::increment(TEN_Node* p, TEN_Node* q)
-{
-  capacity[getEdgeName(p, q)] = 1;
-}
-
-void LibTEN::ResidualNetwork::decrement(TEN_Node* p, TEN_Node* q)
-{
-  capacity[getEdgeName(p, q)] = 0;
+  if (inArray(q, p->children)) {  // usual
+    p->capacity.erase(q);
+  } else {  // reverse
+    q->capacity.erase(p);
+  }
 }
 
 void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)
 {
-  decrement(from, to);
-  increment(to, from);
-}
-
-void LibTEN::ResidualNetwork::setFlow(const std::string edge_name)
-{
-  capacity[edge_name] = 0;
-  capacity[getReverseEdgeName(edge_name)] = 1;
-}
-
-void LibTEN::ResidualNetwork::setReverseFlow(const std::string edge_name)
-{
-  capacity[edge_name] = 1;
-  capacity[getReverseEdgeName(edge_name)] = 0;
+  if (inArray(to, from->children)) {  // usual
+    from->capacity[to] = false;
+  } else {  // reverse
+    to->capacity[from] = true;
+  }
 }
 
 int LibTEN::ResidualNetwork::getFlowSum()
 {
   return std::accumulate(
       source->children.begin(), source->children.end(), 0,
-      [&](int acc, TEN_Node* p) { return acc + getCapacity(p, source); });
-}
-
-void LibTEN::ResidualNetwork::solve()
-{
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    solveByGUROBI();
-  } else {
-    FordFulkerson();
-  }
-#else
-  FordFulkerson();
-#endif
+      [&](int acc, TEN_Node* p) { return acc + (1 - getCapacity(source, p)); });
 }
 
 /*
@@ -242,7 +200,7 @@ void LibTEN::ResidualNetwork::solve()
  * according to the number of vertices
  */
 
-void LibTEN::ResidualNetwork::FordFulkerson()
+void LibTEN::ResidualNetwork::solve()
 {
   constexpr unsigned int MEMORY_LIMIT = 2000000;  // arbitrary value
   if (getNodesNum() > MEMORY_LIMIT) {
@@ -314,14 +272,14 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
         if (CLOSE.find(q) != CLOSE.end()) continue;
 
         // used
-        if (getCapacity(p, q) == 0) continue;
+        if (used(p, q)) continue;
 
         // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
-            if (reachable_filter[q->v] > sink->t) continue;
+            if (reachable_filter[q->v->id] > sink->t) continue;
           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
-            if (reachable_filter[q->v] + q->t > sink->t) continue;
+            if (reachable_filter[q->v->id] + q->t > sink->t) continue;
           }
         }
 
@@ -377,14 +335,14 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
         if (CLOSED.find(q) != CLOSED.end()) continue;
 
         // used
-        if (getCapacity(p, q) == 0) continue;
+        if (used(p, q)) continue;
 
         // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
-            if (reachable_filter[q->v] > sink->t) continue;
+            if (reachable_filter[q->v->id] > sink->t) continue;
           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
-            if (reachable_filter[q->v] + q->t > sink->t) continue;
+            if (reachable_filter[q->v->id] + q->t > sink->t) continue;
           }
         }
 
@@ -409,22 +367,25 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
 // for pruning
 void LibTEN::ResidualNetwork::createFilter()
 {
-  std::vector<Node*> OPEN, OPEN_NEXT;
+  // initialize filter
+  const uint nodes_num = P->getG()->getNodesSize();
+  reachable_filter = std::vector<uint>(nodes_num, nodes_num);
 
-  // initialize
+  // initialize search
+  std::vector<Node*> OPEN, OPEN_NEXT;
   int t = 0;  // timestep
   for (auto v : P->getConfigGoal()) {
     OPEN.push_back(v);
-    reachable_filter[v] = t;
+    reachable_filter[v->id] = t;
   }
   // bfs
   while (true) {
     ++t;
     for (auto v : OPEN) {
       for (auto u : v->neighbor) {
-        if (reachable_filter.find(u) != reachable_filter.end()) continue;
+        if (reachable_filter[u->id] < nodes_num) continue;
         OPEN_NEXT.push_back(u);
-        reachable_filter[u] = t;
+        reachable_filter[u->id] = t;
       }
     }
 
@@ -438,92 +399,9 @@ void LibTEN::ResidualNetwork::createFilter()
 void LibTEN::ResidualNetwork::addParent(TEN_Node* child, TEN_Node* parent)
 {
   child->addParent(parent);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    // add variable
-    auto name = getEdgeName(parent, child);
-    auto var = grb_model->addVar(0.0, 1.0, 0, GRB_BINARY, name);
-    grb_table_vars[name] = var;
-
-    // set objective
-    if (parent == source && source->children.size() == P->getNum()) {
-      GRBLinExpr grb_obj = 0;
-      for (auto p : source->children) {
-        grb_obj += grb_table_vars[getEdgeName(source, p)];
-      }
-      grb_model->setObjective(grb_obj, GRB_MAXIMIZE);
-    }
-
-    // add constraints
-    auto updateConstr = [&](TEN_Node* p) {
-      if (p == source || p == sink) return;
-
-      // check update condition
-      if ((p->type == NodeType::V_OUT &&
-           p->parents.size() == p->v->neighbor.size() + 1) ||
-          (p->type == NodeType::V_IN &&
-           p->children.size() == p->v->neighbor.size() + 1)) {
-        // update
-        auto itr = grb_table_constr.find(p->name);
-        if (itr != grb_table_constr.end()) grb_model->remove(itr->second);
-        GRBLinExpr lhs = 0;
-        for (auto q : p->children) lhs += grb_table_vars[getEdgeName(p, q)];
-        for (auto q : p->parents) lhs -= grb_table_vars[getEdgeName(q, p)];
-        grb_table_constr[p->name] = grb_model->addConstr(lhs == 0, p->name);
-      }
-    };
-
-    updateConstr(parent);
-    updateConstr(child);
-
-    variants_cnt = grb_table_vars.size();
-    constraints_cnt = grb_table_constr.size();
-  }
-#endif
 }
 
 void LibTEN::ResidualNetwork::removeParent(TEN_Node* child, TEN_Node* parent)
 {
   child->removeParent(parent);
-
-#ifdef _GUROBI_
-  if (use_ilp_solver) {
-    // remove variable
-    auto itr = grb_table_vars.find(getEdgeName(parent, child));
-    if (itr != grb_table_vars.end()) {
-      grb_model->remove(itr->second);
-      grb_table_vars.erase(itr);
-    }
-
-    variants_cnt = grb_table_vars.size();
-    constraints_cnt = grb_table_constr.size();
-  }
-#endif
 }
-
-#ifdef _GUROBI_
-void LibTEN::ResidualNetwork::solveByGUROBI()
-{
-  // set time limit
-  if (time_limit != -1) {
-    grb_model->set("TimeLimit", std::to_string((double)time_limit / 1000));
-  }
-
-  // optimize model
-  grb_model->optimize();
-
-  // feasible solution
-  if (grb_model->get(GRB_DoubleAttr_ObjVal) == P->getNum()) {
-    // apply flow
-    for (auto itr = grb_table_vars.begin(); itr != grb_table_vars.end();
-         ++itr) {
-      if (itr->second.get(GRB_DoubleAttr_X) == 1.0) {
-        setFlow(itr->first);
-      } else {
-        setReverseFlow(itr->first);
-      }
-    }
-  }
-}
-#endif

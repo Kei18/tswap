@@ -23,7 +23,7 @@ TEST(TEN_INCREMENTAL, update)
 TEST(TEN_INCREMENTAL, ILP)
 {
   Problem P = Problem("../tests/instances/03.txt");
-  auto network = TEN_INCREMENTAL(&P, false, true);
+  auto network = TEN_INCREMENTAL(&P, false);
 
   network.update();
   ASSERT_FALSE(network.isValid());
