@@ -1,10 +1,12 @@
 #include <lib_ten.hpp>
+#include <problem.hpp>
 
 #include "gtest/gtest.h"
 
 TEST(ResidualNetwork, capacity)
 {
-  auto network = LibTEN::ResidualNetwork();
+  Problem P = Problem("../tests/instances/03.txt");
+  auto network = LibTEN::ResidualNetwork(false, &P);
   auto p = network.source;
   auto q = network.sink;
   q->addParent(p);

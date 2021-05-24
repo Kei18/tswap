@@ -42,16 +42,11 @@ std::string LibTEN::TEN_Node::getName(NodeType _type, Node* _v, int _t)
   }
 }
 
-LibTEN::ResidualNetwork::ResidualNetwork()
-    : apply_filter(false), time_limit(-1), dfs_cnt(0)
-{
-  init();
-}
-
 LibTEN::ResidualNetwork::ResidualNetwork(bool _filter, Problem* _P)
     : apply_filter(_filter), P(_P), time_limit(-1), dfs_cnt(0)
 {
-  init();
+  source = createNewNode(LibTEN::TEN_Node::SOURCE, nullptr, 0);
+  sink = createNewNode(LibTEN::TEN_Node::SINK, nullptr, 0);
   if (apply_filter) createFilter();
 }
 
@@ -65,20 +60,13 @@ LibTEN::ResidualNetwork::~ResidualNetwork()
   delete sink;
 }
 
-void LibTEN::ResidualNetwork::init()
-{
-  source = createNewNode(LibTEN::TEN_Node::SOURCE);
-  sink = createNewNode(LibTEN::TEN_Node::SINK);
-}
-
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
-    TEN_Node::NodeType _type, Node* _v, int _t)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(NodeType _type, Node* _v, int _t)
 {
   LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _t);
 
-  // extend
-  if (_type == TEN_Node::NodeType::V_IN || _type == TEN_Node::NodeType::V_OUT) {
-    if ((int)body_V_IN.size() < _t) {
+  // extend body
+  if (_type == NodeType::V_IN || _type == NodeType::V_OUT) {
+    while ((int)body_V_IN.size() < _t) {
       auto nodes_num = P->getG()->getNodesSize();
       body_V_IN.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
       body_V_OUT.push_back(std::vector<TEN_Node*>(nodes_num, nullptr));
@@ -86,38 +74,26 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
   }
 
   // register
-  if (_type == TEN_Node::NodeType::V_IN) {
+  if (_type == NodeType::V_IN) {
     body_V_IN[_t - 1][_v->id] = new_node;
-  } else if (_type == TEN_Node::NodeType::V_OUT) {
+  } else if (_type == NodeType::V_OUT) {
     body_V_OUT[_t - 1][_v->id] = new_node;
   }
 
   return new_node;
 }
 
-// used for sink or source
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(
-    TEN_Node::NodeType _type)
-{
-  if ((_type != TEN_Node::NodeType::SOURCE) &&
-      (_type != TEN_Node::NodeType::SINK)) {
-    halt("invalid type");
-  }
-  return createNewNode(_type, nullptr, 0);
-}
-
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
-                                                   Node* _u, int _t)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v, int _t)
 {
   switch (_type) {
-    case TEN_Node::NodeType::SOURCE:
+    case NodeType::SOURCE:
       return source;
-    case TEN_Node::NodeType::SINK:
+    case NodeType::SINK:
       return sink;
-    case TEN_Node::NodeType::V_IN:
+    case NodeType::V_IN:
       return ((int)body_V_IN.size() >= _t) ? body_V_IN[_t - 1][_v->id]
                                            : nullptr;
-    case TEN_Node::NodeType::V_OUT:
+    case NodeType::V_OUT:
       return ((int)body_V_OUT.size() >= _t) ? body_V_OUT[_t - 1][_v->id]
                                             : nullptr;
     default:
@@ -125,15 +101,9 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
   }
 }
 
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
-                                                   int _t)
-{
-  return getNode(_type, _v, nullptr, _t);
-}
-
 int LibTEN::ResidualNetwork::getNodesNum()
 {
-  int acc = 2;
+  int acc = 2;  // source and sink
   auto nodes_num = P->getG()->getNodesSize();
   for (int t = 0; t < (int)body_V_IN.size(); ++t) {
     for (int i = 0; i < nodes_num; ++i) {
@@ -180,7 +150,7 @@ bool LibTEN::ResidualNetwork::used(TEN_Node* p, TEN_Node* q)
 {
   if (inArray(q, p->children)) {  // usual
     return !getCapacity(p, q);
-  } else {  // reversed
+  } else {  // reverse
     return getCapacity(p, q);
   }
 }
@@ -201,7 +171,7 @@ void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 {
   if (inArray(q, p->children)) {  // usual
     p->capacity.erase(q);
-  } else {  // reversed
+  } else {  // reverse
     q->capacity.erase(p);
   }
 }
@@ -222,8 +192,6 @@ int LibTEN::ResidualNetwork::getFlowSum()
       [&](int acc, TEN_Node* p) { return acc + (1 - getCapacity(source, p)); });
 }
 
-void LibTEN::ResidualNetwork::solve() { FordFulkerson(); }
-
 /*
  * Notice about implementation of DFS.
  * Recursive call is much faster, however,
@@ -232,7 +200,7 @@ void LibTEN::ResidualNetwork::solve() { FordFulkerson(); }
  * according to the number of vertices
  */
 
-void LibTEN::ResidualNetwork::FordFulkerson()
+void LibTEN::ResidualNetwork::solve()
 {
   constexpr unsigned int MEMORY_LIMIT = 2000000;  // arbitrary value
   if (getNodesNum() > MEMORY_LIMIT) {
@@ -309,9 +277,9 @@ void LibTEN::ResidualNetwork::FordFulkersonWithStack()
         // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
-            if (reachable_filter[q->v] > sink->t) continue;
+            if (reachable_filter[q->v->id] > sink->t) continue;
           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
-            if (reachable_filter[q->v] + q->t > sink->t) continue;
+            if (reachable_filter[q->v->id] + q->t > sink->t) continue;
           }
         }
 
@@ -372,9 +340,9 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
         // pruning
         if (apply_filter) {
           if (p->type == NodeType::SOURCE && q->type == NodeType::V_IN) {
-            if (reachable_filter[q->v] > sink->t) continue;
+            if (reachable_filter[q->v->id] > sink->t) continue;
           } else if (p->type == NodeType::V_IN && q->type == NodeType::V_OUT) {
-            if (reachable_filter[q->v] + q->t > sink->t) continue;
+            if (reachable_filter[q->v->id] + q->t > sink->t) continue;
           }
         }
 
@@ -399,22 +367,25 @@ void LibTEN::ResidualNetwork::FordFulkersonWithRecursiveCall()
 // for pruning
 void LibTEN::ResidualNetwork::createFilter()
 {
-  std::vector<Node*> OPEN, OPEN_NEXT;
+  // initialize filter
+  const uint nodes_num = P->getG()->getNodesSize();
+  reachable_filter = std::vector<uint>(nodes_num, nodes_num);
 
-  // initialize
+  // initialize search
+  std::vector<Node*> OPEN, OPEN_NEXT;
   int t = 0;  // timestep
   for (auto v : P->getConfigGoal()) {
     OPEN.push_back(v);
-    reachable_filter[v] = t;
+    reachable_filter[v->id] = t;
   }
   // bfs
   while (true) {
     ++t;
     for (auto v : OPEN) {
       for (auto u : v->neighbor) {
-        if (reachable_filter.find(u) != reachable_filter.end()) continue;
+        if (reachable_filter[u->id] < nodes_num) continue;
         OPEN_NEXT.push_back(u);
-        reachable_filter[u] = t;
+        reachable_filter[u->id] = t;
       }
     }
 
