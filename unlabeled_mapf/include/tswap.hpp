@@ -19,7 +19,7 @@ private:
     int called;    // how many times called in the queue
   };
 
-  bool use_bfs_allocate;  // use BFS in the target assignment, default: false
+  bool evaluate_all;  // without lazy evaluation, default: false
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
@@ -28,10 +28,6 @@ private:
                              // assignment
   int estimated_soc;         // estimated sum-of-costs according to the target
                              // assignment
-
-  // return a candidate of next location
-  Node* planOneStep(Agent* a, std::unordered_map<Node*, Agent*>& occupied_now,
-                    std::unordered_map<Node*, Agent*>& occupied_next);
 
   // detect and resolve deadlocks
   bool deadlockDetectResolve(Agent* a,

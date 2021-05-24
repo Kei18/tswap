@@ -169,11 +169,11 @@ void FlowNetwork::printHelp()
             << "implement without cache\n"
 
             << "  -l --use-aggressive-lower-bound"
-            << "          "
+            << "  "
             << "LB, calculated by bottleneck assignment\n"
 
             << "  -d --use-passive-lower-bound"
-            << "          "
+            << "  "
             << "LB, calculated by Manhattan distance\n"
 
             << "  -b --use-binary-search"

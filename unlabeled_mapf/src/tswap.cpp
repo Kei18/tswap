@@ -6,7 +6,7 @@
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-TSWAP::TSWAP(Problem* _P) : Solver(_P), use_bfs_allocate(false)
+TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -19,7 +19,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
+  GoalAllocator allocator = GoalAllocator(P, evaluate_all);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -99,7 +99,7 @@ void TSWAP::run()
       }
 
       // desired node
-      Node* u = planOneStep(a_i, occupied_now, occupied_next);
+      Node* u = getPath(a_i->v_now, a_i->g)[1];
 
       // rule 2. if u is occupied in next timestep -> stay
       auto itr_next = occupied_next.find(u);
@@ -202,14 +202,14 @@ bool TSWAP::deadlockDetectResolve(
     if (A_p.size() > 1) {
       if (b == a) break;  // deadlock
 
-      // there is a deadlock, but a is not in the deadlock
+      // there is a deadlock, but "a" is not in the deadlock
       if (inArray(b, A_p)) {
         A_p.clear();
         break;
       }
     }
   }
-  if (A_p.size() > 1 && b == a) {  // detect deadlock
+  if (A_p.size() > 1 && b == a) {  // when detecting deadlock
     // rotate targets
     Node* g = (*(A_p.end() - 1))->g;
     for (auto itr = A_p.begin() + 1; itr != A_p.end(); ++itr)
@@ -221,27 +221,18 @@ bool TSWAP::deadlockDetectResolve(
   return false;
 }
 
-Node* TSWAP::planOneStep(Agent* a,
-                         std::unordered_map<Node*, Agent*>& occupied_now,
-                         std::unordered_map<Node*, Agent*>& occupied_next)
-{
-  auto p = getPath(a->v_now, a->g);
-  if (p.empty()) return a->v_now;
-  return p[1];
-}
-
 void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-      {"use-bfs-allocate", no_argument, 0, 'b'},
+      {"evaluate-all", no_argument, 0, 'e'},
       {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "e", longopts, &longindex)) != -1) {
     switch (opt) {
-      case 'b':
-        use_bfs_allocate = true;
+      case 'e':
+        evaluate_all = true;
         break;
       default:
         break;
@@ -253,9 +244,9 @@ void TSWAP::printHelp()
 {
   std::cout << TSWAP::SOLVER_NAME << "\n"
 
-            << "  -b --use-bfs-allocate"
-            << "         "
-            << "use BFS in goal allocation"
+            << "  -e --evaluate-all"
+            << "     "
+            << "without lazy evaluation"
 
             << std::endl;
 }

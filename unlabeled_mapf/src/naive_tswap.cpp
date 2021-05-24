@@ -79,7 +79,7 @@ void NaiveTSWAP::run()
           b = *itr_w;
           if (b == a) break;  // deadlock
 
-          // there is a deadlock, but a is not in the deadlock
+          // there is a deadlock, but "a" is not in the deadlock
           if (inArray(b, A_p)) {
             A_p.clear();
             break;
