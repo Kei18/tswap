@@ -1,6 +1,7 @@
 #include "../include/solver.hpp"
 
 #include <fstream>
+#include <iomanip>
 
 Solver::Solver(Problem* _P)
     : P(_P),
