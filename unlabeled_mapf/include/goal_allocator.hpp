@@ -3,7 +3,6 @@
 #pragma once
 #include "lib_ga.hpp"
 #include "problem.hpp"
-#include <queue>
 
 class GoalAllocator
 {
@@ -16,11 +15,6 @@ private:
       use_min_cost;   // whether to use min-cost maximum matching, default: true
   int matching_cost;  // estimation of sum of costs
   int matching_makespan;  // estimation of makspan
-
-  // lazy evaluation
-  std::vector<std::queue<Node*>> OPEN_LAZY;
-  std::vector<std::vector<int>> DIST_LAZY;
-  int getLazyEval(const int i, Node* const g);
 
 public:
   GoalAllocator(Problem* _P, bool _use_bfs = false, bool _use_min_cost = true);

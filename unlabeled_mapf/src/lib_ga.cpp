@@ -2,7 +2,6 @@
 
 #include <climits>
 #include <cstring>
-#include <queue>
 
 LibGA::FieldEdge::FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d)
     : start_index(sindex),

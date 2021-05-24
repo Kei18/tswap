@@ -8,9 +8,6 @@ target_compile_options(${PROJECT_NAME} PUBLIC -O3 -Wall -mtune=native -march=nat
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} INTERFACE ./include)
 
-add_subdirectory(../third_party/grid-pathfinding/graph ./graph)
-target_link_libraries(lib-unlabeled-mapf lib-graph)
-
 set(DUMMY_HEADER ./include/gurobi.hpp)
 if(DEFINED ENV{GUROBI_HOME})
   message("use Gurobi (ILP Solver), generate header ${DUMMY_HEADER}")
