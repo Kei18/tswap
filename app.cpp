@@ -108,7 +108,7 @@ std::unique_ptr<Solver> getSolver(const std::string solver_name, Problem *P,
   } else if (solver_name == "TSWAP") {
     solver = std::make_unique<TSWAP>(P);
   } else {
-    warn("unknown solver name, " + solver_name + ", continue by PIBT");
+    warn("unknown solver name, " + solver_name + ", continue by TSWAP");
     solver = std::make_unique<TSWAP>(P);
   }
   solver->setParams(argc, argv);
