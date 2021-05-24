@@ -60,7 +60,8 @@ LibTEN::ResidualNetwork::~ResidualNetwork()
   delete sink;
 }
 
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(NodeType _type, Node* _v, int _t)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(NodeType _type,
+                                                         Node* _v, int _t)
 {
   LibTEN::TEN_Node* new_node = new LibTEN::TEN_Node(_type, _v, _t);
 
@@ -83,7 +84,8 @@ LibTEN::TEN_Node* LibTEN::ResidualNetwork::createNewNode(NodeType _type, Node* _
   return new_node;
 }
 
-LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v, int _t)
+LibTEN::TEN_Node* LibTEN::ResidualNetwork::getNode(NodeType _type, Node* _v,
+                                                   int _t)
 {
   switch (_type) {
     case NodeType::SOURCE:

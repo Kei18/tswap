@@ -21,8 +21,10 @@ namespace LibGA
     int inst_d;   // instance distance
     int d;        // real distance
 
-    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d);  // with lazy eval
-    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1, int _d2);  // without lazy eval
+    FieldEdge(int sindex, int gindex, Node* _s, Node* _g,
+              int _d);  // with lazy eval
+    FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1,
+              int _d2);  // without lazy eval
 
     void setRealDist(int _d);
   };
