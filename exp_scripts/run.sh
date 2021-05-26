@@ -7,17 +7,21 @@ solver=$3
 scen_start=$4
 scen_end=$5
 flocking_blocks=$6
+force=$7
 
 PROJECT_DIR=`dirname $0`/..
 map_trimed=${map%.map}
 
 ## check git status
-GIT_STATUS_RESULT=`git status -s`
-if [ ${#GIT_STATUS_RESULT} -ne 0 ]
+if [ ${force} -ne 1 ]
 then
-    echo "Untracked changes exist. Commit them beforehand."
-    git status -s
-    exit 1
+    GIT_STATUS_RESULT=`git status -s`
+    if [ ${#GIT_STATUS_RESULT} -ne 0 ]
+    then
+        echo "Untracked changes exist. Commit them beforehand."
+        git status -s
+        exit 1
+    fi
 fi
 GIT_RECENT_COMMIT=`git log -1 --pretty=format:"%H"`
 
