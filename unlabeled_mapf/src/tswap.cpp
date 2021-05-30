@@ -212,7 +212,7 @@ bool TSWAP::deadlockDetectResolve(
   if (A_p.size() > 1 && b == a) {  // when detecting deadlock
     // rotate targets
     Node* g = (*(A_p.end() - 1))->g;
-    for (auto itr = A_p.begin() + 1; itr != A_p.end(); ++itr)
+    for (auto itr = A_p.end() - 1; itr != A_p.begin(); --itr)
       (*itr)->g = (*(itr - 1))->g;
     (*A_p.begin())->g = g;
     return true;
