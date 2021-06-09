@@ -1,10 +1,10 @@
 #!/bin/sh
 map="random-64-64-20.map"
-agents_list="50 110 500 1000"
+agents_list="50 110 500 1000 1500 2000"
 flocking_blocks=0
 scen_start=1
 scen_end=50
-force=0
+force=1
 
 set -e
 
