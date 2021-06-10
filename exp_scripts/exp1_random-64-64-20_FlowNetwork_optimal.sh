@@ -1,5 +1,5 @@
 set -e
-force=1
+force=0
 
 sh `dirname $0`/run.sh random-64-64-20.map "50" "FlowNetwork -t 30" 36 36 0 $force
 sh `dirname $0`/run.sh random-64-64-20.map "50" "FlowNetwork -t 22" 22 22 0 $force

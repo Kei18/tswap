@@ -182,7 +182,7 @@ void TSWAP::run()
 
   elapsed_pathplanning = getElapsedTime(t_pathplanning);
 
-  info(" ", "elapsed:", getSolverElapsedTime(), ", finish paht planning");
+  info(" ", "elapsed:", getSolverElapsedTime(), ", finish path planning");
 
   solution = plan;
 }
