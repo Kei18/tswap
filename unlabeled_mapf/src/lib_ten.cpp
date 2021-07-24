@@ -204,7 +204,7 @@ int LibTEN::ResidualNetwork::getFlowSum()
 
 void LibTEN::ResidualNetwork::solve()
 {
-  constexpr unsigned int MEMORY_LIMIT = 2000000;  // arbitrary value
+  constexpr unsigned int MEMORY_LIMIT = 30000;  // arbitrary value
   if (getNodesNum() > MEMORY_LIMIT) {
     FordFulkersonWithStack();
   } else {

@@ -1,15 +1,18 @@
-Unlabeled MAPF
+Unlabeled-MAPF
 ===
-![test](https://github.com/Kei18/unlabeled-MAPF/workflows/test/badge.svg?branch=dev)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
-A simulator and visualizer of Unlabeled Multi-Agent Path Finding (MAPF), used in a paper "Simultaneous Target Assignment and Path Planning for Interchangeable Agents on Graphs".
+A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (MAPF).
 It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
 The repository uses [Google Test](https://github.com/google/googletest).
 The visualizer uses [openFrameworks](https://openframeworks.cc).
-It is possible to use [GUROBI9.1](https://www.gurobi.com/) as an ILP solver to solve the maximum flow problems.
 
 The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-optimal, complete).
+
+| platform | status (public) | status (dev) |
+| ---: | :--- |:--- |
+| macos-10.15 | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test/badge.svg?branch=public) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=public) | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=dev) |
+| ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=public) | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=dev) |
 
 ## Demo
 ![demo in a small field, flocking-like](/material/arena_100agents.gif)
@@ -73,26 +76,6 @@ solution=
 [...]
 ```
 
-## Installation of GUROBI
-As an option, you can use an ILP solver (GUROBI9.1) in the optimal solver.
-The code of GUROBI is available free for academic use.
-Install the code following instructions on the [official site](https://www.gurobi.com/documentation/9.1/quickstart_mac/software_installation_guid.html).
-Don't forget to setup an academic license.
-
-After the installation, make an alias of `GUROBI_HOME`.
-My environment is as follows.
-```
-> echo ${GUROBI_HOME}
-/Library/gurobi911/mac64
-```
-
-You can test the ILP solver via `-g` option.
-```
-./app -i ../instances/random-32-32-20_70agents_1.txt -s FlowNetwork -v -g
-```
-
-Note: Of course, it is significantly slower than the flow-based algorithm (i.e., Ford-Fulkerson).
-
 ## Visualizer
 
 ### Building
@@ -112,6 +95,11 @@ cd build
 ```
 
 You can manipulate it via your keyboard. See printed info.
+
+
+## Experimental Environment
+[![v1.1](https://img.shields.io/badge/tag-v1.1-blue.svg?style=flat)](https://github.com/Kei18/unlabeled-MAPF/releases/tag/v1.1)
+
 
 ## Licence
 This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
@@ -135,4 +123,4 @@ This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
    In Algorithmic foundations of robotics X (pp. 157-173). Springer, Berlin, Heidelberg.
 2. Hönig, W., Kiesel, S., Tinka, A., Durham, J., & Ayanian, N. (2018).
    Conflict-based search with optimal task assignment.
-   In Proceedings of the International Joint Conference on Autonomous Agents and Multiagent Systems (AAMAS).
+   In Proc. Int. Joint Conf. on Autonomous Agents and Multiagent Systems (AAMAS).
