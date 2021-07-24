@@ -11,7 +11,7 @@ The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-o
 
 | platform | status (public) | status (dev) |
 | ---: | :--- |:--- |
-| macos-10.15 | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test/badge.svg?branch=public) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=public) | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=dev) |
+| macos-10.15 | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test_macos/badge.svg?branch=public) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=public) | ![test_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/unlabeled-MAPF/workflows/build_visualizer_macos/badge.svg?branch=dev) |
 | ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=public) | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=dev) |
 
 ## Demo

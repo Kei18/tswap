@@ -30,8 +30,7 @@ private:
                              // assignment
 
   // detect and resolve deadlocks
-  bool deadlockDetectResolve(Agent* a,
-                             std::unordered_map<Node*, Agent*>& occupied_now);
+  bool deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now);
 
   void run();
 

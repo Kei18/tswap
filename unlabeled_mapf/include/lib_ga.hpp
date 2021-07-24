@@ -18,7 +18,7 @@ namespace LibGA
     Node* g;  // goal
 
     bool evaled;  // whether real distance is computed or not
-    int inst_d;   // instance distance
+    int inst_d;   // estimated distance
     int d;        // real distance
 
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g,

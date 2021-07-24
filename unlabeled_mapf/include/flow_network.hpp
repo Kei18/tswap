@@ -21,10 +21,10 @@ public:
   static const std::string SOLVER_NAME;
 
 private:
-  bool use_aggressive_lower_bound;  // LB: use minimum step or not, default:
-                                    // false
-  bool use_passive_lower_bound;     // use real distance to compute LB, default:
-                                    // false
+  bool use_aggressive_lower_bound;  // use aggressive method to obtain good
+                                    // lower bound, default: false
+  bool use_passive_lower_bound;     // use passive method to obtain lower bound,
+                                    // default: false
   bool use_binary_search;           // Binary: use binary search, default: false
   bool use_pruning;                 // Prune: pruning redundant vertices
   bool use_past_flow;               // Reuse: use past flow, default: true

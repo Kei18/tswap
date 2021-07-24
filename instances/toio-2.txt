@@ -1,0 +1,14 @@
+map_file=toio-2.map
+agents=8
+seed=0
+max_timestep=50
+max_comp_time=1000
+random_problem=0
+0,0,5,0
+1,0,6,0
+2,0,7,0
+0,1,5,1
+1,1,6,1
+2,1,7,1
+0,2,6,2
+1,2,7,2

@@ -87,25 +87,43 @@ bool Plan::validate(Problem* P) const
   if (configs.empty()) return false;
 
   // start and goal
-  if (!sameConfig(P->getConfigStart(), get(0))) return false;
-  if (!permutatedConfig(P->getConfigGoal(), get(getMakespan()))) return false;
+  if (!sameConfig(P->getConfigStart(), get(0))) {
+    std::cout << "starts do not match" << std::endl;
+    return false;
+  }
+  if (!permutatedConfig(P->getConfigGoal(), get(getMakespan()))) {
+    std::cout << "goals do not match" << std::endl;
+    return false;
+  }
 
   // check conflicts and continuity
   int num_agents = get(0).size();
   for (int t = 1; t < getMakespan(); ++t) {
-    if (get(t).size() != num_agents) return false;
+    if (get(t).size() != num_agents) {
+      std::cout << "the number of agents seems strange in paths" << std::endl;
+      return false;
+    }
     for (int i = 0; i < num_agents; ++i) {
       Node* v_i_t = get(t, i);
       Node* v_i_t_1 = get(t - 1, i);
       Nodes cands = v_i_t_1->neighbor;
       cands.push_back(v_i_t_1);
-      if (!inArray(v_i_t, cands)) return false;  // invalid move
+      if (!inArray(v_i_t, cands)) {
+        std::cout << "detect invalid moves" << std::endl;
+        return false;  // invalid move
+      }
       // see conflicts
       for (int j = i + 1; j < num_agents; ++j) {
         Node* v_j_t = get(t, j);
         Node* v_j_t_1 = get(t - 1, j);
-        if (v_i_t == v_j_t) return false;
-        if (v_i_t == v_j_t_1 && v_i_t_1 == v_j_t) return false;
+        if (v_i_t == v_j_t) {
+          std::cout << "detect vertex conflicts" << std::endl;
+          return false;
+        }
+        if (v_i_t == v_j_t_1 && v_i_t_1 == v_j_t) {
+          std::cout << "detect swap conflicts" << std::endl;
+          return false;
+        }
       }
     }
   }

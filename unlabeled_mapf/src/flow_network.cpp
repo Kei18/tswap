@@ -26,7 +26,7 @@ void FlowNetwork::run()
 {
   // setup minimum timestep
   if (use_aggressive_lower_bound) {
-    // lazy evaluation, without min cost maximum matching
+    // with lazy evaluation, without min cost maximum matching
     GoalAllocator allocator = GoalAllocator(P, false, false);
     allocator.assign();
     minimum_step = allocator.getMakespan();
@@ -35,6 +35,7 @@ void FlowNetwork::run()
     for (auto s : P->getConfigStart()) {
       Node* g =
           *std::min_element(goals.begin(), goals.end(), [&](Node* v, Node* u) {
+            // use admissible heuristic
             return s->manhattanDist(v) < s->manhattanDist(u);
           });
       int d = s->manhattanDist(g);
@@ -45,9 +46,9 @@ void FlowNetwork::run()
   info(" ", "elapsed: ", getSolverElapsedTime(),
        ", minimum_step:", minimum_step);
 
-  std::shared_ptr<TEN> network_flow;
+  std::shared_ptr<TEN> flow_network;
   if (use_incremental) {
-    network_flow = std::make_shared<TEN_INCREMENTAL>(
+    flow_network = std::make_shared<TEN_INCREMENTAL>(
         P, minimum_step, use_pruning,
         max_comp_time - (int)getSolverElapsedTime());
   }
@@ -61,32 +62,32 @@ void FlowNetwork::run()
   while (t_real <= max_timestep && !overCompTime()) {
     // build time expanded network
     if (!use_incremental) {
-      network_flow = std::make_shared<TEN>(P, t_real, use_pruning);
+      flow_network = std::make_shared<TEN>(P, t_real, use_pruning);
     } else if (!use_past_flow) {
-      network_flow->resetFlow();
+      flow_network->resetFlow();
     }
 
     // set time limit
-    network_flow->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
+    flow_network->setTimeLimit(max_comp_time - (int)getSolverElapsedTime());
 
     // update network
-    network_flow->update(t_real);
+    flow_network->update(t_real);
 
     // updte log
     HISTS.push_back({(int)getSolverElapsedTime(), t_real,
-                     network_flow->isValid(), network_flow->getDfsCnt(),
-                     network_flow->getNodesNum(), 0, 0});
+                     flow_network->isValid(), flow_network->getDfsCnt(),
+                     flow_network->getNodesNum(), 0, 0});
     float visited_rate =
-        (float)network_flow->getDfsCnt() / network_flow->getNodesNum();
+        (float)flow_network->getDfsCnt() / flow_network->getNodesNum();
     info(" ", "elapsed:", getSolverElapsedTime(), ", makespan_limit:", t_real,
-         ", valid:", network_flow->isValid(),
-         ", visited_nodes:", network_flow->getDfsCnt(), "/",
-         network_flow->getNodesNum(), "=", visited_rate);
+         ", valid:", flow_network->isValid(),
+         ", visited_nodes:", flow_network->getDfsCnt(), "/",
+         flow_network->getNodesNum(), "=", visited_rate);
 
     // check solution
-    if (network_flow->isValid()) {
+    if (flow_network->isValid()) {
       solved = true;
-      solution = network_flow->getPlan();
+      solution = flow_network->getPlan();
       if (!use_binary_search) {
         is_optimal = true;
         break;

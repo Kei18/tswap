@@ -13,6 +13,11 @@ TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false)
 
 TSWAP::~TSWAP() {}
 
+/*
+ * The following implementation is equivalent to naive-tswap
+ * but changes the order of planning agents according to the situation.
+ * This modification improves the solution quality of TSWAP.
+ */
 void TSWAP::run()
 {
   Plan plan;  // will be solution
@@ -45,17 +50,17 @@ void TSWAP::run()
       compare);
 
   // work as reservation table
-  std::unordered_map<Node*, Agent*> occupied_now;   // current location
-  std::unordered_map<Node*, Agent*> occupied_next;  // next location
+  std::vector<Agent*> occupied_now(G->getNodesSize(),
+                                   nullptr);  // current location
+  std::vector<Agent*> occupied_next(G->getNodesSize(),
+                                    nullptr);  // next location
 
   // actions
   auto moveTo = [&](Agent* a, Node* v) {
     a->v_next = v;
-    occupied_next[v] = a;
+    occupied_next[v->id] = a;
   };
   auto stay = [&](Agent* a) { moveTo(a, a->v_now); };
-
-  // change goal
   auto swapGoal = [&](Agent* a, Agent* b) {
     Node* v = b->g;
     b->g = a->g;
@@ -73,7 +78,7 @@ void TSWAP::run()
     a->v_next = nullptr;        // next node
     a->g = goals[i];            // goal
     a->called = 0;  // how many times an agent is called in the queue
-    occupied_now[a->v_now] = a;
+    occupied_now[a->v_now->id] = a;
 
     // insert OPEN set
     undecided.push(a);
@@ -98,22 +103,23 @@ void TSWAP::run()
         continue;
       }
 
-      // desired node
+      // get desired node
       Node* u = getPath(a_i->v_now, a_i->g)[1];
 
-      // rule 2. if u is occupied in next timestep -> stay
-      auto itr_next = occupied_next.find(u);
-      if (itr_next != occupied_next.end()) {
-        Agent* a_j = itr_next->second;
+      // rule 2. if u is occupied in the *next* timestep -> stay
+      auto a_j = occupied_next[u->id];
+      if (a_j != nullptr) {
         if (a_j->v_next == a_j->g) swapGoal(a_i, a_j);
         stay(a_i);
         continue;
       }
 
-      // rule 3. if u is occupied in the current timestep
-      auto itr_now = occupied_now.find(u);
-      if (itr_now != occupied_now.end()) {
-        Agent* a_j = itr_now->second;
+      // rule 3. if u is occupied in the *current* timestep
+      a_j = occupied_now[u->id];
+      if (a_j != nullptr) {
+        // To understand the following code, I recommend you to write
+        // illustrations. The key point is that a_i sometimes can move even
+        // after swapping/rotating targets.
         if (a_j->v_now == a_j->g) {
           swapGoal(a_i, a_j);
         } else if (deadlockDetectResolve(a_i,
@@ -141,18 +147,17 @@ void TSWAP::run()
       continue;
     }
 
-    // clear
-    occupied_now.clear();
-    occupied_next.clear();
-
     // acting
     bool check_goal_cond = true;
     Config config(P->getNum(), nullptr);
     for (int i = 0; i < P->getNum(); ++i) {
       Agent* a = &(A[i]);
+      // clear
+      occupied_next[a->v_next->id] = nullptr;
+      if (occupied_now[a->v_now->id] == a) occupied_now[a->v_now->id] = nullptr;
       // set next location
       config[i] = a->v_next;
-      occupied_now[a->v_next] = a;
+      occupied_now[a->v_next->id] = a;
       // check goal condition
       check_goal_cond &= (a->v_next == a->g);
       // reset params
@@ -187,18 +192,17 @@ void TSWAP::run()
   solution = plan;
 }
 
-bool TSWAP::deadlockDetectResolve(
-    Agent* a, std::unordered_map<Node*, Agent*>& occupied_now)
+bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 {
   // deadlock detection
   std::vector<Agent*> A_p;
   Agent* b = a;
   while (true) {
     if (b->v_now == b->g || b->v_next != nullptr) break;  // not deadlock
-    auto itr = occupied_now.find(getPath(b->v_now, b->g)[1]);
-    if (itr == occupied_now.end()) break;  // not deadlock
+    auto c = occupied_now[getPath(b->v_now, b->g)[1]->id];
+    if (c == nullptr) break;  // not deadlock
     A_p.push_back(b);
-    b = itr->second;
+    b = c;
     if (A_p.size() > 1) {
       if (b == a) break;  // deadlock
 
