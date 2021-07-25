@@ -80,9 +80,19 @@ solution=
 
 ### Building
 It takes around 10 minutes.
+
+#### macOS 10.15
 ```sh
-sh ./openFrameworks/scripts/osx/download_libs.sh
-cd visualizer/
+bash ./visualizer/scripts/build_macos.sh
+```
+
+Note: The script of openFrameworks seems to contain bugs. Check this [issue](https://github.com/openframeworks/openFrameworks/issues/6623). I fixed this in my script :D
+
+### macOS 11.4
+```sh
+git submodule update --remote
+bash ./third_party/openFrameworks/scripts/osx/download_libs.sh
+cd visualizer
 make build
 cd ..
 chmod +x ./visualize.sh
