@@ -13,7 +13,7 @@ void readSetNode(const std::string& s, Config& config, Grid* G);
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
-    std::cout << "Put your result file as the first arg." << std::endl;
+    std::cout << "Put your result file as the first arg" << std::endl;
     return 0;
   }
 
