@@ -1,8 +1,8 @@
-Unlabeled-MAPF
+unlabeled-MAPF
 ===
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
-A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (MAPF).
+A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unlabeled-MAPF), used in a paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://arxiv.org/abs/2109.04264) (TSWAP).
 It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
 The repository uses [Google Test](https://github.com/google/googletest).
 The visualizer uses [openFrameworks](https://openframeworks.cc).
@@ -15,9 +15,9 @@ The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-o
 | ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=public) | ![test_ubuntu](https://github.com/Kei18/unlabeled-MAPF/workflows/test_ubuntu/badge.svg?branch=dev) |
 
 ## Demo
-![demo in a small field, flocking-like](/material/arena_100agents.gif)
+![demo in a small field, flocking-like](./material/arena_100agents.gif)
 
-![demo in a large field](/material/lak303d_300agents.gif)
+![demo in a large field](./material/lak303d_300agents.gif)
 
 ## Building
 
@@ -88,7 +88,7 @@ bash ./visualizer/scripts/build_macos.sh
 
 Note: The script of openFrameworks seems to contain bugs. Check this [issue](https://github.com/openframeworks/openFrameworks/issues/6623). I fixed this in my script :D
 
-### macOS 11.4
+#### macOS 11.4
 ```sh
 git submodule update --remote
 bash ./third_party/openFrameworks/scripts/osx/download_libs.sh

@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
     std::cout << "specify instance file using -i [INSTANCE-FILE], e.g.,"
               << std::endl;
     std::cout << "> ./app -i ../instance/sample.txt" << std::endl;
+    std::cout << "\nor check \n"
+              << "> ./app --help" << std::endl;
     return 0;
   }
 
