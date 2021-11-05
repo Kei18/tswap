@@ -6,7 +6,7 @@
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false)
+TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false), use_greedy_assign(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -24,7 +24,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, evaluate_all);
+  GoalAllocator allocator = GoalAllocator(P, evaluate_all, true, use_greedy_assign);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -229,14 +229,18 @@ void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
       {"evaluate-all", no_argument, 0, 'e'},
+      {"greedy-assign", no_argument, 0, 'e'},
       {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "e", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "eg", longopts, &longindex)) != -1) {
     switch (opt) {
       case 'e':
         evaluate_all = true;
+        break;
+      case 'g':
+        use_greedy_assign = true;
         break;
       default:
         break;
@@ -250,7 +254,11 @@ void TSWAP::printHelp()
 
             << "  -e --evaluate-all"
             << "     "
-            << "without lazy evaluation"
+            << "without lazy evaluation\n"
+
+            << "  -g --greedy-assign"
+            << "    "
+            << "use greedy assignment"
 
             << std::endl;
 }

@@ -1,10 +1,11 @@
 #include "../include/goal_allocator.hpp"
 
 GoalAllocator::GoalAllocator(Problem* _P, bool _evaluate_all,
-                             bool _use_min_cost)
+                             bool _use_min_cost, bool _use_greedy_assign)
     : P(_P),
       evaluate_all(_evaluate_all),
       use_min_cost(_use_min_cost),
+      use_greedy_assign(_use_greedy_assign),
       matching_cost(0),
       matching_makespan(0),
       OPEN_LAZY(P->getNum()),
@@ -17,6 +18,11 @@ GoalAllocator::~GoalAllocator() {}
 
 void GoalAllocator::assign()
 {
+  if (use_greedy_assign) {
+    greedyAssign();
+    return;
+  }
+
   auto matching = LibGA::Matching(P);
 
   // use priority queue & lazy evaluation
@@ -149,3 +155,118 @@ Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }
 int GoalAllocator::getCost() const { return matching_cost; }
 
 int GoalAllocator::getMakespan() const { return matching_makespan; }
+
+
+// not used
+void GoalAllocator::greedyAssignOnline()
+{
+  Nodes goals_availability(P->getG()->getNodesSize(), nullptr);
+  for (auto g : P->getConfigGoal()) goals_availability[g->id] = g;
+
+  // compute all distance
+  for (int i = 0; i < P->getNum(); ++i) {
+    auto s = P->getStart(i);
+    OPEN_LAZY[i].push(s);
+    DIST_LAZY[i][s->id] = 0;
+    while (!OPEN_LAZY[i].empty()) {
+      auto n = OPEN_LAZY[i].front();
+      const int d_n = DIST_LAZY[i][n->id];
+
+      // check goal condition
+      if (goals_availability[n->id] != nullptr) {
+        // assign
+        assigned_goals.push_back(goals_availability[n->id]);
+        goals_availability[n->id] = nullptr;
+        matching_cost += d_n;
+        matching_makespan = std::max(matching_makespan, d_n);
+        break;
+      }
+
+      // pop
+      OPEN_LAZY[i].pop();
+
+      for (auto m : n->neighbor) {
+        const int d_m = DIST_LAZY[i][m->id];
+        if (d_n + 1 >= d_m) continue;
+        DIST_LAZY[i][m->id] = d_n + 1;
+        OPEN_LAZY[i].push(m);
+      }
+    }
+  }
+}
+
+
+void GoalAllocator::greedyAssign()
+{
+  using Edge = std::tuple<int, Node*, int>;  // start, goal, distance
+  std::vector<Edge> start_goal_pairs;
+  auto compare = [&] (Edge a, Edge b) {
+    if (std::get<2>(a) != std::get<2>(b)) return std::get<2>(a) < std::get<2>(b);
+    if (std::get<0>(a) != std::get<0>(b)) return std::get<0>(a) < std::get<0>(b);
+    if (std::get<1>(a) != std::get<1>(b)) return std::get<1>(a)->id < std::get<1>(b)->id;
+    return false;
+  };
+
+  std::vector<bool> goal_indexes(P->getG()->getNodesSize(), false);
+  for (auto g : P->getConfigGoal()) goal_indexes[g->id] = true;
+
+  // compute all distance
+  for (int i = 0; i < P->getNum(); ++i) {
+
+    auto s = P->getStart(i);
+    OPEN_LAZY[i].push(s);
+    DIST_LAZY[i][s->id] = 0;
+
+    int goal_cnt = 0;
+    while (!OPEN_LAZY[i].empty()) {
+      auto n = OPEN_LAZY[i].front();
+      const int d_n = DIST_LAZY[i][n->id];
+
+      // check goal condition
+      if (goal_indexes[n->id]) {
+        // insert
+        start_goal_pairs.push_back(std::make_tuple(i, n, d_n));
+        ++goal_cnt;
+        // all distances are computed
+        if (goal_cnt == P->getNum()) break;
+      }
+
+      // pop
+      OPEN_LAZY[i].pop();
+
+      for (auto m : n->neighbor) {
+        const int d_m = DIST_LAZY[i][m->id];
+        if (d_n + 1 >= d_m) continue;
+        DIST_LAZY[i][m->id] = d_n + 1;
+        OPEN_LAZY[i].push(m);
+      }
+    }
+  }
+
+  // sort
+  sort(start_goal_pairs.begin(), start_goal_pairs.end(), compare);
+
+  // initialize
+  assigned_goals.clear();
+  for (int i = 0; i < P->getNum(); ++i) assigned_goals.push_back(nullptr);
+  matching_cost = 0;
+  matching_makespan = 0;
+
+  // greedy assign
+  for (auto edge : start_goal_pairs) {
+    auto index = std::get<0>(edge);
+    auto g = std::get<1>(edge);
+    auto d = std::get<2>(edge);
+
+    // skip already assigned starts or goals
+    if (assigned_goals[index] != nullptr) continue;
+    if (!goal_indexes[g->id]) continue;
+
+    // assign
+    assigned_goals[index] = g;
+    goal_indexes[g->id] = false;
+
+    matching_cost += d;
+    matching_makespan = std::max(matching_makespan, d);
+  }
+}
