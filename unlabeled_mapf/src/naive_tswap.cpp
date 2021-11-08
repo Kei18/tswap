@@ -19,7 +19,7 @@ void NaiveTSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, use_bfs_allocate);
+  GoalAllocator allocator = GoalAllocator(P, GoalAllocator::BOTTLENECK, use_bfs_allocate);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
