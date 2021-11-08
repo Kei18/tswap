@@ -22,7 +22,6 @@ private:
 
   GoalAllocator::MODE assignment_mode;
   bool evaluate_all;  // without lazy evaluation, default: false
-  bool use_min_cost;  // for bottleneck assignment
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment

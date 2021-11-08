@@ -42,7 +42,7 @@ TEST(GoalAllocator, large_field)
 TEST(GoalAllocator, large_field_without_optimization)
 {
   Problem P = Problem("../tests/instances/08.txt");
-  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, false, false);
+  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, false);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
 
@@ -54,7 +54,7 @@ TEST(GoalAllocator, large_field_without_optimization)
 TEST(GoalAllocator, BFS)
 {
   Problem P = Problem("../tests/instances/02.txt");
-  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, true, true);
+  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, true);
   allocator.assign();
 
   Nodes assigned_goals = allocator.getAssignedGoals();

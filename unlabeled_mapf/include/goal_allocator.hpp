@@ -10,6 +10,7 @@ class GoalAllocator
 {
 public:
   enum MODE {
+    BOTTLENECK_LINEAR,
     BOTTLENECK,
     LINEAR,
     GREEDY,
@@ -24,7 +25,6 @@ private:
 
   // for bottleneck assignment
   const bool evaluate_all;  // evaluate all distance, default: false
-  const bool use_min_cost;   // whether to use min-cost maximum matching, default: true
 
   // qualities
   int matching_cost;  // estimation of sum of costs
@@ -44,8 +44,7 @@ private:
 public:
   GoalAllocator(Problem* _P,
                 MODE _mode = MODE::BOTTLENECK,
-                bool _evaluate_all = false,
-                bool _use_min_cost = true);
+                bool _evaluate_all = false);
   ~GoalAllocator();
 
   // solve the problem

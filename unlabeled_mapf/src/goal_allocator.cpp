@@ -2,12 +2,10 @@
 
 GoalAllocator::GoalAllocator(Problem* _P,
                              MODE _mode,
-                             bool _evaluate_all,
-                             bool _use_min_cost)
+                             bool _evaluate_all)
     : P(_P),
       assignment_mode(_mode),
       evaluate_all(_evaluate_all),
-      use_min_cost(_use_min_cost),
       matching_cost(0),
       matching_makespan(0),
       OPEN_LAZY(P->getNum()),
@@ -21,6 +19,9 @@ GoalAllocator::~GoalAllocator() {}
 void GoalAllocator::assign()
 {
   switch (assignment_mode) {
+  case BOTTLENECK_LINEAR:
+    bottleneckAssign();
+    break;
   case BOTTLENECK:
     bottleneckAssign();
     break;
@@ -116,7 +117,7 @@ void GoalAllocator::bottleneckAssign()
   }
 
   // use min cost maximum matching
-  if (use_min_cost) matching.solveBySuccessiveShortestPath();
+  if (assignment_mode == BOTTLENECK_LINEAR) matching.solveBySuccessiveShortestPath();
 
   assigned_goals = matching.assigned_goals;
   matching_cost = matching.getCost();

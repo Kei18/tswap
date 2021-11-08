@@ -7,8 +7,7 @@ const std::string TSWAP::SOLVER_NAME = "TSWAP";
 TSWAP::TSWAP(Problem* _P) :
   Solver(_P),
   assignment_mode(GoalAllocator::BOTTLENECK),
-  evaluate_all(false),
-  use_min_cost(true)
+  evaluate_all(false)
 {
   solver_name = SOLVER_NAME;
 }
@@ -26,7 +25,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, assignment_mode, evaluate_all, use_min_cost);
+  GoalAllocator allocator = GoalAllocator(P, assignment_mode, evaluate_all);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -236,19 +235,15 @@ void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
     {"evaluate-all", no_argument, 0, 'e'},
-    {"use-not-min-cost", no_argument, 0, 'c'},
     {"mode", no_argument, 0, 'm'},
     {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "ecm:", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "em:", longopts, &longindex)) != -1) {
     switch (opt) {
       case 'e':
         evaluate_all = true;
-        break;
-      case 'c':
-        use_min_cost = false;
         break;
       case 'm':
         assignment_mode = static_cast<GoalAllocator::MODE>(std::atoi(optarg));
@@ -267,13 +262,14 @@ void TSWAP::printHelp()
             << "             "
             << "without lazy evaluation (bottleneck assignment)\n"
 
-            << "  -c --use-not-min-cost"
-            << "         "
-            << "without mincost matching (bottleneck assignment)\n"
-
             << "  -m --mode"
             << "                     "
-            << "assignment mode, 0: bottleneck (default), 1: linear, 2: greedy, 3: greedy swap"
+            << "assignment mode\n"
+            << "                                    0: bottleneck-linear (default)\n"
+            << "                                    1: bottleneck\n"
+            << "                                    2: linear\n"
+            << "                                    3: greedy\n"
+            << "                                    4: greedy-swap"
 
             << std::endl;
 }
