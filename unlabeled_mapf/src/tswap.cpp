@@ -269,7 +269,8 @@ void TSWAP::printHelp()
             << "                                    1: bottleneck\n"
             << "                                    2: linear\n"
             << "                                    3: greedy\n"
-            << "                                    4: greedy-swap"
+            << "                                    4: greedy-swap\n"
+            << "                                    5: greedy-swap (without lazy eval)"
 
             << std::endl;
 }

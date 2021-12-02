@@ -34,6 +34,9 @@ void GoalAllocator::assign()
   case GREEDY_SWAP:
     greedySwapAssign();
     break;
+  case GREEDY_SWAP_WO_LAZY:
+    greedySwapAssignWoLazy();
+    break;
   default:
     break;
   }
@@ -282,6 +285,11 @@ void GoalAllocator::greedySwapAssign()
     }
   }
 
+  greedyRefine();
+}
+
+void GoalAllocator::greedyRefine()
+{
   // iterative refinement
   while (true) {
     int i = 0;  // bottleneck agent
@@ -325,6 +333,52 @@ void GoalAllocator::greedySwapAssign()
     matching_makespan = std::max(matching_makespan, c);
     matching_cost += c;
   }
+}
+
+void GoalAllocator::greedySwapAssignWoLazy()
+{
+  assigned_goals = std::vector<Node*>(P->getNum(), nullptr);
+  setAllStartGoalDistances();
+  std::queue<int> U;  // undecided
+  std::vector<std::queue<Node*>> D(P->getNum(), std::queue<Node*>());  // distance
+  for (int i = 0; i < P->getNum(); ++i) {
+    U.push(i);
+    auto compare = [&] (Node* a, Node* b) {
+      auto d_a = getLazyEval(i, a);
+      auto d_b = getLazyEval(i, b);
+      if (d_a != d_b) return d_a < d_b;
+      return a->id < b->id;
+    };
+    auto tmp = P->getConfigGoal();
+    std::sort(tmp.begin(), tmp.end(), compare);
+    for (auto g : tmp) D[i].push(g);
+  }
+
+  constexpr int NIL = -1;
+  std::vector<int> G_A(P->getG()->getNodesSize(), NIL);  // goal -> agent
+
+  while (!U.empty()) {
+    auto i = U.front();
+    U.pop();
+    while (!D[i].empty()) {
+      auto g = D[i].front();
+      D[i].pop();
+      auto j = G_A[g->id];
+      if (j == NIL) {
+          assigned_goals[i] = g;
+          G_A[g->id] = i;
+          break;
+      } else if (getLazyEval(i, g) < getLazyEval(j, g)) {
+          assigned_goals[j] = nullptr;
+          assigned_goals[i] = g;
+          G_A[g->id] = i;
+          U.push(j);
+          break;
+      }
+    }
+  }
+
+  greedyRefine();
 }
 
 void GoalAllocator::setAllStartGoalDistances()

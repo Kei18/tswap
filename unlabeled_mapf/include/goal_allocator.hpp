@@ -14,7 +14,8 @@ public:
     BOTTLENECK,
     LINEAR,
     GREEDY,
-    GREEDY_SWAP
+    GREEDY_SWAP,
+    GREEDY_SWAP_WO_LAZY
   };
 
 private:
@@ -40,6 +41,8 @@ private:
   void linearAssign();
   void greedyAssign();
   void greedySwapAssign();
+  void greedySwapAssignWoLazy();
+  void greedyRefine();
 
 public:
   GoalAllocator(Problem* _P,
