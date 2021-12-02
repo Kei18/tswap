@@ -11,6 +11,7 @@ class GoalAllocator
 public:
   enum MODE {
     BOTTLENECK_LINEAR,
+    BOTTLENECK_LINEAR_WO_LAZY,
     BOTTLENECK,
     LINEAR,
     GREEDY,
@@ -23,9 +24,6 @@ private:
   Nodes assigned_goals;  // assignment results
 
   const MODE assignment_mode;
-
-  // for bottleneck assignment
-  const bool evaluate_all;  // evaluate all distance, default: false
 
   // qualities
   int matching_cost;  // estimation of sum of costs
@@ -45,9 +43,7 @@ private:
   void greedyRefine();
 
 public:
-  GoalAllocator(Problem* _P,
-                MODE _mode = MODE::BOTTLENECK,
-                bool _evaluate_all = false);
+  GoalAllocator(Problem* _P, MODE _mode = MODE::BOTTLENECK_LINEAR);
   ~GoalAllocator();
 
   // solve the problem

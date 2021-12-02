@@ -6,8 +6,7 @@ const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
 TSWAP::TSWAP(Problem* _P) :
   Solver(_P),
-  assignment_mode(GoalAllocator::BOTTLENECK),
-  evaluate_all(false)
+  assignment_mode(GoalAllocator::BOTTLENECK_LINEAR)
 {
   solver_name = SOLVER_NAME;
 }
@@ -25,7 +24,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, assignment_mode, evaluate_all);
+  GoalAllocator allocator = GoalAllocator(P, assignment_mode);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -234,17 +233,13 @@ bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-    {"evaluate-all", no_argument, 0, 'e'},
     {"mode", no_argument, 0, 'm'},
     {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "em:", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "m:", longopts, &longindex)) != -1) {
     switch (opt) {
-      case 'e':
-        evaluate_all = true;
-        break;
       case 'm':
         assignment_mode = static_cast<GoalAllocator::MODE>(std::atoi(optarg));
         break;
@@ -258,19 +253,16 @@ void TSWAP::printHelp()
 {
   std::cout << TSWAP::SOLVER_NAME << "\n"
 
-            << "  -e --evaluate-all"
-            << "             "
-            << "without lazy evaluation (bottleneck assignment)\n"
-
             << "  -m --mode"
             << "                     "
             << "assignment mode\n"
             << "                                    0: bottleneck-linear (default)\n"
-            << "                                    1: bottleneck\n"
-            << "                                    2: linear\n"
-            << "                                    3: greedy\n"
-            << "                                    4: greedy-swap\n"
-            << "                                    5: greedy-swap (without lazy eval)"
+            << "                                    1: bottleneck-linear (without lazy eval)\n"
+            << "                                    2: bottleneck\n"
+            << "                                    3: linear\n"
+            << "                                    4: greedy\n"
+            << "                                    5: greedy-swap\n"
+            << "                                    6: greedy-swap (without lazy eval)"
 
             << std::endl;
 }

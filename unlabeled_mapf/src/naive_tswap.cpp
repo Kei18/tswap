@@ -6,7 +6,7 @@
 
 const std::string NaiveTSWAP::SOLVER_NAME = "NaiveTSWAP";
 
-NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P), use_bfs_allocate(false)
+NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P)
 {
   solver_name = SOLVER_NAME;
 }
@@ -19,7 +19,7 @@ void NaiveTSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, GoalAllocator::BOTTLENECK, use_bfs_allocate);
+  GoalAllocator allocator = GoalAllocator(P);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -135,30 +135,13 @@ void NaiveTSWAP::run()
 
 void NaiveTSWAP::setParams(int argc, char* argv[])
 {
-  struct option longopts[] = {
-      {"use-bfs-allocate", no_argument, 0, 'b'},
-      {0, 0, 0, 0},
-  };
-  optind = 1;  // reset
-  int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "b", longopts, &longindex)) != -1) {
-    switch (opt) {
-      case 'b':
-        use_bfs_allocate = true;
-        break;
-      default:
-        break;
-    }
-  }
 }
 
 void NaiveTSWAP::printHelp()
 {
   std::cout << NaiveTSWAP::SOLVER_NAME << "\n"
 
-            << "  -b --use-bfs-allocate"
-            << "         "
-            << "use BFS in goal allocation"
+            << "  nothing"
 
             << std::endl;
 }

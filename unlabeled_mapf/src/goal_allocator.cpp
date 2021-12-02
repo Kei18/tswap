@@ -1,11 +1,9 @@
 #include "../include/goal_allocator.hpp"
 
 GoalAllocator::GoalAllocator(Problem* _P,
-                             MODE _mode,
-                             bool _evaluate_all)
+                             MODE _mode)
     : P(_P),
       assignment_mode(_mode),
-      evaluate_all(_evaluate_all),
       matching_cost(0),
       matching_makespan(0),
       OPEN_LAZY(P->getNum()),
@@ -20,6 +18,9 @@ void GoalAllocator::assign()
 {
   switch (assignment_mode) {
   case BOTTLENECK_LINEAR:
+    bottleneckAssign();
+    break;
+  case BOTTLENECK_LINEAR_WO_LAZY:
     bottleneckAssign();
     break;
   case BOTTLENECK:
@@ -70,7 +71,7 @@ void GoalAllocator::bottleneckAssign()
       OPEN(compare);
 
 
-  if (!evaluate_all) {
+  if (assignment_mode != MODE::BOTTLENECK_LINEAR_WO_LAZY) {
     // lazy evaluation
     for (int i = 0; i < P->getNum(); ++i) {
       auto s = P->getStart(i);
@@ -120,7 +121,7 @@ void GoalAllocator::bottleneckAssign()
   }
 
   // use min cost maximum matching
-  if (assignment_mode == BOTTLENECK_LINEAR) matching.solveBySuccessiveShortestPath();
+  if (assignment_mode != BOTTLENECK) matching.solveBySuccessiveShortestPath();
 
   assigned_goals = matching.assigned_goals;
   matching_cost = matching.getCost();
@@ -293,12 +294,12 @@ void GoalAllocator::greedyRefine()
   // iterative refinement
   while (true) {
     int i = 0;  // bottleneck agent
-    int d_i = 0;  // bottleneck cost
+    int c_now = 0;  // bottleneck cost
     for (int k = 0; k < P->getNum(); ++k) {
       auto d = getLazyEval(k, assigned_goals[k]);
-      if (d > d_i) {
+      if (d > c_now) {
         i = k;
-        d_i = d;
+        c_now = d;
       }
     }
     auto s_i = P->getStart(i);
@@ -308,13 +309,11 @@ void GoalAllocator::greedyRefine()
     for (int j = 0; j < P->getNum(); ++j) {
       if (j == i) continue;
       auto g_j = assigned_goals[j];
-      auto cost_now  = std::max(d_i, getLazyEval(j, g_j));  // known distance
       // heuristic distance
-      auto cost_estimated = std::max(s_i->manhattanDist(g_j), P->getStart(j)->manhattanDist(g_i));
-      if (cost_estimated >= cost_now) continue;
+      if (std::max(s_i->manhattanDist(g_j), P->getStart(j)->manhattanDist(g_i)) >= c_now) continue;
       // real distance
-      auto cost_swap = std::max(getLazyEval(i, g_j), getLazyEval(j, g_i));
-      if (cost_swap < cost_now) {
+      auto c_swap = std::max(getLazyEval(i, g_j), getLazyEval(j, g_i));
+      if (c_swap < c_now) {
         assigned_goals[i] = g_j;
         assigned_goals[j] = g_i;
         updated = true;

@@ -42,23 +42,11 @@ TEST(GoalAllocator, large_field)
 TEST(GoalAllocator, large_field_without_optimization)
 {
   Problem P = Problem("../tests/instances/08.txt");
-  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, false);
+  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK);
   allocator.assign();
   Nodes assigned_goals = allocator.getAssignedGoals();
 
   ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
   ASSERT_EQ(allocator.getMakespan(), 40);
   ASSERT_TRUE(allocator.getCost() >= 7288);
-}
-
-TEST(GoalAllocator, BFS)
-{
-  Problem P = Problem("../tests/instances/02.txt");
-  GoalAllocator allocator = GoalAllocator(&P, GoalAllocator::BOTTLENECK, true);
-  allocator.assign();
-
-  Nodes assigned_goals = allocator.getAssignedGoals();
-  ASSERT_TRUE(permutatedConfig(assigned_goals, P.getConfigGoal()));
-  ASSERT_EQ(allocator.getMakespan(), 16);
-  ASSERT_EQ(allocator.getCost(), 133);
 }
