@@ -38,6 +38,9 @@ void GoalAllocator::assign()
   case GREEDY_SWAP_WO_LAZY:
     greedySwapAssignWoLazy();
     break;
+  case GREEDY_SWAP_COST:
+    greedySwapAssign();
+    break;
   default:
     break;
   }
@@ -286,7 +289,11 @@ void GoalAllocator::greedySwapAssign()
     }
   }
 
-  greedyRefine();
+  if (assignment_mode == GREEDY_SWAP) {
+    greedyRefine();
+  } else if (assignment_mode == GREEDY_SWAP_COST) {
+    greedyRefineSOC();
+  }
 }
 
 void GoalAllocator::greedyRefine()
@@ -321,6 +328,41 @@ void GoalAllocator::greedyRefine()
       }
     }
 
+    if (!updated) break;
+  }
+
+  // compute quality
+  matching_cost = 0;
+  matching_makespan = 0;
+  for (int i = 0; i < P->getNum(); ++i) {
+    auto c = DIST_LAZY[i][assigned_goals[i]->id];
+    matching_makespan = std::max(matching_makespan, c);
+    matching_cost += c;
+  }
+}
+
+void GoalAllocator::greedyRefineSOC()
+{
+  // iterative refinement
+  while (true) {
+    bool updated = false;
+    for (int i = 0; i < P->getNum(); ++i)
+      for (int j = i+1; j < P->getNum(); ++j) {
+        auto s_i = P->getStart(i);
+        auto s_j = P->getStart(j);
+        auto g_i = assigned_goals[i];
+        auto g_j = assigned_goals[j];
+        auto c_now = getLazyEval(i, g_i) + getLazyEval(j, g_j);
+        // heuristic distance
+        if (s_i->manhattanDist(g_j) + s_j->manhattanDist(g_i) >= c_now) continue;
+        // real distance
+        auto c_swap = getLazyEval(i, g_j) + getLazyEval(j, g_i);
+        if (c_swap < c_now) {
+          assigned_goals[i] = g_j;
+          assigned_goals[j] = g_i;
+          updated = true;
+        }
+    }
     if (!updated) break;
   }
 

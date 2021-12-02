@@ -21,7 +21,6 @@ private:
   };
 
   GoalAllocator::MODE assignment_mode;
-  bool evaluate_all;  // without lazy evaluation, default: false
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment

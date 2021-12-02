@@ -36,3 +36,7 @@ sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $floc
 # greedy with refinement without lazy evaluation
 solver="TSWAP -m 6"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks $force
+
+# greedy with refinement for sum-of-costs
+solver="TSWAP -m 7"
+sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks $force

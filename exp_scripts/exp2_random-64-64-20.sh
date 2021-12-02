@@ -8,7 +8,10 @@ force=0
 
 set -e
 
-solver="TSWAP"
+solver="TSWAP -m 2"
+sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks $force
+
+solver="TSWAP -m 5"
 sh `dirname $0`/run.sh $map "$agents_list" "$solver" $scen_start $scen_end $flocking_blocks $force
 
 solver="FlowNetwork -l"

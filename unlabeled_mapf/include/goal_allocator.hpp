@@ -16,7 +16,8 @@ public:
     LINEAR,
     GREEDY,
     GREEDY_SWAP,
-    GREEDY_SWAP_WO_LAZY
+    GREEDY_SWAP_WO_LAZY,
+    GREEDY_SWAP_COST
   };
 
 private:
@@ -41,6 +42,7 @@ private:
   void greedySwapAssign();
   void greedySwapAssignWoLazy();
   void greedyRefine();
+  void greedyRefineSOC();
 
 public:
   GoalAllocator(Problem* _P, MODE _mode = MODE::BOTTLENECK_LINEAR);

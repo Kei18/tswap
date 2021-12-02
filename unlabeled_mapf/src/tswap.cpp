@@ -262,7 +262,8 @@ void TSWAP::printHelp()
             << "                                    3: linear\n"
             << "                                    4: greedy\n"
             << "                                    5: greedy-swap\n"
-            << "                                    6: greedy-swap (without lazy eval)"
+            << "                                    6: greedy-swap (without lazy eval)\n"
+            << "                                    7: greedy-swap-cost"
 
             << std::endl;
 }
