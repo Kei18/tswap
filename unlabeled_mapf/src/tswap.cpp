@@ -2,11 +2,11 @@
 
 #include <fstream>
 
-#include "../include/goal_allocator.hpp"
-
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
-TSWAP::TSWAP(Problem* _P) : Solver(_P), evaluate_all(false)
+TSWAP::TSWAP(Problem* _P) :
+  Solver(_P),
+  assignment_mode(GoalAllocator::BOTTLENECK_LINEAR)
 {
   solver_name = SOLVER_NAME;
 }
@@ -24,7 +24,7 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, evaluate_all);
+  GoalAllocator allocator = GoalAllocator(P, assignment_mode);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -104,7 +104,7 @@ void TSWAP::run()
       }
 
       // get desired node
-      Node* u = getPath(a_i->v_now, a_i->g)[1];
+      Node* u = getNextNode(a_i->v_now, a_i->g);
 
       // rule 2. if u is occupied in the *next* timestep -> stay
       auto a_j = occupied_next[u->id];
@@ -192,6 +192,11 @@ void TSWAP::run()
   solution = plan;
 }
 
+Node* TSWAP::getNextNode(Node* a, Node* b)
+{
+  return getPath(a, b)[1];
+}
+
 bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 {
   // deadlock detection
@@ -199,7 +204,7 @@ bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
   Agent* b = a;
   while (true) {
     if (b->v_now == b->g || b->v_next != nullptr) break;  // not deadlock
-    auto c = occupied_now[getPath(b->v_now, b->g)[1]->id];
+    auto c = occupied_now[getNextNode(b->v_now, b->g)->id];
     if (c == nullptr) break;  // not deadlock
     A_p.push_back(b);
     b = c;
@@ -228,15 +233,15 @@ bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
-      {"evaluate-all", no_argument, 0, 'e'},
-      {0, 0, 0, 0},
+    {"mode", no_argument, 0, 'm'},
+    {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "e", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "m:", longopts, &longindex)) != -1) {
     switch (opt) {
-      case 'e':
-        evaluate_all = true;
+      case 'm':
+        assignment_mode = static_cast<GoalAllocator::MODE>(std::atoi(optarg));
         break;
       default:
         break;
@@ -248,9 +253,17 @@ void TSWAP::printHelp()
 {
   std::cout << TSWAP::SOLVER_NAME << "\n"
 
-            << "  -e --evaluate-all"
-            << "     "
-            << "without lazy evaluation"
+            << "  -m --mode"
+            << "                     "
+            << "assignment mode\n"
+            << "                                    0: bottleneck-linear (default)\n"
+            << "                                    1: bottleneck-linear (without lazy eval)\n"
+            << "                                    2: bottleneck\n"
+            << "                                    3: linear\n"
+            << "                                    4: greedy\n"
+            << "                                    5: greedy-swap\n"
+            << "                                    6: greedy-swap (without lazy eval)\n"
+            << "                                    7: greedy-swap-cost"
 
             << std::endl;
 }

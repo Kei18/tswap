@@ -4,6 +4,7 @@
 
 #pragma once
 #include "solver.hpp"
+#include "../include/goal_allocator.hpp"
 
 class TSWAP : public Solver
 {
@@ -19,7 +20,7 @@ private:
     int called;    // how many times called in the queue
   };
 
-  bool evaluate_all;  // without lazy evaluation, default: false
+  GoalAllocator::MODE assignment_mode;
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
@@ -28,6 +29,8 @@ private:
                              // assignment
   int estimated_soc;         // estimated sum-of-costs according to the target
                              // assignment
+
+  Node* getNextNode(Node* a, Node* b);
 
   // detect and resolve deadlocks
   bool deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now);

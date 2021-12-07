@@ -8,13 +8,25 @@
 
 class GoalAllocator
 {
+public:
+  enum MODE {
+    BOTTLENECK_LINEAR,
+    BOTTLENECK_LINEAR_WO_LAZY,
+    BOTTLENECK,
+    LINEAR,
+    GREEDY,
+    GREEDY_SWAP,
+    GREEDY_SWAP_WO_LAZY,
+    GREEDY_SWAP_COST
+  };
+
 private:
   Problem* P;
-  Nodes assigned_goals;  // assignment
+  Nodes assigned_goals;  // assignment results
 
-  const bool evaluate_all;  // evaluate all distance, default: false
-  const bool
-      use_min_cost;   // whether to use min-cost maximum matching, default: true
+  const MODE assignment_mode;
+
+  // qualities
   int matching_cost;  // estimation of sum of costs
   int matching_makespan;  // estimation of makspan
 
@@ -22,10 +34,18 @@ private:
   std::vector<std::queue<Node*>> OPEN_LAZY;
   std::vector<std::vector<int>> DIST_LAZY;
   int getLazyEval(const int i, Node* const g);
+  void setAllStartGoalDistances();  // compute all start-goal pairs of distance
+
+  void bottleneckAssign();
+  void linearAssign();
+  void greedyAssign();
+  void greedySwapAssign();
+  void greedySwapAssignWoLazy();
+  void greedyRefine();
+  void greedyRefineSOC();
 
 public:
-  GoalAllocator(Problem* _P, bool _evaluate_all = false,
-                bool _use_min_cost = true);
+  GoalAllocator(Problem* _P, MODE _mode = MODE::BOTTLENECK_LINEAR);
   ~GoalAllocator();
 
   // solve the problem
