@@ -160,7 +160,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
   auto compare = [&](DijkstraNode* v, DijkstraNode* u) { return v->d > u->d; };
 
   // avoid "new" operation
-  const int MEMORY_SIZE = N * 20;
+  const int MEMORY_SIZE = N * 40;
   DijkstraNode GC[MEMORY_SIZE];
 
   for (int _i = 0; _i < N; ++_i) {
