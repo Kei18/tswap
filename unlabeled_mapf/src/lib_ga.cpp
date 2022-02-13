@@ -83,6 +83,16 @@ int LibGA::Matching::getCost()
   return sum;
 }
 
+int LibGA::Matching::getMakespan()
+{
+  int score = 0;
+  for (int i = 0; i < N; ++i) {
+    if (mate[i] == NIL) continue;
+    score = std::max(score, cost[i][mate[i] - N]);
+  }
+  return score;
+}
+
 void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
 {
   addEdge(e);
@@ -150,7 +160,7 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
   auto compare = [&](DijkstraNode* v, DijkstraNode* u) { return v->d > u->d; };
 
   // avoid "new" operation
-  const int MEMORY_SIZE = N * 10;
+  const int MEMORY_SIZE = N * 40;
   DijkstraNode GC[MEMORY_SIZE];
 
   for (int _i = 0; _i < N; ++_i) {

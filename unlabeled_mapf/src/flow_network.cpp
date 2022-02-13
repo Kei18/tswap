@@ -27,7 +27,7 @@ void FlowNetwork::run()
   // setup minimum timestep
   if (use_aggressive_lower_bound) {
     // with lazy evaluation, without min cost maximum matching
-    GoalAllocator allocator = GoalAllocator(P, false, false);
+    GoalAllocator allocator = GoalAllocator(P, GoalAllocator::BOTTLENECK);
     allocator.assign();
     minimum_step = allocator.getMakespan();
   } else if (use_passive_lower_bound) {

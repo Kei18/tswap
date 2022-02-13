@@ -46,6 +46,7 @@ namespace LibGA
     void resetCurrentMate();
     void mariage(const int s, const int g);
     int getCost();
+    int getMakespan();
 
     // find one augmenting path
     void updateByIncrementalFordFulkerson(FieldEdge const* e);

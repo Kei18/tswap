@@ -17,8 +17,6 @@ private:
     Node* g;  // current target
   };
 
-  bool use_bfs_allocate;  // use BFS in the target assignment, default: false
-
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
   int elapsed_pathplanning;  // elapsed time for path planing
