@@ -1,9 +1,12 @@
 <html>
   <head>
-    <title>unlabeld-MAPF</title>
+    <title>TSWAP: Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400&family=Roboto:wght@100&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/custom.css">
   </head>
   <body class="d-flex flex-column h-100">
@@ -11,8 +14,7 @@
     <main role="main flex-shrink-0">
       <div class="container">
 
-        <p class="h2 text-center">Solving Simultaneous Target Assignment and Path Planning Efficiently<br/>with Time-Independent Execution</p>
-
+        <p class="h1 text-center">Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution</p>
         <p class="text-center">
           <a href="https://kei18.github.io/">Keisuke Okumura</a>
           and <a href="https://www.coord.c.titech.ac.jp/m/defago/">Xavier Défago</a>
@@ -20,19 +22,54 @@
 
         <p class="text-center mt-3">
           <a href="https://arxiv.org/abs/2109.04264">[preprint]</a>
-          <a href="https://github.com/Kei18/unlabeled-MAPF">[simulator]</a>
+          <a href="https://github.com/Kei18/tswap">[simulator]</a>
           <a href="https://github.com/Kei18/toio-tswap">[robot implementation]</a>
         </p>
 
-        <div class="text-center mt-5 video-wrapper mb-5">
-          <iframe src="https://player.vimeo.com/video/601032722" width="854" height="480" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        <div class="row">
+          <div class="col-md-4">
+            <img alt="" src="images/hello.gif" class="img-fluid" style="width:100%;" />
+            <p class="text-center"><small>pattern formation</small></p>
+          </div>
+          <div class="col-md-4">
+            <img alt="" src="images/arena_100agents.gif" class="img-fluid" style="width:100%;" />
+            <p class="text-center"><small>unlabeled MAPF</small></p>
+          </div>
+          <div class="col-md-4">
+            <img alt="" src="images/robot.gif" class="img-fluid" style="width:100%;" />
+            <p class="text-center"><small>robust execution</small></p>
+          </div>
         </div>
 
-        <div class="mx-auto">
+        <div class="mx-auto mt-5">
+          <p class="h5">Overview</p>
+          <div class="text-secondary">
+            <p>Real-time planning for a combined problem of target assignment and path planning for multiple agents, also known as the unlabeled version of Multi-Agent Path Finding (MAPF), is crucial for high-level coordination in multi-agent systems, e.g., pattern formation by robot swarms. This paper studies two aspects of unlabeled-MAPF: (1) offline scenario: solving large instances by centralized approaches with small computation time, and (2) online scenario: executing unlabeled-MAPF despite timing uncertainties of real robots.</p>
+            <p>For this purpose, we propose TSWAP, a novel complete algorithm consisting of target assignment with lazy evaluation and path planning with target swapping. TSWAP can adapt to both offline and online scenarios. We empirically demonstrate that Offline TSWAP is highly scalable; providing near-optimal solutions while reducing runtime by orders of magnitude compared to existing approaches. In addition, we present the benefits of Online TSWAP, such as delay tolerance, through real-robot demos.</p>
+          </div>
+        </div>
+
+        <div class="mx-auto mt-5">
           <p class="h5">News</p>
           <ul>
             <li>Not yet!</li>
           </ul>
+        </div>
+
+        <p class="h5 mt-5">Video</p>
+        <div class="text-center video-wrapper mb-5">
+          <iframe src="https://player.vimeo.com/video/601032722" width="854" height="480" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+
+        <div class="mx-auto mt-5">
+          <p class="h5">Citation</p>
+          <div class="citation mb-3 text-secondary">
+            <pre><code>@article{okumura2021unlabel,
+  title={Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution},
+  author={Okumura, Keisuke and D{\'e}fago, Xavier},
+  journal={arXiv preprint arXiv:2109.04264},
+  year={2021}
+}</code></pre></div>
         </div>
 
       </div>
