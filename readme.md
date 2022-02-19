@@ -2,7 +2,7 @@ tswap
 ===
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
-A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unlabeled-MAPF), used in a paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://arxiv.org/abs/2109.04264) (TSWAP).
+A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unlabeled-MAPF), used in a paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://arxiv.org/abs/2109.04264) (TSWAP, to appear at ICAPS-22).
 
 - It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
 - The repository uses [Google Test](https://github.com/google/googletest).
