@@ -1,7 +1,6 @@
 #include "../include/goal_allocator.hpp"
 
-GoalAllocator::GoalAllocator(Problem* _P,
-                             MODE _mode)
+GoalAllocator::GoalAllocator(Problem* _P, MODE _mode)
     : P(_P),
       assignment_mode(_mode),
       matching_cost(0),
@@ -17,32 +16,32 @@ GoalAllocator::~GoalAllocator() {}
 void GoalAllocator::assign()
 {
   switch (assignment_mode) {
-  case BOTTLENECK_LINEAR:
-    bottleneckAssign();
-    break;
-  case BOTTLENECK_LINEAR_WO_LAZY:
-    bottleneckAssign();
-    break;
-  case BOTTLENECK:
-    bottleneckAssign();
-    break;
-  case LINEAR:
-    linearAssign();
-    break;
-  case GREEDY:
-    greedyAssign();
-    break;
-  case GREEDY_SWAP:
-    greedySwapAssign();
-    break;
-  case GREEDY_SWAP_WO_LAZY:
-    greedySwapAssignWoLazy();
-    break;
-  case GREEDY_SWAP_COST:
-    greedySwapAssign();
-    break;
-  default:
-    break;
+    case BOTTLENECK_LINEAR:
+      bottleneckAssign();
+      break;
+    case BOTTLENECK_LINEAR_WO_LAZY:
+      bottleneckAssign();
+      break;
+    case BOTTLENECK:
+      bottleneckAssign();
+      break;
+    case LINEAR:
+      linearAssign();
+      break;
+    case GREEDY:
+      greedyAssign();
+      break;
+    case GREEDY_SWAP:
+      greedySwapAssign();
+      break;
+    case GREEDY_SWAP_WO_LAZY:
+      greedySwapAssignWoLazy();
+      break;
+    case GREEDY_SWAP_COST:
+      greedySwapAssign();
+      break;
+    default:
+      break;
   }
 }
 
@@ -72,7 +71,6 @@ void GoalAllocator::bottleneckAssign()
   std::priority_queue<LibGA::FieldEdge, std::vector<LibGA::FieldEdge>,
                       decltype(compare)>
       OPEN(compare);
-
 
   if (assignment_mode != MODE::BOTTLENECK_LINEAR_WO_LAZY) {
     // lazy evaluation
@@ -174,7 +172,8 @@ void GoalAllocator::linearAssign()
     auto s = P->getStart(i);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
-      auto e = LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g), DIST_LAZY[i][g->id]);
+      auto e = LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g),
+                                DIST_LAZY[i][g->id]);
       matching.addEdge(&e);
     }
   }
@@ -184,9 +183,8 @@ void GoalAllocator::linearAssign()
 
   assigned_goals = matching.assigned_goals;
   matching_cost = matching.getCost();
-  matching_makespan =  matching.getMakespan();
+  matching_makespan = matching.getMakespan();
 }
-
 
 void GoalAllocator::greedyAssign()
 {
@@ -202,10 +200,13 @@ void GoalAllocator::greedyAssign()
   }
 
   // sort
-  auto compare = [&] (Edge a, Edge b) {
-    if (std::get<2>(a) != std::get<2>(b)) return std::get<2>(a) < std::get<2>(b);
-    if (std::get<0>(a) != std::get<0>(b)) return std::get<0>(a) < std::get<0>(b);
-    if (std::get<1>(a) != std::get<1>(b)) return std::get<1>(a)->id < std::get<1>(b)->id;
+  auto compare = [&](Edge a, Edge b) {
+    if (std::get<2>(a) != std::get<2>(b))
+      return std::get<2>(a) < std::get<2>(b);
+    if (std::get<0>(a) != std::get<0>(b))
+      return std::get<0>(a) < std::get<0>(b);
+    if (std::get<1>(a) != std::get<1>(b))
+      return std::get<1>(a)->id < std::get<1>(b)->id;
     return false;
   };
   sort(start_goal_pairs.begin(), start_goal_pairs.end(), compare);
@@ -300,7 +301,7 @@ void GoalAllocator::greedyRefine()
 {
   // iterative refinement
   while (true) {
-    int i = 0;  // bottleneck agent
+    int i = 0;      // bottleneck agent
     int c_now = 0;  // bottleneck cost
     for (int k = 0; k < P->getNum(); ++k) {
       auto d = getLazyEval(k, assigned_goals[k]);
@@ -317,7 +318,9 @@ void GoalAllocator::greedyRefine()
       if (j == i) continue;
       auto g_j = assigned_goals[j];
       // heuristic distance
-      if (std::max(s_i->manhattanDist(g_j), P->getStart(j)->manhattanDist(g_i)) >= c_now) continue;
+      if (std::max(s_i->manhattanDist(g_j),
+                   P->getStart(j)->manhattanDist(g_i)) >= c_now)
+        continue;
       // real distance
       auto c_swap = std::max(getLazyEval(i, g_j), getLazyEval(j, g_i));
       if (c_swap < c_now) {
@@ -347,14 +350,15 @@ void GoalAllocator::greedyRefineSOC()
   while (true) {
     bool updated = false;
     for (int i = 0; i < P->getNum(); ++i)
-      for (int j = i+1; j < P->getNum(); ++j) {
+      for (int j = i + 1; j < P->getNum(); ++j) {
         auto s_i = P->getStart(i);
         auto s_j = P->getStart(j);
         auto g_i = assigned_goals[i];
         auto g_j = assigned_goals[j];
         auto c_now = getLazyEval(i, g_i) + getLazyEval(j, g_j);
         // heuristic distance
-        if (s_i->manhattanDist(g_j) + s_j->manhattanDist(g_i) >= c_now) continue;
+        if (s_i->manhattanDist(g_j) + s_j->manhattanDist(g_i) >= c_now)
+          continue;
         // real distance
         auto c_swap = getLazyEval(i, g_j) + getLazyEval(j, g_i);
         if (c_swap < c_now) {
@@ -362,7 +366,7 @@ void GoalAllocator::greedyRefineSOC()
           assigned_goals[j] = g_i;
           updated = true;
         }
-    }
+      }
     if (!updated) break;
   }
 
@@ -381,10 +385,11 @@ void GoalAllocator::greedySwapAssignWoLazy()
   assigned_goals = std::vector<Node*>(P->getNum(), nullptr);
   setAllStartGoalDistances();
   std::queue<int> U;  // undecided
-  std::vector<std::queue<Node*>> D(P->getNum(), std::queue<Node*>());  // distance
+  std::vector<std::queue<Node*>> D(P->getNum(),
+                                   std::queue<Node*>());  // distance
   for (int i = 0; i < P->getNum(); ++i) {
     U.push(i);
-    auto compare = [&] (Node* a, Node* b) {
+    auto compare = [&](Node* a, Node* b) {
       auto d_a = getLazyEval(i, a);
       auto d_b = getLazyEval(i, b);
       if (d_a != d_b) return d_a < d_b;
@@ -406,15 +411,15 @@ void GoalAllocator::greedySwapAssignWoLazy()
       D[i].pop();
       auto j = G_A[g->id];
       if (j == NIL) {
-          assigned_goals[i] = g;
-          G_A[g->id] = i;
-          break;
+        assigned_goals[i] = g;
+        G_A[g->id] = i;
+        break;
       } else if (getLazyEval(i, g) < getLazyEval(j, g)) {
-          assigned_goals[j] = nullptr;
-          assigned_goals[i] = g;
-          G_A[g->id] = i;
-          U.push(j);
-          break;
+        assigned_goals[j] = nullptr;
+        assigned_goals[i] = g;
+        G_A[g->id] = i;
+        U.push(j);
+        break;
       }
     }
   }
@@ -429,7 +434,6 @@ void GoalAllocator::setAllStartGoalDistances()
   for (auto g : P->getConfigGoal()) goal_indexes[g->id] = true;
 
   for (int i = 0; i < P->getNum(); ++i) {
-
     auto s = P->getStart(i);
     OPEN_LAZY[i].push(s);
     DIST_LAZY[i][s->id] = 0;
@@ -459,7 +463,6 @@ void GoalAllocator::setAllStartGoalDistances()
     }
   }
 }
-
 
 Nodes GoalAllocator::getAssignedGoals() const { return assigned_goals; }
 

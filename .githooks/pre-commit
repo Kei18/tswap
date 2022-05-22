@@ -1,0 +1,10 @@
+#!/bin/sh
+echo "code formatting by clang-format"
+clang-format -i \
+             ./unlabeled_mapf/include/*.hpp \
+             ./unlabeled_mapf/src/*.cpp \
+             ./tests/*.cpp \
+             ./app.cpp \
+test `git add ./**/*.cpp`
+test `git add ./**/*.hpp`
+echo "formatting done"

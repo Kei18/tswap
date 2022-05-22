@@ -27,7 +27,7 @@ private:
   const MODE assignment_mode;
 
   // qualities
-  int matching_cost;  // estimation of sum of costs
+  int matching_cost;      // estimation of sum of costs
   int matching_makespan;  // estimation of makspan
 
   // lazy evaluation
