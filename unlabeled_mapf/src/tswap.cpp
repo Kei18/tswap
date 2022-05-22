@@ -1,4 +1,5 @@
 #include "../include/tswap.hpp"
+
 #include <alloca.h>
 
 #include <fstream>
@@ -205,7 +206,8 @@ Node* TSWAP::getNextNode(Node* a, Node* b, std::vector<Agent*>& occupied_now)
     if (m == b) return b;
     int cost = allocator->getLazyEval(m, i);
     if (cost < cost_baseline) {
-      if (!use_tie_break || occupied_now[m->id] == nullptr) return m;  // tie-break
+      if (!use_tie_break || occupied_now[m->id] == nullptr)
+        return m;  // tie-break
       candidate = m;
     }
   }
@@ -291,8 +293,7 @@ void TSWAP::printHelp()
 
       << "  -b --off-tie-break"
       << "            "
-      << "do not use tie-break rule"
-      << std::endl;
+      << "do not use tie-break rule" << std::endl;
 }
 
 void TSWAP::makeLog(const std::string& logfile)

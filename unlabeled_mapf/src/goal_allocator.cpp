@@ -1,4 +1,5 @@
 #include "../include/goal_allocator.hpp"
+
 #include <unordered_map>
 
 GoalAllocator::GoalAllocator(Problem* _P, MODE _mode)
@@ -201,7 +202,8 @@ void GoalAllocator::greedyAssign()
   std::vector<Edge> start_goal_pairs;
   for (int i = 0; i < P->getNum(); ++i) {
     for (int j = 0; j < P->getNum(); ++j) {
-      start_goal_pairs.push_back(std::make_tuple(i, P->getGoal(j), getLazyEval(i, j)));
+      start_goal_pairs.push_back(
+          std::make_tuple(i, P->getGoal(j), getLazyEval(i, j)));
     }
   }
 
@@ -326,8 +328,7 @@ void GoalAllocator::greedyRefine()
       auto s_j = assigned_starts[j];
       auto g_j = P->getGoal(j);
       // heuristic distance
-      if (std::max(s_i->manhattanDist(g_j),
-                   s_j->manhattanDist(g_i)) >= c_now)
+      if (std::max(s_i->manhattanDist(g_j), s_j->manhattanDist(g_i)) >= c_now)
         continue;
       // real distance
       auto c_swap = std::max(getLazyEval(s_i, j), getLazyEval(s_j, i));
@@ -346,7 +347,8 @@ void GoalAllocator::greedyRefine()
   std::unordered_map<Node*, Node*> tmp;  //
   for (int i = 0; i < P->getNum(); ++i) tmp[assigned_starts[i]] = P->getGoal(i);
   assigned_goals.clear();
-  for (int i = 0; i < P->getNum(); ++i) assigned_goals.push_back(tmp[P->getStart(i)]);
+  for (int i = 0; i < P->getNum(); ++i)
+    assigned_goals.push_back(tmp[P->getStart(i)]);
 
   // compute quality
   matching_cost = 0;
