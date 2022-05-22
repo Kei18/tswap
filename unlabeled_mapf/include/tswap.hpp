@@ -22,7 +22,8 @@ private:
 
   GoalAllocator::MODE assignment_mode;
   std::shared_ptr<GoalAllocator> allocator;  // target assignment algorithm
-  std::vector<int> goal_indexes;  // node-id -> goal index \in {1, ..., N}}, used with lazy distance evaluation
+  std::vector<int> goal_indexes;  // node-id -> goal index \in {1, ..., N}},
+                                  // used with lazy distance evaluation
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment

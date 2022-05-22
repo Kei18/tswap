@@ -126,7 +126,8 @@ void TSWAP::run()
         // after swapping/rotating targets.
         if (a_j->v_now == a_j->g) {
           swapGoal(a_i, a_j);
-        } else if (deadlockDetectResolve(a_i, occupied_now)) {  // deadlock detection
+        } else if (deadlockDetectResolve(a_i,
+                                         occupied_now)) {  // deadlock detection
           // skip
           undecided.push(a_i);
           continue;
