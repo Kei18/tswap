@@ -9,10 +9,10 @@ A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unla
 - The visualizer uses [openFrameworks](https://openframeworks.cc).
 - The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-optimal, complete).
 
-| platform | status (public) | status (dev) |
+| platform | status (master) | status (dev) |
 | ---: | :--- |:--- |
-| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=public) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=public) | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=dev) |
-| ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=public) | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=dev) |
+| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=master) | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=dev) |
+| ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=master) | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=dev) |
 
 ## Demo
 ![demo in a small field, flocking-like](./material/arena_100agents.gif)
@@ -110,6 +110,14 @@ You can manipulate it via your keyboard. See printed info.
 ## Experimental Environment
 [![v1.2](https://img.shields.io/badge/tag-v1.2-blue.svg?style=flat)](https://github.com/Kei18/tswap/releases/tag/v1.2)
 
+## Utilities
+
+auto formatting with commit (by [clang-format](https://clang.llvm.org/docs/ClangFormat.html))
+
+```sh
+git config core.hooksPath .githooks
+chmod a+x .githooks/pre-commit
+```
 
 ## Licence
 This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
