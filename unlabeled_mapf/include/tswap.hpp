@@ -3,8 +3,8 @@
  */
 
 #pragma once
-#include "solver.hpp"
 #include "../include/goal_allocator.hpp"
+#include "solver.hpp"
 
 class TSWAP : public Solver
 {

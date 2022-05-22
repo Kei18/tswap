@@ -6,10 +6,7 @@
 
 const std::string NaiveTSWAP::SOLVER_NAME = "NaiveTSWAP";
 
-NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P)
-{
-  solver_name = SOLVER_NAME;
-}
+NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P) { solver_name = SOLVER_NAME; }
 
 NaiveTSWAP::~NaiveTSWAP() {}
 
@@ -133,9 +130,7 @@ void NaiveTSWAP::run()
   solution = plan;
 }
 
-void NaiveTSWAP::setParams(int argc, char* argv[])
-{
-}
+void NaiveTSWAP::setParams(int argc, char* argv[]) {}
 
 void NaiveTSWAP::printHelp()
 {
