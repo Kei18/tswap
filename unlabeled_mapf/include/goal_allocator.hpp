@@ -22,7 +22,8 @@ public:
 
 private:
   Problem* P;
-  Nodes assigned_goals;  // assignment results
+  Nodes assigned_goals;   // start index -> goal
+  Nodes assigned_starts;  // goal index -> start
 
   const MODE assignment_mode;
 
@@ -33,7 +34,12 @@ private:
   // lazy evaluation
   std::vector<std::queue<Node*>> OPEN_LAZY;
   std::vector<std::vector<int>> DIST_LAZY;
-  int getLazyEval(const int i, Node* const g);
+
+public:
+  int getLazyEval(const int start_index, const int goal_index);
+  int getLazyEval(Node* const s, const int goal_index);
+
+private:
   void setAllStartGoalDistances();  // compute all start-goal pairs of distance
 
   void bottleneckAssign();

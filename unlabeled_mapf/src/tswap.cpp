@@ -1,13 +1,18 @@
 #include "../include/tswap.hpp"
+#include <alloca.h>
 
 #include <fstream>
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
 TSWAP::TSWAP(Problem* _P)
-    : Solver(_P), assignment_mode(GoalAllocator::BOTTLENECK_LINEAR)
+    : Solver(_P),
+      assignment_mode(GoalAllocator::BOTTLENECK_LINEAR),
+      goal_indexes(G->getNodesSize(), -1),
+      use_tie_break(true)
 {
   solver_name = SOLVER_NAME;
+  for (int i = 0; i < P->getNum(); ++i) goal_indexes[P->getGoal(i)->id] = i;
 }
 
 TSWAP::~TSWAP() {}
@@ -23,13 +28,13 @@ void TSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, assignment_mode);
-  allocator.assign();
-  auto goals = allocator.getAssignedGoals();
+  allocator = std::make_shared<GoalAllocator>(P, assignment_mode);
+  allocator->assign();
+  auto goals = allocator->getAssignedGoals();
 
   elapsed_assignment = getSolverElapsedTime();
-  estimated_soc = allocator.getCost();
-  estimated_makespan = allocator.getMakespan();
+  estimated_soc = allocator->getCost();
+  estimated_makespan = allocator->getMakespan();
 
   info(" ", "elapsed:", elapsed_assignment, ", finish goal assignment",
        ", soc: >=", estimated_soc, ", makespan: >=", estimated_makespan);
@@ -103,7 +108,7 @@ void TSWAP::run()
       }
 
       // get desired node
-      Node* u = getNextNode(a_i->v_now, a_i->g);
+      Node* u = getNextNode(a_i->v_now, a_i->g, occupied_now);
 
       // rule 2. if u is occupied in the *next* timestep -> stay
       auto a_j = occupied_next[u->id];
@@ -191,7 +196,21 @@ void TSWAP::run()
   solution = plan;
 }
 
-Node* TSWAP::getNextNode(Node* a, Node* b) { return getPath(a, b)[1]; }
+Node* TSWAP::getNextNode(Node* a, Node* b, std::vector<Agent*>& occupied_now)
+{
+  int i = goal_indexes[b->id];
+  Node* candidate = a;
+  int cost_baseline = allocator->getLazyEval(a, i);
+  for (auto m : a->neighbor) {
+    if (m == b) return b;
+    int cost = allocator->getLazyEval(m, i);
+    if (cost < cost_baseline) {
+      if (!use_tie_break || occupied_now[m->id] == nullptr) return m;  // tie-break
+      candidate = m;
+    }
+  }
+  return candidate;
+}
 
 bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 {
@@ -200,7 +219,7 @@ bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
   Agent* b = a;
   while (true) {
     if (b->v_now == b->g || b->v_next != nullptr) break;  // not deadlock
-    auto c = occupied_now[getNextNode(b->v_now, b->g)->id];
+    auto c = occupied_now[getNextNode(b->v_now, b->g, occupied_now)->id];
     if (c == nullptr) break;  // not deadlock
     A_p.push_back(b);
     b = c;
@@ -230,14 +249,18 @@ void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
       {"mode", no_argument, 0, 'm'},
+      {"off-tie-break", no_argument, 0, 'b'},
       {0, 0, 0, 0},
   };
   optind = 1;  // reset
   int opt, longindex;
-  while ((opt = getopt_long(argc, argv, "m:", longopts, &longindex)) != -1) {
+  while ((opt = getopt_long(argc, argv, "m:b", longopts, &longindex)) != -1) {
     switch (opt) {
       case 'm':
         assignment_mode = static_cast<GoalAllocator::MODE>(std::atoi(optarg));
+        break;
+      case 'b':
+        use_tie_break = false;
         break;
       default:
         break;
@@ -264,6 +287,11 @@ void TSWAP::printHelp()
          "eval)\n"
       << "                                    7: greedy-swap-cost"
 
+      << "\n"
+
+      << "  -b --off-tie-break"
+      << "            "
+      << "do not use tie-break rule"
       << std::endl;
 }
 

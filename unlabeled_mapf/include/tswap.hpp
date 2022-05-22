@@ -21,6 +21,10 @@ private:
   };
 
   GoalAllocator::MODE assignment_mode;
+  std::shared_ptr<GoalAllocator> allocator;
+  std::vector<int> goal_indexes;
+
+  bool use_tie_break = true;
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment
@@ -30,7 +34,7 @@ private:
   int estimated_soc;         // estimated sum-of-costs according to the target
                              // assignment
 
-  Node* getNextNode(Node* a, Node* b);
+  Node* getNextNode(Node* a, Node* b, std::vector<Agent*>& occupied_now);
 
   // detect and resolve deadlocks
   bool deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now);
