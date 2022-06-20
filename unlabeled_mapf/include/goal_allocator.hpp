@@ -17,7 +17,7 @@ public:
     GREEDY,
     GREEDY_SWAP,
     GREEDY_SWAP_WO_LAZY,
-    GREEDY_SWAP_COST
+    GREEDY_SWAP_COST,
   };
 
 private:
