@@ -2,16 +2,15 @@ tswap
 ===
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
-A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unlabeled-MAPF), used in a paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://arxiv.org/abs/2109.04264) (TSWAP, to appear at ICAPS-22).
+The code repository of the paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://kei18.github.io/tswap/) (TSWAP, to appear at ICAPS-22).
 
 - It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
 - The repository uses [Google Test](https://github.com/google/googletest).
-- The visualizer uses [openFrameworks](https://openframeworks.cc).
 - The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-optimal, complete).
 
 | platform | status (master) |
 | ---: | :--- |
-| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=master) |
+| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) |
 | ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=master) |
 
 ## Demo
@@ -78,45 +77,18 @@ solution=
 
 ## Visualizer
 
-### Building
-It takes around 10 minutes.
-
-#### macOS 10.x
-```sh
-bash ./visualizer/scripts/build_macos.sh
-```
-
-Note: The script of openFrameworks seems to contain bugs. Check this [issue](https://github.com/openframeworks/openFrameworks/issues/6623). I fixed this in my script :D
-
-#### macOS 11.x
-```sh
-git submodule update --remote
-bash ./third_party/openFrameworks/scripts/osx/download_libs.sh
-cd visualizer
-make build
-cd ..
-chmod +x ./visualize.sh
-```
-
-### Usage
-```sh
-cd build
-../visualize.sh result.txt
-```
-
-You can manipulate it via your keyboard. See printed info.
-
+[@Kei18/mapf-visualizer](https://github.com/kei18/mapf-visualizer) is available.
 
 ## Experimental Environment
-[![v1.2](https://img.shields.io/badge/tag-v1.2-blue.svg?style=flat)](https://github.com/Kei18/tswap/releases/tag/v1.2)
+
+- ICAPS-22: [![v1.2](https://img.shields.io/badge/tag-v1.2-blue.svg?style=flat)](https://github.com/Kei18/tswap/releases/tag/v1.2)
 
 ## Utilities
 
 auto formatting with commit (by [clang-format](https://clang.llvm.org/docs/ClangFormat.html))
 
 ```sh
-git config core.hooksPath .githooks
-chmod a+x .githooks/pre-commit
+git config core.hooksPath .githooks && chmod a+x .githooks/pre-commit
 ```
 
 ## Licence
