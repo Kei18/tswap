@@ -3,12 +3,14 @@
  */
 
 #pragma once
+#include "goal_allocator.hpp"
 #include "solver.hpp"
 
 class NaiveTSWAP : public Solver
 {
 public:
   static const std::string SOLVER_NAME;
+  GoalAllocator::MODE assignment_mode;
 
 private:
   struct Agent {

@@ -9,10 +9,10 @@ A simulator and visualizer of (offline) Unlabeled Multi-Agent Path Finding (unla
 - The visualizer uses [openFrameworks](https://openframeworks.cc).
 - The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-optimal, complete).
 
-| platform | status (master) | status (dev) |
-| ---: | :--- |:--- |
-| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=master) | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=dev) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=dev) |
-| ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=master) | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=dev) |
+| platform | status (master) |
+| ---: | :--- |
+| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) ![build_visualizer_macos](https://github.com/Kei18/tswap/workflows/build_visualizer_macos/badge.svg?branch=master) |
+| ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=master) |
 
 ## Demo
 ![demo in a small field, flocking-like](./material/arena_100agents.gif)
@@ -33,7 +33,7 @@ make
 ## Usage
 TSWAP (sub-optimal complete)
 ```sh
-./app -i ../instances/sample.txt -s TSWAP -o result.txt -v
+./app -i ../sample-instance.txt -s TSWAP -o result.txt -v
 ```
 
 FlowNetwork (makespan optimal, the result is saved in `result.txt`)

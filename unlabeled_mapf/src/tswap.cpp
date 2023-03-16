@@ -54,7 +54,7 @@ void TSWAP::run()
   std::priority_queue<Agent*, Agents, decltype(compare)> U(compare);
 
   // work as reservation table
-  Agents occupied_now(K, nullptr);  // current location
+  Agents occupied_now(K, nullptr);   // current location
   Agents occupied_next(K, nullptr);  // next location
 
   // actions
@@ -112,7 +112,7 @@ void TSWAP::run()
       auto a_j = occupied_next[u->id];
       if (a_j != nullptr) {
         if (a_j->v_next == a_j->g) swapGoal(a_i, a_j);  // rule-3
-        stay(a_i);  // rule-5
+        stay(a_i);                                      // rule-5
         continue;
       }
 
@@ -125,7 +125,7 @@ void TSWAP::run()
 
       U.push(a_i);
       if (a_j != nullptr && a_j->v_now == a_j->g) swapGoal(a_i, a_j);  // rule-3
-      deadlockDetectResolve(a_i, occupied_now);  // rule-4
+      deadlockDetectResolve(a_i, occupied_now);                        // rule-4
     }
 
     // acting

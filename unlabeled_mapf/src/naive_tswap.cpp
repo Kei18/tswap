@@ -6,7 +6,11 @@
 
 const std::string NaiveTSWAP::SOLVER_NAME = "NaiveTSWAP";
 
-NaiveTSWAP::NaiveTSWAP(Problem* _P) : Solver(_P) { solver_name = SOLVER_NAME; }
+NaiveTSWAP::NaiveTSWAP(Problem* _P)
+    : Solver(_P), assignment_mode(GoalAllocator::BOTTLENECK_LINEAR)
+{
+  solver_name = SOLVER_NAME;
+}
 
 NaiveTSWAP::~NaiveTSWAP() {}
 
@@ -16,7 +20,7 @@ void NaiveTSWAP::run()
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P);
+  GoalAllocator allocator = GoalAllocator(P, assignment_mode);
   allocator.assign();
   auto goals = allocator.getAssignedGoals();
 
@@ -130,7 +134,23 @@ void NaiveTSWAP::run()
   solution = plan;
 }
 
-void NaiveTSWAP::setParams(int argc, char* argv[]) {}
+void NaiveTSWAP::setParams(int argc, char* argv[]) {
+  struct option longopts[] = {
+      {"mode", no_argument, 0, 'm'},
+      {0, 0, 0, 0},
+  };
+  optind = 1;  // reset
+  int opt, longindex;
+  while ((opt = getopt_long(argc, argv, "m:", longopts, &longindex)) != -1) {
+    switch (opt) {
+      case 'm':
+        assignment_mode = static_cast<GoalAllocator::MODE>(std::atoi(optarg));
+        break;
+      default:
+        break;
+    }
+  }
+}
 
 void NaiveTSWAP::printHelp()
 {
