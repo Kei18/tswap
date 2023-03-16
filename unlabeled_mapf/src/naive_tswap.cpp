@@ -134,7 +134,8 @@ void NaiveTSWAP::run()
   solution = plan;
 }
 
-void NaiveTSWAP::setParams(int argc, char* argv[]) {
+void NaiveTSWAP::setParams(int argc, char* argv[])
+{
   struct option longopts[] = {
       {"mode", no_argument, 0, 'm'},
       {0, 0, 0, 0},

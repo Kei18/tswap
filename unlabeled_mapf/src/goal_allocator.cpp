@@ -179,8 +179,8 @@ void GoalAllocator::linearAssign()
     auto s = P->getStart(i);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
-      auto e = LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g),
-                                getLazyEval(i, j));
+      auto e =
+          LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g), getLazyEval(i, j));
       matching.addEdge(&e);
     }
   }
