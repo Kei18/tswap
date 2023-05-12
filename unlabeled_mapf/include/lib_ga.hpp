@@ -14,15 +14,15 @@ namespace LibGA
   struct FieldEdge {
     int start_index;
     int goal_index;
-    Node* s;  // start
-    Node* g;  // goal
+    Node* s;      // start
+    Node* g;      // goal
 
     bool evaled;  // whether real distance is computed or not
     int inst_d;   // estimated distance
     int d;        // real distance
 
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g,
-              int _d);  // with lazy eval
+              int _d);   // with lazy eval
     FieldEdge(int sindex, int gindex, Node* _s, Node* _g, int _d1,
               int _d2);  // without lazy eval
 
@@ -38,7 +38,7 @@ namespace LibGA
     std::vector<int> mate;               // pair
     std::vector<std::vector<int>> cost;  // start -> goal
     int matched_num;
-    Nodes assigned_goals;  // results
+    Nodes assigned_goals;                // results
 
     Matching(Problem* P);
 

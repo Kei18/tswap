@@ -2,10 +2,9 @@ tswap
 ===
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENCE.txt)
 
-The code repository of the paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://kei18.github.io/tswap/) (TSWAP, to appear at ICAPS-22).
+The code repository of the paper ["Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution"](https://kei18.github.io/tswap/) (TSWAP; ICAPS-22 & AIJ-23).
 
 - It is written in C++(17) with [CMake](https://cmake.org/) build and tested on MacOS 10.15.
-- The repository uses [Google Test](https://github.com/google/googletest).
 - The implementations include: the makespan optimal algorithm [1] and TSWAP (sub-optimal, complete).
 
 | platform | status (master) |
@@ -81,6 +80,7 @@ solution=
 
 ## Experimental Environment
 
+- AIJ-23: [![v1.3](https://img.shields.io/badge/tag-v1.3-blue.svg?style=flat)](https://github.com/Kei18/tswap/releases/tag/v1.3)
 - ICAPS-22: [![v1.2](https://img.shields.io/badge/tag-v1.2-blue.svg?style=flat)](https://github.com/Kei18/tswap/releases/tag/v1.2)
 
 ## Utilities
@@ -103,9 +103,6 @@ This software is released under the MIT License, see [LICENCE.txt](LICENCE.txt).
 - Scripts for the experiments are in `exp_scripts/`.
 - `tests/` include test scripts.
 - The implementation of ECBS-TA [2] can be obtained [Wolfgang's excellent repository](https://github.com/whoenig/libMultiRobotPlanning).
-
-## Author
-[Keisuke Okumura](https://kei18.github.io) is a Ph.D. candidate at Tokyo Institute of Technology, working on multiple moving agents.
 
 ## Reference
 1. Yu, J., & LaValle, S. M. (2013).

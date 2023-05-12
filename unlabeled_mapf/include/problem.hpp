@@ -32,14 +32,14 @@ using Configs = std::vector<Config>;
 class Problem
 {
 private:
-  std::string instance;  // instance name
-  Graph* G;              // graph
-  std::mt19937* MT;      // seed
-  Config config_s;       // initial configuration
-  Config config_g;       // goal configuration
-  int num_agents;        // number of agents
-  int max_timestep;      // timestep limit
-  int max_comp_time;     // comp_time limit, ms
+  std::string instance;             // instance name
+  Graph* G;                         // graph
+  std::mt19937* MT;                 // seed
+  Config config_s;                  // initial configuration
+  Config config_g;                  // goal configuration
+  int num_agents;                   // number of agents
+  int max_timestep;                 // timestep limit
+  int max_comp_time;                // comp_time limit, ms
 
   const bool instance_initialized;  // for memory manage
 

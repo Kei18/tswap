@@ -32,8 +32,8 @@ private:
   bool use_incremental;  // choose TEN_INCREMENTAL or TEN (no cache), default:
                          // true
 
-  int minimum_step;  // start from this timestep
-  bool is_optimal;   // for binary search, optimal makespan or not
+  int minimum_step;      // start from this timestep
+  bool is_optimal;       // for binary search, optimal makespan or not
 
   void run();
 
