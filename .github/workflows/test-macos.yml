@@ -43,4 +43,4 @@ jobs:
 
       - name: run-app
         working-directory: build
-        run: ./app -i ../instances/sample.txt -s TSWAP -o result.txt -v
+        run: ./app -i ../sample-instance.txt -s TSWAP -o result.txt -v

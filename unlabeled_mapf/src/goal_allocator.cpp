@@ -1,5 +1,7 @@
 #include "../include/goal_allocator.hpp"
 
+#include <unordered_map>
+
 GoalAllocator::GoalAllocator(Problem* _P, MODE _mode)
     : P(_P),
       assignment_mode(_mode),
@@ -83,12 +85,11 @@ void GoalAllocator::bottleneckAssign()
     }
   } else {
     // without lazy eval
-    setAllStartGoalDistances();
     for (int i = 0; i < P->getNum(); ++i) {
       auto s = P->getStart(i);
       for (int j = 0; j < P->getNum(); ++j) {
         auto g = P->getGoal(j);
-        OPEN.emplace(i, j, s, g, s->manhattanDist(g), DIST_LAZY[i][g->id]);
+        OPEN.emplace(i, j, s, g, s->manhattanDist(g), getLazyEval(s, j));
       }
     }
   }
@@ -99,7 +100,7 @@ void GoalAllocator::bottleneckAssign()
 
     // lazy evaluation
     if (!p.evaled) {
-      p.setRealDist(getLazyEval(p.start_index, p.g));
+      p.setRealDist(getLazyEval(p.s, p.goal_index));
       OPEN.push(p);
       continue;
     }
@@ -128,35 +129,41 @@ void GoalAllocator::bottleneckAssign()
   matching_cost = matching.getCost();
 }
 
-int GoalAllocator::getLazyEval(const int i, Node* const g)
+int GoalAllocator::getLazyEval(const int start_index, const int goal_index)
 {
+  return getLazyEval(P->getStart(start_index), goal_index);
+}
+
+int GoalAllocator::getLazyEval(Node* const s, const int goal_index)
+{
+  auto g = P->getGoal(goal_index);
+
   // already evaluated
-  if (DIST_LAZY[i][g->id] != P->getG()->getNodesSize())
-    return DIST_LAZY[i][g->id];
+  if (DIST_LAZY[goal_index][s->id] != P->getG()->getNodesSize())
+    return DIST_LAZY[goal_index][s->id];
 
   // initialize
-  auto s = P->getStart(i);
-  if (DIST_LAZY[i][s->id] != 0) {
-    DIST_LAZY[i][s->id] = 0;
-    OPEN_LAZY[i].push(s);
+  if (DIST_LAZY[goal_index][g->id] != 0) {
+    DIST_LAZY[goal_index][g->id] = 0;
+    OPEN_LAZY[goal_index].push(g);
   }
 
   // BFS
-  while (!OPEN_LAZY[i].empty()) {
-    auto n = OPEN_LAZY[i].front();
-    const int d_n = DIST_LAZY[i][n->id];
+  while (!OPEN_LAZY[goal_index].empty()) {
+    auto n = OPEN_LAZY[goal_index].front();
+    const int d_n = DIST_LAZY[goal_index][n->id];
 
     // check goal condition
-    if (n == g) return d_n;
+    if (n == s) return d_n;
 
     // pop
-    OPEN_LAZY[i].pop();
+    OPEN_LAZY[goal_index].pop();
 
     for (auto m : n->neighbor) {
-      const int d_m = DIST_LAZY[i][m->id];
+      const int d_m = DIST_LAZY[goal_index][m->id];
       if (d_n + 1 >= d_m) continue;
-      DIST_LAZY[i][m->id] = d_n + 1;
-      OPEN_LAZY[i].push(m);
+      DIST_LAZY[goal_index][m->id] = d_n + 1;
+      OPEN_LAZY[goal_index].push(m);
     }
   }
 
@@ -172,8 +179,8 @@ void GoalAllocator::linearAssign()
     auto s = P->getStart(i);
     for (int j = 0; j < P->getNum(); ++j) {
       auto g = P->getGoal(j);
-      auto e = LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g),
-                                DIST_LAZY[i][g->id]);
+      auto e =
+          LibGA::FieldEdge(i, j, s, g, s->manhattanDist(g), getLazyEval(i, j));
       matching.addEdge(&e);
     }
   }
@@ -194,8 +201,9 @@ void GoalAllocator::greedyAssign()
   using Edge = std::tuple<int, Node*, int>;  // start, goal, distance
   std::vector<Edge> start_goal_pairs;
   for (int i = 0; i < P->getNum(); ++i) {
-    for (auto g : P->getConfigGoal()) {
-      start_goal_pairs.push_back(std::make_tuple(i, g, DIST_LAZY[i][g->id]));
+    for (int j = 0; j < P->getNum(); ++j) {
+      start_goal_pairs.push_back(
+          std::make_tuple(i, P->getGoal(j), getLazyEval(i, j)));
     }
   }
 
@@ -243,18 +251,19 @@ void GoalAllocator::greedySwapAssign()
   std::queue<int> Q;
   for (int i = 0; i < P->getNum(); ++i) {
     Q.push(i);
-    auto s = P->getStart(i);
-    OPEN_LAZY[i].push(s);
-    DIST_LAZY[i][s->id] = 0;
+    auto g = P->getGoal(i);
+    OPEN_LAZY[i].push(g);
+    DIST_LAZY[i][g->id] = 0;
   }
 
   assigned_goals.clear();
-  constexpr int NON_TARGET = -2;
-  constexpr int FREE_TARGET = -1;
-  std::vector<int> goal_agent_pairs(P->getG()->getNodesSize(), NON_TARGET);
+  assigned_starts.clear();
+  constexpr int NON_START = -2;
+  constexpr int FREE_START = -1;
+  std::vector<int> start_agent_pairs(P->getG()->getNodesSize(), NON_START);
   for (int i = 0; i < P->getNum(); ++i) {
-    goal_agent_pairs[P->getGoal(i)->id] = FREE_TARGET;
-    assigned_goals.push_back(nullptr);
+    start_agent_pairs[P->getStart(i)->id] = FREE_START;
+    assigned_starts.push_back(nullptr);
   }
 
   while (!Q.empty()) {
@@ -266,15 +275,15 @@ void GoalAllocator::greedySwapAssign()
       auto d_n = DIST_LAZY[i][n->id];
 
       // check assignment
-      auto j = goal_agent_pairs[n->id];
-      if (j == FREE_TARGET) {  // free
-        assigned_goals[i] = n;
-        goal_agent_pairs[n->id] = i;
+      auto j = start_agent_pairs[n->id];
+      if (j == FREE_START) {  // free
+        assigned_starts[i] = n;
+        start_agent_pairs[n->id] = i;
         break;
-      } else if (j != NON_TARGET && d_n < DIST_LAZY[j][n->id]) {
-        assigned_goals[i] = n;
-        goal_agent_pairs[n->id] = i;
-        assigned_goals[j] = nullptr;
+      } else if (j != NON_START && d_n < DIST_LAZY[j][n->id]) {
+        assigned_starts[i] = n;
+        start_agent_pairs[n->id] = i;
+        assigned_starts[j] = nullptr;
         Q.push(j);
         break;
       }
@@ -304,28 +313,28 @@ void GoalAllocator::greedyRefine()
     int i = 0;      // bottleneck agent
     int c_now = 0;  // bottleneck cost
     for (int k = 0; k < P->getNum(); ++k) {
-      auto d = getLazyEval(k, assigned_goals[k]);
+      auto d = getLazyEval(assigned_starts[k], k);
       if (d > c_now) {
         i = k;
         c_now = d;
       }
     }
-    auto s_i = P->getStart(i);
-    auto g_i = assigned_goals[i];
+    auto s_i = assigned_starts[i];
+    auto g_i = P->getGoal(i);
     bool updated = false;
 
     for (int j = 0; j < P->getNum(); ++j) {
       if (j == i) continue;
-      auto g_j = assigned_goals[j];
+      auto s_j = assigned_starts[j];
+      auto g_j = P->getGoal(j);
       // heuristic distance
-      if (std::max(s_i->manhattanDist(g_j),
-                   P->getStart(j)->manhattanDist(g_i)) >= c_now)
+      if (std::max(s_i->manhattanDist(g_j), s_j->manhattanDist(g_i)) >= c_now)
         continue;
       // real distance
-      auto c_swap = std::max(getLazyEval(i, g_j), getLazyEval(j, g_i));
+      auto c_swap = std::max(getLazyEval(s_i, j), getLazyEval(s_j, i));
       if (c_swap < c_now) {
-        assigned_goals[i] = g_j;
-        assigned_goals[j] = g_i;
+        assigned_starts[i] = s_j;
+        assigned_starts[j] = s_i;
         updated = true;
         break;
       }
@@ -334,11 +343,18 @@ void GoalAllocator::greedyRefine()
     if (!updated) break;
   }
 
+  // assigned_starts -> assigned goals
+  std::unordered_map<Node*, Node*> tmp;  //
+  for (int i = 0; i < P->getNum(); ++i) tmp[assigned_starts[i]] = P->getGoal(i);
+  assigned_goals.clear();
+  for (int i = 0; i < P->getNum(); ++i)
+    assigned_goals.push_back(tmp[P->getStart(i)]);
+
   // compute quality
   matching_cost = 0;
   matching_makespan = 0;
   for (int i = 0; i < P->getNum(); ++i) {
-    auto c = DIST_LAZY[i][assigned_goals[i]->id];
+    auto c = getLazyEval(assigned_starts[i], i);
     matching_makespan = std::max(matching_makespan, c);
     matching_cost += c;
   }
@@ -351,30 +367,37 @@ void GoalAllocator::greedyRefineSOC()
     bool updated = false;
     for (int i = 0; i < P->getNum(); ++i)
       for (int j = i + 1; j < P->getNum(); ++j) {
-        auto s_i = P->getStart(i);
-        auto s_j = P->getStart(j);
-        auto g_i = assigned_goals[i];
-        auto g_j = assigned_goals[j];
-        auto c_now = getLazyEval(i, g_i) + getLazyEval(j, g_j);
+        auto s_i = assigned_starts[i];
+        auto s_j = assigned_starts[j];
+        auto g_i = P->getGoal(i);
+        auto g_j = P->getGoal(j);
+        auto c_now = getLazyEval(s_i, i) + getLazyEval(s_j, j);
         // heuristic distance
         if (s_i->manhattanDist(g_j) + s_j->manhattanDist(g_i) >= c_now)
           continue;
         // real distance
-        auto c_swap = getLazyEval(i, g_j) + getLazyEval(j, g_i);
+        auto c_swap = getLazyEval(s_i, j) + getLazyEval(s_j, i);
         if (c_swap < c_now) {
-          assigned_goals[i] = g_j;
-          assigned_goals[j] = g_i;
+          assigned_starts[i] = s_j;
+          assigned_starts[j] = s_i;
           updated = true;
         }
       }
     if (!updated) break;
   }
 
+  // assigned_starts -> assigned goals
+  std::unordered_map<Node*, Node*> tmp;
+  for (int i = 0; i < P->getNum(); ++i) tmp[assigned_starts[i]] = P->getGoal(i);
+  assigned_goals.clear();
+  for (int i = 0; i < P->getNum(); ++i)
+    assigned_goals.push_back(tmp[P->getStart(i)]);
+
   // compute quality
   matching_cost = 0;
   matching_makespan = 0;
   for (int i = 0; i < P->getNum(); ++i) {
-    auto c = DIST_LAZY[i][assigned_goals[i]->id];
+    auto c = getLazyEval(assigned_starts[i], i);
     matching_makespan = std::max(matching_makespan, c);
     matching_cost += c;
   }
@@ -382,7 +405,7 @@ void GoalAllocator::greedyRefineSOC()
 
 void GoalAllocator::greedySwapAssignWoLazy()
 {
-  assigned_goals = std::vector<Node*>(P->getNum(), nullptr);
+  assigned_starts = Nodes(P->getNum(), nullptr);
   setAllStartGoalDistances();
   std::queue<int> U;  // undecided
   std::vector<std::queue<Node*>> D(P->getNum(),
@@ -390,34 +413,34 @@ void GoalAllocator::greedySwapAssignWoLazy()
   for (int i = 0; i < P->getNum(); ++i) {
     U.push(i);
     auto compare = [&](Node* a, Node* b) {
-      auto d_a = getLazyEval(i, a);
-      auto d_b = getLazyEval(i, b);
+      auto d_a = getLazyEval(a, i);
+      auto d_b = getLazyEval(b, i);
       if (d_a != d_b) return d_a < d_b;
       return a->id < b->id;
     };
-    auto tmp = P->getConfigGoal();
+    auto tmp = P->getConfigStart();
     std::sort(tmp.begin(), tmp.end(), compare);
-    for (auto g : tmp) D[i].push(g);
+    for (auto s : tmp) D[i].push(s);
   }
 
   constexpr int NIL = -1;
-  std::vector<int> G_A(P->getG()->getNodesSize(), NIL);  // goal -> agent
+  std::vector<int> A(P->getG()->getNodesSize(), NIL);  // start -> agent
 
   while (!U.empty()) {
     auto i = U.front();
     U.pop();
     while (!D[i].empty()) {
-      auto g = D[i].front();
+      auto s = D[i].front();
       D[i].pop();
-      auto j = G_A[g->id];
+      auto j = A[s->id];
       if (j == NIL) {
-        assigned_goals[i] = g;
-        G_A[g->id] = i;
+        assigned_starts[i] = s;
+        A[s->id] = i;
         break;
-      } else if (getLazyEval(i, g) < getLazyEval(j, g)) {
-        assigned_goals[j] = nullptr;
-        assigned_goals[i] = g;
-        G_A[g->id] = i;
+      } else if (getLazyEval(s, i) < getLazyEval(s, j)) {
+        assigned_starts[j] = nullptr;
+        assigned_starts[i] = s;
+        A[s->id] = i;
         U.push(j);
         break;
       }
@@ -430,24 +453,24 @@ void GoalAllocator::greedySwapAssignWoLazy()
 void GoalAllocator::setAllStartGoalDistances()
 {
   // for constant time checking
-  std::vector<bool> goal_indexes(P->getG()->getNodesSize(), false);
-  for (auto g : P->getConfigGoal()) goal_indexes[g->id] = true;
+  std::vector<bool> start_indexes(P->getG()->getNodesSize(), false);
+  for (auto s : P->getConfigStart()) start_indexes[s->id] = true;
 
   for (int i = 0; i < P->getNum(); ++i) {
-    auto s = P->getStart(i);
-    OPEN_LAZY[i].push(s);
-    DIST_LAZY[i][s->id] = 0;
+    auto g = P->getGoal(i);
+    OPEN_LAZY[i].push(g);
+    DIST_LAZY[i][g->id] = 0;
 
-    int goal_cnt = 0;
+    int start_cnt = 0;
     while (!OPEN_LAZY[i].empty()) {
       auto n = OPEN_LAZY[i].front();
       const int d_n = DIST_LAZY[i][n->id];
 
       // check goal condition
-      if (goal_indexes[n->id]) {
-        ++goal_cnt;
+      if (start_indexes[n->id]) {
+        ++start_cnt;
         // all distances are computed
-        if (goal_cnt == P->getNum()) break;
+        if (start_cnt == P->getNum()) break;
       }
 
       // pop

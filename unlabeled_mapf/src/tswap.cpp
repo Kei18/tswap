@@ -1,13 +1,18 @@
 #include "../include/tswap.hpp"
 
+#include <alloca.h>
+
 #include <fstream>
 
 const std::string TSWAP::SOLVER_NAME = "TSWAP";
 
 TSWAP::TSWAP(Problem* _P)
-    : Solver(_P), assignment_mode(GoalAllocator::BOTTLENECK_LINEAR)
+    : Solver(_P),
+      assignment_mode(GoalAllocator::BOTTLENECK_LINEAR),
+      goal_indexes(G->getNodesSize(), -1)
 {
   solver_name = SOLVER_NAME;
+  for (int i = 0; i < P->getNum(); ++i) goal_indexes[P->getGoal(i)->id] = i;
 }
 
 TSWAP::~TSWAP() {}
@@ -20,16 +25,17 @@ TSWAP::~TSWAP() {}
 void TSWAP::run()
 {
   Plan plan;  // will be solution
+  const int K = G->getNodesSize();
 
   // goal assignment
   info(" ", "start task allocation");
-  GoalAllocator allocator = GoalAllocator(P, assignment_mode);
-  allocator.assign();
-  auto goals = allocator.getAssignedGoals();
+  allocator = std::make_shared<GoalAllocator>(P, assignment_mode);
+  allocator->assign();
+  auto goals = allocator->getAssignedGoals();
 
   elapsed_assignment = getSolverElapsedTime();
-  estimated_soc = allocator.getCost();
-  estimated_makespan = allocator.getMakespan();
+  estimated_soc = allocator->getCost();
+  estimated_makespan = allocator->getMakespan();
 
   info(" ", "elapsed:", elapsed_assignment, ", finish goal assignment",
        ", soc: >=", estimated_soc, ", makespan: >=", estimated_makespan);
@@ -45,14 +51,11 @@ void TSWAP::run()
   };
 
   // agents have not decided their next locations
-  std::priority_queue<Agent*, std::vector<Agent*>, decltype(compare)> undecided(
-      compare);
+  std::priority_queue<Agent*, Agents, decltype(compare)> U(compare);
 
   // work as reservation table
-  std::vector<Agent*> occupied_now(G->getNodesSize(),
-                                   nullptr);  // current location
-  std::vector<Agent*> occupied_next(G->getNodesSize(),
-                                    nullptr);  // next location
+  Agents occupied_now(K, nullptr);   // current location
+  Agents occupied_next(K, nullptr);  // next location
 
   // actions
   auto moveTo = [&](Agent* a, Node* v) {
@@ -80,7 +83,7 @@ void TSWAP::run()
     occupied_now[a->v_now->id] = a;
 
     // insert OPEN set
-    undecided.push(a);
+    U.push(a);
   }
 
   // set initial config
@@ -90,10 +93,10 @@ void TSWAP::run()
   int timestep = 0;
   while (true) {
     // planning
-    while (!undecided.empty()) {
+    while (!U.empty()) {
       // pickup one agent
-      Agent* a_i = undecided.top();
-      undecided.pop();
+      Agent* a_i = U.top();
+      U.pop();
       a_i->called++;
 
       // rule 1. stay goal
@@ -103,47 +106,26 @@ void TSWAP::run()
       }
 
       // get desired node
-      Node* u = getNextNode(a_i->v_now, a_i->g);
+      auto u = getNextNode(a_i->v_now, a_i->g);
 
-      // rule 2. if u is occupied in the *next* timestep -> stay
+      // if u is occupied in the *next* timestep -> stay
       auto a_j = occupied_next[u->id];
       if (a_j != nullptr) {
-        if (a_j->v_next == a_j->g) swapGoal(a_i, a_j);
-        stay(a_i);
+        if (a_j->v_next == a_j->g) swapGoal(a_i, a_j);  // rule-3
+        stay(a_i);                                      // rule-5
         continue;
       }
 
-      // rule 3. if u is occupied in the *current* timestep
+      // if u is occupied in the *current* timestep
       a_j = occupied_now[u->id];
-      if (a_j != nullptr) {
-        // To understand the following code, I recommend you to write
-        // illustrations. The key point is that a_i sometimes can move even
-        // after swapping/rotating targets.
-        if (a_j->v_now == a_j->g) {
-          swapGoal(a_i, a_j);
-        } else if (deadlockDetectResolve(a_i,
-                                         occupied_now)) {  // deadlock detection
-          // skip
-          undecided.push(a_i);
-          continue;
-        }
-
-        if (a_j->v_next == nullptr) {
-          // skip
-          undecided.push(a_i);
-        } else if (a_j->v_next == u) {
-          // wait
-          stay(a_i);
-        } else {
-          // move
-          moveTo(a_i, u);
-        }
+      if (a_j == nullptr || (a_j->v_now == u && a_j->v_next != nullptr)) {
+        moveTo(a_i, u);  // rule-2
         continue;
       }
 
-      // rule4. otherwise (u is free)
-      moveTo(a_i, u);
-      continue;
+      U.push(a_i);
+      if (a_j != nullptr && a_j->v_now == a_j->g) swapGoal(a_i, a_j);  // rule-3
+      deadlockDetectResolve(a_i, occupied_now);                        // rule-4
     }
 
     // acting
@@ -164,7 +146,7 @@ void TSWAP::run()
       a->v_next = nullptr;
       a->called = 0;
       // push to priority queue
-      undecided.push(a);
+      U.push(a);
     }
 
     // update plan
@@ -191,7 +173,16 @@ void TSWAP::run()
   solution = plan;
 }
 
-Node* TSWAP::getNextNode(Node* a, Node* b) { return getPath(a, b)[1]; }
+Node* TSWAP::getNextNode(Node* a, Node* b)
+{
+  int i = goal_indexes[b->id];
+  int cost_baseline = allocator->getLazyEval(a, i);
+  for (auto m : a->neighbor) {
+    if (m == b) return b;  // goal
+    if (allocator->getLazyEval(m, i) < cost_baseline) return m;
+  }
+  return a;
+}
 
 bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
 {
@@ -230,6 +221,7 @@ void TSWAP::setParams(int argc, char* argv[])
 {
   struct option longopts[] = {
       {"mode", no_argument, 0, 'm'},
+      {"off-tie-break", no_argument, 0, 'b'},
       {0, 0, 0, 0},
   };
   optind = 1;  // reset

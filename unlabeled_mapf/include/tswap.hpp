@@ -3,6 +3,8 @@
  */
 
 #pragma once
+#include <memory>
+
 #include "../include/goal_allocator.hpp"
 #include "solver.hpp"
 
@@ -19,8 +21,12 @@ private:
     Node* g;       // goal location
     int called;    // how many times called in the queue
   };
+  using Agents = std::vector<Agent*>;
 
   GoalAllocator::MODE assignment_mode;
+  std::shared_ptr<GoalAllocator> allocator;  // target assignment algorithm
+  std::vector<int> goal_indexes;  // node-id -> goal index \in {1, ..., N}},
+                                  // used with lazy distance evaluation
 
   // for log
   int elapsed_assignment;    // elapsed time for target assignment

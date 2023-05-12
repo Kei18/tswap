@@ -10,8 +10,8 @@
 class TEN
 {
 protected:
-  Problem* const P;  // original problem
-  const Nodes V;     // all nodes in G
+  Problem* const P;                 // original problem
+  const Nodes V;                    // all nodes in G
 
   LibTEN::ResidualNetwork network;  // main body
   bool valid_network;               //
