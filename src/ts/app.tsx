@@ -124,6 +124,31 @@ const App: React.SFC<{}> = () => {
             ""
           )}
 
+          {data.demo ? (
+            <div className="mx-auto mt-5">
+              <p className="h5">Demo</p>
+              <div className="row">
+                {data.demo.map((item, i) => {
+                  return (
+                    <div key={i} className="col-md text-center">
+                      {item.image ? (
+                        <img
+                          src={images_gif[item.image]}
+                          className="img-fluid"
+                        />
+                      ) : (
+                        ""
+                      )}
+                      {item.description ? <p>{item.description}</p> : ""}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+
           {data.subLinks ? (
             <p className="text-center mt-3 sub-links">
               {data.subLinks.map((item, i) => (
@@ -167,31 +192,6 @@ const App: React.SFC<{}> = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-          ) : (
-            ""
-          )}
-
-          {data.demo ? (
-            <div className="mx-auto mt-5">
-              <p className="h5">Demo</p>
-              <div className="row">
-                {data.demo.map((item, i) => {
-                  return (
-                    <div key={i} className="col-md text-center">
-                      {item.image ? (
-                        <img
-                          src={images_gif[item.image]}
-                          className="img-fluid"
-                        />
-                      ) : (
-                        ""
-                      )}
-                      {item.description ? <p>{item.description}</p> : ""}
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           ) : (
             ""
@@ -246,7 +246,7 @@ const App: React.SFC<{}> = () => {
 
           {data.otherLinks ? (
             <div className="mx-auto mt-5">
-              <p className="h5">Other Links</p>
+              <p className="h5">Important Related Work</p>
               <ul>
                 {data.otherLinks.map((item, i) => (
                   <li key={i}>

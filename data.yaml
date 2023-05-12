@@ -1,72 +1,90 @@
 title: |
-  project page generator (title)
+  Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution
 
 # meta-tag
 description: |-
   demo site
 site_name: research projects | Keisuke Okumura
-site_url: https://kei18.github.io/project-page-generator/
+site_url: https://kei18.github.io/tswap/
 thumbnail: thumbnail
 twitter: _kei18
 
 authors:
   - name: Keisuke Okumura
     url: https://kei18.github.io/
-    affiliation: Earth
-  - name: Alice
-    url: https://en.wikipedia.org/wiki/Alice
-    affiliation: Alice's Adventures in Wonderland
-  - name: Satoshi Nakamoto
+    affiliation: |
+      University of Cambridge / National Institute of Advanced Industrial Science and Technology (AIST)
+  - name: Xavier Défago
+    url: https://www.coord.c.titech.ac.jp/m/defago/
+    affiliation: Tokyo Institute of Technology
 
 topLinks:
-  - name: paper-link (e.g., AIJ-21)
-    url: https://doi.org/10.1016/j.artint.2022.103752
+  - name: conference paper (ICAPS-22)
+    url: https://ojs.aaai.org/index.php/ICAPS/article/view/19810
+  - name: preprint with appendix for ICAPS-22
+    url: https://arxiv.org/abs/2109.04264
 
-headerImage: demo
+# headerImage: demo
 
 subLinks:
-  - name: code
-    url: https://github.com/Kei18/project-page-generator
+  - name: code (GitHub)
+    url: https://github.com/Kei18/tswap
 
 demo:
-  - image: demo
-    description: demo1
-  - image: demo
-    description: demo2
-  - image: demo
-    description: demo3
+  - image: hello
+    description: pattern formation
+  - image: arena_100agents
+    description: unlabeled MAPF
+  - image: robot
+    description: robust execution
 
 otherLinks:
   - name: |
-      example-1: LaCAM
-    url: https://kei18.github.io/lacam/
-  - name: |
-      example-2: MAPPCF
-    url: https://kei18.github.io/mappcf/
+      Offline Time-Independent Multiagent Path Planning (T-RO-23)
+    url: https://kei18.github.io/otimapp/
+  - url: https://kei18.github.io/time-independent-planning/
+    name: |
+      Time-Independent Planning for Multiple Moving Agents (AAAI-21)
+  - url: https://kei18.github.io/pibt2/
+    name: |
+      Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding (AIJ-22)
 
 abstract: |
-  <p>Write your abstract here</p>
-  <p><span class="text-danger">Lorem ipsum</span> dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+  <p>
+  Real-time planning for a combined problem of target assignment and path planning for multiple agents, also known as the unlabeled version of multi-agent path finding (MAPF), is crucial for high-level coordination in multi-agent systems, such as pattern formation by robot swarms.
+  This paper studies two aspects of <span class="text-danger">unlabeled-MAPF</span>:
+  (1) offline scenario:~solving large instances using centralized approaches with a small computation time, and
+  (2) online scenario:~executing unlabeled-MAPF, despite the timing uncertainties real robots face.
+  For this purpose, we propose <span class="text-danger">TSWAP</span>, a novel sub-optimal complete algorithm that takes an arbitrary initial target assignment and then repeats one-timestep path planning with target swapping.
+  TSWAP can adapt to both offline and online scenarios.
+  We empirically demonstrate that <em>offline TSWAP</em> is highly scalable, and provides near-optimal solutions while reducing runtime by orders of magnitude compared with existing approaches.
+  In addition, we present the benefits of <em>online TSWAP</em>, such as delay tolerance, through real-robot demonstrations.
+  </p>
 
 news:
   - body: |
-      The paper has been accepted to Artificial Intelligence (AIJ)!
-    url: https://www.journals.elsevier.com/artificial-intelligence
-    date: Jul. 2022
+      Got the ICAPS 2022 Best Student Paper Award!
+    url: https://icaps22.icaps-conference.org/awards#confaward
+    date: May. 2022
+  - body: |
+      The paper has been accepted to ICAPS-22!
+    url: https://icaps22.icaps-conference.org/
+    date: Jan. 2022
 
-video: https://player.vimeo.com/video/645887407
+video: https://player.vimeo.com/video/601032722
 
-slides: https://speakerdeck.com/player/c720eb1fa04244c79127fe6ba0c03030
+slides: https://speakerdeck.com/player/9fc2805e89864265a9afdd4fe8108632
 
 citation: |-
-  @article{okumura2022priority,
-    title = {Priority Inheritance with Backtracking for Iterative Multi-agent Path Finding},
-    journal = {Artificial Intelligence},
-    pages = {103752},
-    year = {2022},
-    issn = {0004-3702},
-    doi = {https://doi.org/10.1016/j.artint.2022.103752},
-    author = {Keisuke Okumura and Manao Machida and Xavier Défago and Yasumasa Tamura}
+  # conference version
+
+  @inproceedings{okumura2022solving,
+    title={Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution},
+    author={Okumura, Keisuke and D{\'e}fago, Xavier},
+    booktitle={Proceedings of the International Conference on Automated Planning and Scheduling},
+    volume={32},
+    pages={270--278},
+    year={2022}
   }
 
 contact: |-
