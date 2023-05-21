@@ -4,7 +4,7 @@ file(GLOB SRCS "./src/*.cpp")
 project(lib-unlabeled-mapf)
 add_library(${PROJECT_NAME} STATIC ${SRCS})
 add_definitions(-D_MAPDIR_="${CMAKE_CURRENT_LIST_DIR}/../map/")
-target_compile_options(${PROJECT_NAME} PUBLIC -O3 -Wall -mtune=native -march=native)
+target_compile_options(${PROJECT_NAME} PUBLIC -O3 -Wall)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} INTERFACE ./include)
 
