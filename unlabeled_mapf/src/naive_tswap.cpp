@@ -71,7 +71,7 @@ void NaiveTSWAP::run()
       } else {                          // deadlock detection
         std::vector<Agent*> A_p = {a};  // A'
         while (true) {
-          if (b->v == b->g) break;      // not deadlock
+          if (b->v == b->g) break;  // not deadlock
           Node* w = getPath(b->v, b->g)[1];
           auto itr_w = std::find_if(A.begin(), A.end(),
                                     [w](Agent* c) { return c->v == w; });

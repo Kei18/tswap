@@ -28,16 +28,16 @@ protected:
 
   Time::time_point t_start;  // when to start solving
 
-  Plan solution;             // solution
-  double comp_time;          // time for deliberation
-  bool solved;               // success -> true, failed -> false (default)
+  Plan solution;     // solution
+  double comp_time;  // time for deliberation
+  bool solved;       // success -> true, failed -> false (default)
 
-  bool verbose;              // true -> print additional info
+  bool verbose;  // true -> print additional info
 
   // for space-time A*
   struct AstarNode {
     Node* v;
-    int g;         // in getTimedPath, g represents t
+    int g;  // in getTimedPath, g represents t
     int f;
     AstarNode* p;  // parent
   };

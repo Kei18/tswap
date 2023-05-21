@@ -192,7 +192,7 @@ bool TSWAP::deadlockDetectResolve(Agent* a, std::vector<Agent*>& occupied_now)
   while (true) {
     if (b->v_now == b->g || b->v_next != nullptr) break;  // not deadlock
     auto c = occupied_now[getNextNode(b->v_now, b->g)->id];
-    if (c == nullptr) break;                              // not deadlock
+    if (c == nullptr) break;  // not deadlock
     A_p.push_back(b);
     b = c;
     if (A_p.size() > 1) {

@@ -111,7 +111,7 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
       if (w == NIL || (!CLOSE[w] && dfs(w))) {
         if (v < N) {  // start
           mariage(v, u);
-        } else {      // goal
+        } else {  // goal
           mariage(u, v);
         }
         return true;
@@ -122,11 +122,11 @@ void LibGA::Matching::updateByIncrementalFordFulkerson(FieldEdge const* e)
 
   const int s = e->start_index;
   const int g = N + e->goal_index;
-  if (mate[s] == NIL) {         // new path must include s
+  if (mate[s] == NIL) {  // new path must include s
     dfs(s);
   } else if (mate[g] == NIL) {  // new path must include g
     dfs(g);
-  } else {                      // search all
+  } else {  // search all
     for (int v = 0; v < N; ++v) {
       if (mate[v] == NIL && dfs(v)) break;
     }
@@ -212,13 +212,13 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
         if (CLOSE[m]) continue;
 
         // check connectivity
-        if (n->v < N) {                          // start -> goal
+        if (n->v < N) {  // start -> goal
           if (mate[n->v] == m) continue;
-        } else if (n->v < N * 2 && m < N) {      // goal -> start
+        } else if (n->v < N * 2 && m < N) {  // goal -> start
           if (mate[n->v] != m) continue;
         } else if (n->v < N * 2 && m == SINK) {  // goal -> sink
           if (f_to_sink[n->v - N]) continue;
-        } else if (n->v == SINK) {               // sink -> goal
+        } else if (n->v == SINK) {  // sink -> goal
           if (!f_to_sink[m - N]) continue;
         } else {
           halt("unknown case");
@@ -254,13 +254,13 @@ void LibGA::Matching::solveBySuccessiveShortestPath()
     if (sink_p != nullptr) {
       auto n = sink_p;
       while (n->p != nullptr) {
-        if (n->v == SINK) {             // goal -> sink
+        if (n->v == SINK) {  // goal -> sink
           f_to_sink[n->p->v - N] = true;
         } else if (n->p->v == SINK) {   // sink -> goal
           f_to_sink[n->v - N] = false;  // meaningless
         } else if (n->v >= N) {         // start -> goal
           mariage(n->p->v, n->v);
-        } else {                        // goal -> start
+        } else {  // goal -> start
           // pass
         }
         n = n->p;
