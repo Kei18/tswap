@@ -9,7 +9,7 @@ The code repository of the paper ["Solving Simultaneous Target Assignment and Pa
 
 | platform | status (master) |
 | ---: | :--- |
-| macos-10.15 | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) |
+| macos-latest | ![test_macos](https://github.com/Kei18/tswap/workflows/test_macos/badge.svg?branch=master) |
 | ubuntu-latest | ![test_ubuntu](https://github.com/Kei18/tswap/workflows/test_ubuntu/badge.svg?branch=master) |
 
 ## Demo

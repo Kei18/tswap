@@ -152,7 +152,7 @@ bool LibTEN::ResidualNetwork::used(TEN_Node* p, TEN_Node* q)
 {
   if (inArray(q, p->children)) {  // usual
     return !getCapacity(p, q);
-  } else {  // reverse
+  } else {                        // reverse
     return getCapacity(p, q);
   }
 }
@@ -173,7 +173,7 @@ void LibTEN::ResidualNetwork::deleteEdge(TEN_Node* p, TEN_Node* q)
 {
   if (inArray(q, p->children)) {  // usual
     p->capacity.erase(q);
-  } else {  // reverse
+  } else {                        // reverse
     q->capacity.erase(p);
   }
 }
@@ -182,7 +182,7 @@ void LibTEN::ResidualNetwork::setFlow(TEN_Node* from, TEN_Node* to)
 {
   if (inArray(to, from->children)) {  // usual
     from->capacity[to] = false;
-  } else {  // reverse
+  } else {                            // reverse
     to->capacity[from] = true;
   }
 }

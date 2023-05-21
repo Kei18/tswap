@@ -407,7 +407,7 @@ void GoalAllocator::greedySwapAssignWoLazy()
 {
   assigned_starts = Nodes(P->getNum(), nullptr);
   setAllStartGoalDistances();
-  std::queue<int> U;  // undecided
+  std::queue<int> U;                                      // undecided
   std::vector<std::queue<Node*>> D(P->getNum(),
                                    std::queue<Node*>());  // distance
   for (int i = 0; i < P->getNum(); ++i) {
