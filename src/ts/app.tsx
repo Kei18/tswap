@@ -47,6 +47,14 @@ const App: React.SFC<{}> = () => {
           ) : (
             ""
           )}
+          {data.thumbnail && images_png[data.thumbnail] ? (
+            <meta
+              property="twitter:image"
+              content={images_png[data.thumbnail]}
+            />
+          ) : (
+            ""
+          )}
         </Helmet>
 
         <div className="container">

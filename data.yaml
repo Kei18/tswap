@@ -19,12 +19,14 @@ authors:
     affiliation: Tokyo Institute of Technology
 
 topLinks:
+  - name: journal paper (AIJ-23)
+    url: https://www.sciencedirect.com/science/article/pii/S0004370223000929
   - name: conference paper (ICAPS-22)
     url: https://ojs.aaai.org/index.php/ICAPS/article/view/19810
   - name: preprint with appendix for ICAPS-22
     url: https://arxiv.org/abs/2109.04264
 
-# headerImage: demo
+headerImage: tswap-large
 
 subLinks:
   - name: code (GitHub)
@@ -53,8 +55,8 @@ abstract: |
   <p>
   Real-time planning for a combined problem of target assignment and path planning for multiple agents, also known as the unlabeled version of multi-agent path finding (MAPF), is crucial for high-level coordination in multi-agent systems, such as pattern formation by robot swarms.
   This paper studies two aspects of <span class="text-danger">unlabeled-MAPF</span>:
-  (1) offline scenario:~solving large instances using centralized approaches with a small computation time, and
-  (2) online scenario:~executing unlabeled-MAPF, despite the timing uncertainties real robots face.
+  (1) offline scenario: solving large instances using centralized approaches with a small computation time, and
+  (2) online scenario: executing unlabeled-MAPF, despite the timing uncertainties real robots face.
   For this purpose, we propose <span class="text-danger">TSWAP</span>, a novel sub-optimal complete algorithm that takes an arbitrary initial target assignment and then repeats one-timestep path planning with target swapping.
   TSWAP can adapt to both offline and online scenarios.
   We empirically demonstrate that <em>offline TSWAP</em> is highly scalable, and provides near-optimal solutions while reducing runtime by orders of magnitude compared with existing approaches.
@@ -62,6 +64,10 @@ abstract: |
   </p>
 
 news:
+  - body: |
+      The paper has been accepted to Artificial Intelligence (AIJ)!
+    url: https://www.sciencedirect.com/journal/artificial-intelligence
+    date: May. 2023
   - body: |
       Got the ICAPS 2022 Best Student Paper Award!
     url: https://icaps22.icaps-conference.org/awards#confaward
@@ -76,8 +82,19 @@ video: https://player.vimeo.com/video/601032722
 slides: https://speakerdeck.com/player/9fc2805e89864265a9afdd4fe8108632
 
 citation: |-
-  # conference version
+  # journal version
+  @article{okumura2023solving,
+    title = {Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution},
+    journal = {Artificial Intelligence},
+    pages = {103946},
+    year = {2023},
+    issn = {0004-3702},
+    doi = {https://doi.org/10.1016/j.artint.2023.103946},
+    author = {Keisuke Okumura and Xavier Défago}
+  }
 
+
+  # conference version
   @inproceedings{okumura2022solving,
     title={Solving Simultaneous Target Assignment and Path Planning Efficiently with Time-Independent Execution},
     author={Okumura, Keisuke and D{\'e}fago, Xavier},
