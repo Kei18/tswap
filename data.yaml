@@ -64,6 +64,9 @@ abstract: |
   </p>
 
 news:
+  - body: A toy Python implementation has been released (pytswap)
+    url: https://github.com/Kei18/pytswap
+    date: Aug. 2025
   - body: |
       The paper has been accepted to Artificial Intelligence (AIJ)!
     url: https://www.sciencedirect.com/journal/artificial-intelligence
